@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+# TODO Makefile
+
+gcc -Wall -Wextra -Werror -std=c99 -pedantic main.c -o hsh
+sudo cp hsh /usr/local/bin/
