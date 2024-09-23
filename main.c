@@ -4,6 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/wait.h>
+
 void panic(char *msg) {
 	fprintf(stderr, "%s\n", msg);
 	exit(1);
@@ -16,7 +18,7 @@ void execute(char *cmd) {
 		char *argv[] = {NULL};
 		char *env[] = {NULL};
 
-		printf("I'm the child (%d), so I'll execve(%s)\n", getpid(), cmd);
+		printf("%d: execve(%s)\n", getpid(), cmd);
 		execve(cmd, argv, env);
 
 		// execve only returns control to us if it fails
@@ -24,7 +26,10 @@ void execute(char *cmd) {
 		exit(1);
 	}
 
-	printf("I'm the parent (%d), who created %d\n", getpid(), pid);
+	printf("%d-%d: Time to wait\n", getpid(), pid);
+	int status = 0;
+	int id = wait(&status);
+	printf("%d-%d: Done waiting on %d with status %d\n", getpid(), pid, id, status);
 }
 
 void parse_line(char *line) {
