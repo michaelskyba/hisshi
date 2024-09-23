@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 void panic(char *msg) {
@@ -33,6 +34,10 @@ void parse_line(char *line) {
 		printf("Skipping blank line\n");
 		return;
 	}
+
+	// As of 1727056628 we're using fgets which pads a newline
+	char *nl = strchr(line, '\n');
+	if (nl) *nl = '\0';
 
 	printf("Executing %s\n", line);
 	execute(line);
