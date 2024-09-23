@@ -6,39 +6,7 @@
 
 #include <sys/wait.h>
 
-struct arg_node {
-	char *name;
-	struct arg_node *next;
-};
-
-struct command {
-	char *path;
-
-	int argc;
-	struct arg_node *arg_head;
-	struct arg_node *arg_tail;
-};
-
-void panic(char *msg) {
-	fprintf(stderr, "%s\n", msg);
-	exit(1);
-}
-
-char **get_argv_array(struct command *cmd) {
-	// +1: Room for NULL
-	int len = cmd->argc + 1;
-
-	char **argv = (char **) malloc(sizeof(char *) * len);
-	struct arg_node *p = cmd->arg_head;
-
-	for (int i = 0; i < cmd->argc; i++) {
-		argv[i] = p->name;
-		p = p->next;
-	}
-
-	argv[cmd->argc] = NULL;
-	return argv;
-}
+#include "command.c"
 
 void execute(struct command *cmd) {
 	int pid = fork();
@@ -66,29 +34,6 @@ void execute(struct command *cmd) {
 	int status = 0;
 	int id = wait(&status);
 	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, id, status);
-}
-
-struct command *create_command() {
-	struct command *cmd = (struct command *) malloc(sizeof(struct command));
-	cmd->path = NULL;
-	cmd->argc = 0;
-	cmd->arg_head = NULL;
-	cmd->arg_tail = NULL;
-
-	return cmd;
-}
-
-void add_arg(struct command *cmd, char *arg_name) {
-	struct arg_node *arg = (struct arg_node *) malloc(sizeof(struct arg_node));
-	arg->name = arg_name;
-	arg->next = NULL;
-
-	if (cmd->argc++ == 0)
-		cmd->arg_head = arg;
-	else
-		cmd->arg_tail->next = arg;
-
-	cmd->arg_tail = arg;
 }
 
 void parse_line(char *line) {
@@ -133,8 +78,11 @@ void parse_script(FILE *script_file) {
 }
 
 int main(int argc, char **argv) {
-	if (argc != 2)
-		panic("Usage: hsh script-file");
+	// TODO interactive usage (kak?)
+	if (argc != 2) {
+		fprintf(stderr, "Usage: hsh script-file\n");
+		exit(1);
+	}
 
 	printf("Starting on PID %d\n", getpid());
 	printf("%s: received file %s\n", argv[0], argv[1]);
