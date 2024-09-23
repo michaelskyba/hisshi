@@ -1,0 +1,55 @@
+338591 execve("./a.out", ["./a.out"], 0x7ffc1294d6a8 /* 124 vars */) = 0
+338591 arch_prctl(ARCH_SET_FS, 0x724603ee8b68) = 0
+338591 set_tid_address(0x724603ee8fd0)  = 338591
+338591 brk(NULL)                        = 0x62b2d1d45000
+338591 brk(0x62b2d1d47000)              = 0x62b2d1d47000
+338591 mmap(0x62b2d1d45000, 4096, PROT_NONE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x62b2d1d45000
+338591 mprotect(0x724603ee5000, 4096, PROT_READ) = 0
+338591 mprotect(0x62b2bbc30000, 4096, PROT_READ) = 0
+338591 getpid()                         = 338591
+338591 ioctl(1, TIOCGWINSZ, {ws_row=47, ws_col=85, ws_xpixel=935, ws_ypixel=1034}) = 0
+338591 writev(1, [{iov_base="Starting with PID 338591", iov_len=24}, {iov_base="\n", iov_len=1}], 2) = 25
+338591 open("./input.txt", O_RDONLY|O_LARGEFILE) = 3
+338591 mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x724603e3c000
+338591 read(3, "one\ntwo\nthree\nfour\nfive\n", 1024) = 24
+338591 lseek(3, 0, SEEK_CUR)            = 24
+338591 writev(1, [{iov_base="offset before: 24", iov_len=17}, {iov_base="\n", iov_len=1}], 2) = 18
+338591 rt_sigprocmask(SIG_BLOCK, ~[RTMIN RT_1 RT_2], [], 8) = 0
+338591 rt_sigprocmask(SIG_BLOCK, ~[], ~[KILL STOP RTMIN RT_1 RT_2], 8) = 0
+338591 fork()                           = 338592
+338592 set_tid_address(0x724603ee8fd0 <unfinished ...>
+338591 rt_sigprocmask(SIG_SETMASK, ~[KILL STOP RTMIN RT_1 RT_2],  <unfinished ...>
+338592 <... set_tid_address resumed>)   = 338592
+338591 <... rt_sigprocmask resumed>NULL, 8) = 0
+338591 rt_sigprocmask(SIG_SETMASK, [],  <unfinished ...>
+338592 rt_sigprocmask(SIG_SETMASK, ~[KILL STOP RTMIN RT_1 RT_2],  <unfinished ...>
+338591 <... rt_sigprocmask resumed>NULL, 8) = 0
+338592 <... rt_sigprocmask resumed>NULL, 8) = 0
+338591 getpid( <unfinished ...>
+338592 rt_sigprocmask(SIG_SETMASK, [],  <unfinished ...>
+338591 <... getpid resumed>)            = 338591
+338592 <... rt_sigprocmask resumed>NULL, 8) = 0
+338591 writev(1, [{iov_base="338591-338592", iov_len=13}, {iov_base=": Time to wait\n", iov_len=15}], 2 <unfinished ...>
+338592 getpid( <unfinished ...>
+338591 <... writev resumed>)            = 28
+338592 <... getpid resumed>)            = 338592
+338591 wait4(-1,  <unfinished ...>
+338592 writev(1, [{iov_base="338592: execve(foo", iov_len=18}, {iov_base=")\n", iov_len=2}], 2) = 20
+338592 execve("foo", [], 0x7ffeb7875100 /* 0 vars */) = -1 ENOENT (No such file or directory)
+338592 writev(2, [{iov_base="", iov_len=0}, {iov_base="foo", iov_len=3}], 2) = 3
+338592 writev(2, [{iov_base="", iov_len=0}, {iov_base=":", iov_len=1}], 2) = 1
+338592 writev(2, [{iov_base="", iov_len=0}, {iov_base=" ", iov_len=1}], 2) = 1
+338592 writev(2, [{iov_base="", iov_len=0}, {iov_base="No such file or directory", iov_len=25}], 2) = 25
+338592 writev(2, [{iov_base="", iov_len=0}, {iov_base="\n", iov_len=1}], 2) = 1
+338592 lseek(3, -23, SEEK_CUR)          = 1
+338592 exit_group(1)                    = ?
+338592 +++ exited with 1 +++
+338591 <... wait4 resumed>[{WIFEXITED(s) && WEXITSTATUS(s) == 1}], 0, NULL) = 338592
+338591 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=338592, si_uid=1000, si_status=1, si_utime=0, si_stime=0} ---
+338591 getpid()                         = 338591
+338591 writev(1, [{iov_base="338591-338592: Done waiting on 3"..., iov_len=53}, {iov_base="\n", iov_len=1}], 2) = 54
+338591 lseek(3, 0, SEEK_CUR)            = 1
+338591 writev(1, [{iov_base="offset after: 1", iov_len=15}, {iov_base="\n", iov_len=1}], 2) = 16
+338591 lseek(3, -23, SEEK_CUR)          = -1 EINVAL (Invalid argument)
+338591 exit_group(0)                    = ?
+338591 +++ exited with 0 +++

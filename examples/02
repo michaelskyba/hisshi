@@ -1,0 +1,9 @@
+#!/usr/local/bin/hsh
+
+# fixed
+# fixed2
+
+ls
+date
+
+/usr/bin/ls

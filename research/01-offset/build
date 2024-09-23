@@ -1,0 +1,6 @@
+#!/bin/sh
+
+musl-gcc \
+	-Wall -Wextra -Werror -std=c99 -pedantic \
+	-g -O0 \
+	00.c

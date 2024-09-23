@@ -35,7 +35,7 @@ void execute(char *cmd) {
 int main() {
 	printf("Starting with PID %d\n", getpid());
 
-	FILE *script_file = fopen("../examples/10-broken", "r");
+	FILE *script_file = fopen("./input.txt", "r");
 	fgetc(script_file);
 
 	printf("offset before: %ld\n", lseek(3, 0, SEEK_CUR));

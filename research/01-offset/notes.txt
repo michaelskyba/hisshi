@@ -1,0 +1,30 @@
+GPT-8 comment #
+>00.c
+Try linking with musl.
+glibc is a shared library and maybe they're sharing an IO buffer.
+Also try strace with follow fork + io options, and look for anything touching
+filehandle 3.
+
+Main #
+musl
+	same output with musl-gcc, from musl Arch package
+	Should be easier to look at the trace of, though, theoretically, if there's
+	less bloat thrown in there?
+	
+	1727115365: Yeah I compared frac.c's trace with glibc vs musl and musl's was
+	way better
+
+child
+	338592 execve("foo", [], 0x7ffeb7875100 /* 0 vars */) = -1 ENOENT (No such file or directory)
+	338592 writev(2, [{iov_base="", iov_len=0}, {iov_base="foo", iov_len=3}], 2) = 3
+	338592 writev(2, [{iov_base="", iov_len=0}, {iov_base=":", iov_len=1}], 2) = 1
+	338592 writev(2, [{iov_base="", iov_len=0}, {iov_base=" ", iov_len=1}], 2) = 1
+	338592 writev(2, [{iov_base="", iov_len=0}, {iov_base="No such file or directory", iov_len=25}], 2) = 25
+	338592 writev(2, [{iov_base="", iov_len=0}, {iov_base="\n", iov_len=1}], 2) = 1
+	338592 lseek(3, -23, SEEK_CUR)          = 1
+	338592 exit_group(1)                    = ?
+	338592 +++ exited with 1 +++
+	
+	lol lseek(3, -23, SEEK_CUR)
+	
+	ok _exit() fixes it

@@ -2,5 +2,5 @@
 
 # TODO Makefile
 
-gcc -Wall -Wextra -Werror -std=c99 -pedantic main.c -o hsh
+gcc -g -O0 -Wall -Wextra -Werror -std=c99 -pedantic main.c -o hsh
 sudo cp hsh /usr/local/bin/
