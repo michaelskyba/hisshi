@@ -24,6 +24,22 @@ void panic(char *msg) {
 	exit(1);
 }
 
+char **get_argv_array(struct command *cmd) {
+	// +1: Room for NULL
+	int len = cmd->argc + 1;
+
+	char **argv = (char **) malloc(sizeof(char *) * len);
+	struct arg_node *p = cmd->arg_head;
+
+	for (int i = 0; i < cmd->argc; i++) {
+		argv[i] = p->name;
+		p = p->next;
+	}
+
+	argv[cmd->argc] = NULL;
+	return argv;
+}
+
 void execute(struct command *cmd) {
 	int pid = fork();
 
@@ -33,11 +49,13 @@ void execute(struct command *cmd) {
 	}
 
 	if (pid == 0) {
-		char *argv[] = {NULL};
+		// TODO Think about whether you need to free the command struct
+		// once you're executing it
+
 		char *env[] = {NULL};
 
 		printf("%d: execve(%s)\n", getpid(), cmd->path);
-		execve(cmd->path, argv, env);
+		execve(cmd->path, get_argv_array(cmd), env);
 
 		// execve only returns control to us if it fails
 		perror(cmd->path);
@@ -87,6 +105,10 @@ void parse_line(char *line) {
 	struct command *cmd = create_command();
 	cmd->path = line;
 	add_arg(cmd, cmd->path); // Convention: set name as $0
+
+	// Test
+	add_arg(cmd, "foo");
+	add_arg(cmd, "bar");
 
 	execute(cmd);
 }
