@@ -1,0 +1,9 @@
+#!/usr/local/bin/hsh
+
+# The output length differs between runs. Sometimes it runs ls multiples times.
+# Something is wrong...
+
+ls
+date
+
+/usr/bin/ls

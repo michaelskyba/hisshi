@@ -1,0 +1,5 @@
+#!/usr/local/bin/hsh
+
+ls
+
+/usr/bin/ls
