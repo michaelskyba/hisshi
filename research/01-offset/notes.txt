@@ -10,7 +10,7 @@ musl
 	same output with musl-gcc, from musl Arch package
 	Should be easier to look at the trace of, though, theoretically, if there's
 	less bloat thrown in there?
-	
+
 	1727115365: Yeah I compared frac.c's trace with glibc vs musl and musl's was
 	way better
 
@@ -24,7 +24,7 @@ child
 	338592 lseek(3, -23, SEEK_CUR)          = 1
 	338592 exit_group(1)                    = ?
 	338592 +++ exited with 1 +++
-	
+
 	lol lseek(3, -23, SEEK_CUR)
-	
+
 	ok _exit() fixes it

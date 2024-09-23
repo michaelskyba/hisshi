@@ -1,0 +1,5 @@
+#!/usr/local/bin/hsh
+# /usr/bin/date +%s
+# /usr/bin/echo hi
+/usr/bin/date
+/usr/bin/echo

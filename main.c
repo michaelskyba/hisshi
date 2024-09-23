@@ -40,10 +40,6 @@ void execute(char *cmd) {
 }
 
 void parse_line(char *line) {
-	// As of 1727056628 we're using fgets which pads a newline
-	char *nl = strchr(line, '\n');
-	if (nl) *nl = '\0';
-
 	if (*line == '\0') {
 		printf("Skipping blank line\n");
 		return;
@@ -59,14 +55,21 @@ void parse_line(char *line) {
 }
 
 void parse_script(FILE *script_file) {
+	// TODO address lines longer than chunk_size
 	int chunk_size = 100;
 	char *line = (char *) malloc(sizeof(char) * chunk_size);
+	char *p = line;
 
-	// while ((*line++ = getc(script_file)))
-	// 	parse_line(line);
+	while ((*p = getc(script_file)) != EOF) {
+		if (*p != '\n') {
+			p++;
+			continue;
+		}
 
-	while (fgets(line, chunk_size, script_file))
+		*p = '\0';
 		parse_line(line);
+		p = line;
+	}
 }
 
 int main(int argc, char **argv) {
