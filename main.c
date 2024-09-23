@@ -8,26 +8,45 @@ void panic(char *msg) {
 }
 
 void execute(char *cmd) {
-	if (*cmd == '#') {
-		printf("Skipping comment: %s", cmd);
+	int pid = fork();
+
+	if (pid == 0) {
+		char *argv[] = {NULL};
+		char *env[] = {NULL};
+
+		printf("I'm the child %d, so I'm execve() ing\n", getpid());
+		int status = execve(cmd, argv, env);
+		printf("Child finished with status %d...\n", status);
 		return;
 	}
 
-	if (*cmd == '\n') {
+	printf("I'm the parent (%d), who created %d\n", getpid(), pid);
+}
+
+void parse_line(char *line) {
+	if (*line == '#') {
+		printf("Skipping comment: %s", line);
+		return;
+	}
+
+	if (*line == '\n') {
 		printf("Skipping blank line\n");
 		return;
 	}
 
-	printf("Executing %s on PID %d\n", cmd, getpid());
-	system(cmd);
+	printf("Executing %s\n", line);
+	execute(line);
 }
 
-void run_script(FILE *script_file) {
+void parse_script(FILE *script_file) {
 	int chunk_size = 100;
-	char line[chunk_size];
+	char *line = (char *) malloc(sizeof(char) * chunk_size);
+
+	// while ((*line++ = getc(script_file)))
+	// 	parse_line(line);
 
 	while (fgets(line, chunk_size, script_file))
-		execute(line);
+		parse_line(line);
 }
 
 int main(int argc, char **argv) {
@@ -38,5 +57,5 @@ int main(int argc, char **argv) {
 
 	printf("%s: received file %s\n", argv[0], argv[1]);
 	FILE *script_file = fopen(argv[1], "r");
-	run_script(script_file);
+	parse_script(script_file);
 }
