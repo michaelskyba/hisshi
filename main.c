@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,10 +16,12 @@ void execute(char *cmd) {
 		char *argv[] = {NULL};
 		char *env[] = {NULL};
 
-		printf("I'm the child %d, so I'm execve() ing\n", getpid());
-		int status = execve(cmd, argv, env);
-		printf("Child finished with status %d...\n", status);
-		return;
+		printf("I'm the child (%d), so I'll execve(%s)\n", getpid(), cmd);
+		execve(cmd, argv, env);
+
+		// execve only returns control to us if it fails
+		perror(cmd);
+		exit(1);
 	}
 
 	printf("I'm the parent (%d), who created %d\n", getpid(), pid);
