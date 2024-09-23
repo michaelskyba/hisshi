@@ -1,5 +1,6 @@
 #!/usr/local/bin/hsh
 # /usr/bin/date +%s
 # /usr/bin/echo hi
-/usr/bin/date
-/usr/bin/echo
+/home/oboro/src/hisshi/util/dump
+# /usr/bin/date
+# /usr/bin/echo

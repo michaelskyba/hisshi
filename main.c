@@ -6,16 +6,29 @@
 
 #include <sys/wait.h>
 
+struct arg_node {
+	char *name;
+	struct arg_node *next;
+};
+
+struct command {
+	char *path;
+
+	int argc;
+	struct arg_node *arg_head;
+	struct arg_node *arg_tail;
+};
+
 void panic(char *msg) {
 	fprintf(stderr, "%s\n", msg);
 	exit(1);
 }
 
-void execute(char *cmd) {
+void execute(struct command *cmd) {
 	int pid = fork();
 
 	if (pid < 0) {
-		perror(cmd);
+		perror(cmd->path);
 		exit(1);
 	}
 
@@ -23,20 +36,41 @@ void execute(char *cmd) {
 		char *argv[] = {NULL};
 		char *env[] = {NULL};
 
-		printf("%d: execve(%s)\n", getpid(), cmd);
-		execve(cmd, argv, env);
+		printf("%d: execve(%s)\n", getpid(), cmd->path);
+		execve(cmd->path, argv, env);
 
 		// execve only returns control to us if it fails
-		perror(cmd);
+		perror(cmd->path);
 		_exit(1);
 	}
 
-	printf("%d-%d: Time to wait\n", getpid(), pid);
+	printf("%d-%d: Starting wait()\n", getpid(), pid);
 	int status = 0;
 	int id = wait(&status);
-	printf("%d-%d: Done waiting on %d with status %d\n", getpid(), pid, id, status);
+	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, id, status);
+}
 
-	printf("cmd is %s\n", cmd);
+struct command *create_command() {
+	struct command *cmd = (struct command *) malloc(sizeof(struct command));
+	cmd->path = NULL;
+	cmd->argc = 0;
+	cmd->arg_head = NULL;
+	cmd->arg_tail = NULL;
+
+	return cmd;
+}
+
+void add_arg(struct command *cmd, char *arg_name) {
+	struct arg_node *arg = (struct arg_node *) malloc(sizeof(struct arg_node));
+	arg->name = arg_name;
+	arg->next = NULL;
+
+	if (cmd->argc++ == 0)
+		cmd->arg_head = arg;
+	else
+		cmd->arg_tail->next = arg;
+
+	cmd->arg_tail = arg;
 }
 
 void parse_line(char *line) {
@@ -50,8 +84,11 @@ void parse_line(char *line) {
 		return;
 	}
 
-	printf("Executing %s\n", line);
-	execute(line);
+	struct command *cmd = create_command();
+	cmd->path = line;
+	add_arg(cmd, cmd->path); // Convention: set name as $0
+
+	execute(cmd);
 }
 
 void parse_script(FILE *script_file) {
@@ -67,8 +104,9 @@ void parse_script(FILE *script_file) {
 		}
 
 		*p = '\0';
-		parse_line(line);
 		p = line;
+
+		parse_line(line);
 	}
 }
 
