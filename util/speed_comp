@@ -1,0 +1,24 @@
+#!/bin/sh
+script=../examples/11
+
+if [ "$1" ]
+then
+	for i in $(seq 1000)
+	do
+		$1 "$script" > /dev/null
+	done
+
+	exit
+fi
+
+echo bash
+time ./speed_comp bash
+
+echo oksh
+time ./speed_comp oksh
+
+echo dash
+time ./speed_comp dash
+
+echo hsh
+time ./speed_comp hsh
