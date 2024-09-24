@@ -41,44 +41,61 @@ void execute(struct command *cmd) {
 	dump_command(cmd);
 }
 
-void parse_line(char *line) {
-	if (*line == '\0') {
-		printf("Skipping blank line\n");
-		return;
-	}
-
-	if (*line == '#') {
-		printf("Skipping comment: %s\n", line);
-		return;
-	}
-
-	struct command *cmd = create_command();
-	cmd->path = line;
-	add_arg(cmd, cmd->path); // Convention: set name as $0
-
-	// Test
-	add_arg(cmd, "foo");
-	add_arg(cmd, "bar");
-
-	execute(cmd);
-}
-
 void parse_script(FILE *script_file) {
 	// TODO address lines longer than chunk_size
 	int chunk_size = 100;
-	char *line = (char *) malloc(sizeof(char) * chunk_size);
-	char *p = line;
+	char *name = (char *) malloc(sizeof(char) * chunk_size);
+	char *p = name;
 
-	while ((*p = getc(script_file)) != EOF) {
-		if (*p != '\n') {
+	int ln = 1;
+	struct command *cmd = create_command();
+
+	while (1) {
+		*p = getc(script_file);
+
+		// Doesn't require any parsing because we declare that every file must
+		// end with a \n
+		if (*p == EOF)
+			break;
+
+		// TODO support trailing comments
+		if (*p == '#' && p == name) {
+			printf("%d: Skipping comment\n", ln++);
+			while (getc(script_file) != '\n') ;
+			continue;
+		}
+
+		if (*p != ' ' && *p != '\n') {
 			p++;
 			continue;
 		}
 
+		int is_newline = *p == '\n';
 		*p = '\0';
-		p = line;
 
-		parse_line(line);
+		// TODO support leading/trailing spaces
+		// "Leading whitespace is unsupported, sorry :("
+
+		if (p == name && is_newline) {
+			printf("%d: Skipping blank line\n", ln++);
+			continue;
+		}
+
+		if (!cmd->path) {
+			char *name_copy = malloc(sizeof(char) * strlen(name));
+			strcpy(name_copy, name);
+			cmd->path = name_copy;
+		}
+
+		// If $0, still set as convention
+		add_arg(cmd, name);
+
+		if (is_newline) {
+			execute(cmd);
+			ln++;
+		}
+
+		p = name;
 	}
 }
 

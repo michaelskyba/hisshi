@@ -78,14 +78,9 @@ void clear_command(struct command *cmd) {
 	struct arg_node *next;
 
 	for (arg = cmd->arg_head; arg != NULL; arg = next) {
-		printf("starting with arg %p, name %s\n", (void *) arg, arg->name);
-
 		next = arg->next;
 
-		printf("freeing arg->name\n");
 		free(arg->name);
-
-		printf("freeing arg\n");
 		free(arg);
 	}
 
