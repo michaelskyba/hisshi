@@ -49,3 +49,18 @@ struct command *create_command() {
 
 	return cmd;
 }
+
+void dump_command(struct command *cmd) {
+	if (!cmd->path) {
+		printf("cmd %p (%d): %p\n", (void *) cmd->path, cmd->argc, (void *) cmd->arg_head);
+		return;
+	}
+
+	printf("cmd %s (%d): ", cmd->path, cmd->argc);
+
+	struct arg_node *arg;
+	for (arg = cmd->arg_head; arg != NULL; arg = arg->next)
+		printf("%s,", arg->name);
+
+	printf("\n");
+}

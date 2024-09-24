@@ -9,6 +9,9 @@
 #include "command.c"
 
 void execute(struct command *cmd) {
+	printf("exec start ");
+	dump_command(cmd);
+
 	int pid = fork();
 
 	if (pid < 0) {
@@ -17,9 +20,6 @@ void execute(struct command *cmd) {
 	}
 
 	if (pid == 0) {
-		// TODO Think about whether you need to free the command struct
-		// once you're executing it
-
 		char *env[] = {NULL};
 
 		printf("%d: execve(%s)\n", getpid(), cmd->path);
@@ -34,6 +34,11 @@ void execute(struct command *cmd) {
 	int status = 0;
 	int id = wait(&status);
 	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, id, status);
+
+	// clear_command(cmd);
+
+	printf("end ");
+	dump_command(cmd);
 }
 
 void parse_line(char *line) {
@@ -52,8 +57,16 @@ void parse_line(char *line) {
 	add_arg(cmd, cmd->path); // Convention: set name as $0
 
 	// Test
-	add_arg(cmd, "foo");
-	add_arg(cmd, "bar");
+
+	char *arg1 = (char *) malloc(2);
+	arg1[0] = 'a';
+	arg1[1] = 0;
+	char *arg2 = (char *) malloc(2);
+	arg2[0] = 'b';
+	arg2[1] = 0;
+
+	add_arg(cmd, arg1);
+	add_arg(cmd, arg2);
 
 	execute(cmd);
 }
