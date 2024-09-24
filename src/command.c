@@ -27,9 +27,13 @@ char **get_argv_array(struct command *cmd) {
 	return argv;
 }
 
-void add_arg(struct command *cmd, char *arg_name) {
+// Creates a copy of the given name pointer
+void add_arg(struct command *cmd, char *given_arg_name) {
+	char *name = (char *) malloc(sizeof(char) * strlen(given_arg_name));
+	strcpy(name, given_arg_name);
+
 	struct arg_node *arg = (struct arg_node *) malloc(sizeof(struct arg_node));
-	arg->name = arg_name;
+	arg->name = name;
 	arg->next = NULL;
 
 	if (cmd->argc++ == 0)
@@ -89,8 +93,6 @@ void clear_command(struct command *cmd) {
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
 
-	// TODO Make cmd->path be a separate string from [0]
-	// And then clear both
-
+	free(cmd->path);
 	cmd->path = NULL;
 }

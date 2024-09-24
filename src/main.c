@@ -57,16 +57,8 @@ void parse_line(char *line) {
 	add_arg(cmd, cmd->path); // Convention: set name as $0
 
 	// Test
-
-	char *arg1 = (char *) malloc(2);
-	arg1[0] = 'a';
-	arg1[1] = 0;
-	char *arg2 = (char *) malloc(2);
-	arg2[0] = 'b';
-	arg2[1] = 0;
-
-	add_arg(cmd, arg1);
-	add_arg(cmd, arg2);
+	add_arg(cmd, "foo");
+	add_arg(cmd, "bar");
 
 	execute(cmd);
 }
