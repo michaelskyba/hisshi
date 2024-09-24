@@ -24,22 +24,24 @@ rw supports
 	"" (:10)
 */
 
-void tail(int start) {
-	// 4: "tail", "-n", offset, NULL
+void coreutil(char *name, char *arg) {
 	char **argv = (char **) malloc(sizeof(char *) * 4);
-	argv[0] = tail_bin;
+	argv[0] = name;
 	argv[1] = "-n";
-
-	argv[2] = (char *) malloc(ARG_SIZE);
-	sprintf(argv[2], "%d", start);
-
+	argv[2] = arg;
 	argv[3] = NULL;
 
 	char *env[] = {NULL};
-
 	execve(tail_bin, argv, env);
 }
 
+void from(int start) {
+	char *arg = (char *) malloc(ARG_SIZE);
+	sprintf(arg, "%+d", start);
+	coreutil(tail_bin, arg);
+}
+
 int main() {
-	tail(10);
+	from(-10);
+	// from(10);
 }
