@@ -35,7 +35,7 @@ void execute(struct command *cmd) {
 	int id = wait(&status);
 	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, id, status);
 
-	// clear_command(cmd);
+	clear_command(cmd);
 
 	printf("end ");
 	dump_command(cmd);

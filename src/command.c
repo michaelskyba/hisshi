@@ -64,3 +64,33 @@ void dump_command(struct command *cmd) {
 
 	printf("\n");
 }
+
+void clear_command(struct command *cmd) {
+	// Already clear
+	if (!cmd->path)
+		return;
+
+	struct arg_node *arg;
+	struct arg_node *next;
+
+	for (arg = cmd->arg_head; arg != NULL; arg = next) {
+		printf("starting with arg %p, name %s\n", (void *) arg, arg->name);
+
+		next = arg->next;
+
+		printf("freeing arg->name\n");
+		free(arg->name);
+
+		printf("freeing arg\n");
+		free(arg);
+	}
+
+	cmd->argc = 0;
+	cmd->arg_head = NULL;
+	cmd->arg_tail = NULL;
+
+	// TODO Make cmd->path be a separate string from [0]
+	// And then clear both
+
+	cmd->path = NULL;
+}
