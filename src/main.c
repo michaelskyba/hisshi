@@ -82,7 +82,8 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (!cmd->path) {
-			char *name_copy = malloc(sizeof(char) * strlen(name));
+			int len = strlen(name) + 1;
+			char *name_copy = malloc(sizeof(char) * len);
 			strcpy(name_copy, name);
 			cmd->path = name_copy;
 		}

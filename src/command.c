@@ -12,7 +12,7 @@ struct command {
 };
 
 char **get_argv_array(struct command *cmd) {
-	// +1: Room for NULL
+	// +1: Room for the NULL argument
 	int len = cmd->argc + 1;
 
 	char **argv = (char **) malloc(sizeof(char *) * len);
@@ -29,7 +29,8 @@ char **get_argv_array(struct command *cmd) {
 
 // Creates a copy of the given name pointer
 void add_arg(struct command *cmd, char *given_arg_name) {
-	char *name = (char *) malloc(sizeof(char) * strlen(given_arg_name));
+	int len = strlen(given_arg_name) + 1;
+	char *name = (char *) malloc(sizeof(char) * len);
 	strcpy(name, given_arg_name);
 
 	struct arg_node *arg = (struct arg_node *) malloc(sizeof(struct arg_node));
