@@ -37,15 +37,11 @@ void execute(struct command *cmd) {
 	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, id, status);
 
 	clear_command(cmd);
-
-	printf("end ");
-	dump_command(cmd);
 }
 
 void parse_script(FILE *script_file) {
-	// TODO address lines longer than chunk_size
-	int chunk_size = 100;
-	char *name = (char *) malloc(sizeof(char) * chunk_size);
+	// TODO address lines longer than a fixed chunk_size 100
+	char *name = (char *) malloc(100);
 	char *p = name;
 
 	int ln = 1;
@@ -82,12 +78,8 @@ void parse_script(FILE *script_file) {
 			continue;
 		}
 
-		if (!cmd->path) {
-			int len = strlen(name) + 1;
-			char *name_copy = malloc(sizeof(char) * len);
-			strcpy(name_copy, name);
-			cmd->path = name_copy;
-		}
+		if (!cmd->path)
+			set_path(cmd, name);
 
 		// If $0, still set as convention
 		add_arg(cmd, name);
