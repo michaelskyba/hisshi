@@ -6,8 +6,8 @@ char *get_str_copy(char *base) {
 
 // Given name is not modified
 char *get_bin_path(char *target) {
-	// Absolute path
-	if (*target == '/')
+	// Absolute or relative paths
+	if (*target == '/' || *target == '.')
 		return get_str_copy(target);
 
 	// We need a copy because strtok modifies your input

@@ -1,0 +1,16 @@
+#!/usr/local/bin/hsh
+
+date +%s
+echo hi
+
+# Only exists in /home/oboro/src/hisshi/examples; not in PATH
+dump foo bar
+
+/usr/bin/date
+# /usr/bin/date
+
+/usr/bin/echo test
+
+# /home/oboro/src/hisshi/util/dump
+
+./01
