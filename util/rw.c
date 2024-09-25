@@ -1,11 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #define head_bin "/usr/bin/uu-head"
 #define tail_bin "/usr/bin/uu-tail"
 
 #define ARG_SIZE 100
+
+enum {
+	arg_start,
+	arg_end,
+};
 
 /*
 tail supports n:, -n:
@@ -54,24 +60,53 @@ void until(int end) {
 	coreutil(head_bin, arg);
 }
 
+void from_until(int start, int end) {
+	printf("%d --> %d\n", start, end);
+	exit(0);
+}
+
 int main(int argc, char **argv) {
 	// head -10 as default
 	if (argc < 2)
 		until(10);
 
+	int start = 0;
+	int end = -0; // relative to output of start
+	int state = arg_start;
+
 	char *arg = argv[1];
+	char *content = arg;
+	char *p = arg - 1;
 
-	int start;
-	int end;
+	while (*++p) {
+		if (!isdigit(*p) && *p != '-' && *p != ':') {
+			printf("usage: rw [start]:[end]\n");
+			return 1;
+		}
 
-	if (sscanf(arg, "%d:%d", &start, &end) == 2) {
-		printf("%d --> %d\n", start, end);
-		return 0;
+		if (*p == ':') {
+			*p = '\0';
+			if (p != arg)
+				start = atoi(content);
+
+			state = arg_end;
+			content = p+1;
+		}
 	}
 
-	if (sscanf(arg, "%d:", &start) == 1)
-		from(start);
+	// We never hit any colon, so we were just given one number
+	// Take this to mean n:1
+	if (state == arg_start) {
+		start = atoi(content);
+		end = 1;
+	}
 
-	if (sscanf(arg, ":%d", &end) == 1)
-		until(end);
+	// We hit a colon, indicating the start of the end
+	if (state == arg_end)
+		end = atoi(content);
+
+	if (start == 0) until(end);
+	if (end == 0) from(start);
+
+	from_until(start, end);
 }
