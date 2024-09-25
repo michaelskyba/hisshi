@@ -38,19 +38,9 @@ char **get_argv_array(struct command *cmd) {
 }
 
 // Creates a copy of the given name pointer
-void set_path(struct command *cmd, char *name) {
-	char *name_copy = (char *) malloc(strlen(name) + 1);
-	strcpy(name_copy, name);
-	cmd->path = name_copy;
-}
-
-// Creates a copy of the given name pointer
 void add_arg(struct command *cmd, char *given_arg_name) {
-	char *name = (char *) malloc(strlen(given_arg_name) + 1);
-	strcpy(name, given_arg_name);
-
 	struct arg_node *arg = (struct arg_node *) malloc(sizeof(struct arg_node));
-	arg->name = name;
+	arg->name = get_str_copy(given_arg_name);
 	arg->next = NULL;
 
 	if (cmd->argc++ == 0)

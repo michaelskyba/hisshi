@@ -1,3 +1,4 @@
+#include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -6,6 +7,7 @@
 
 #include <sys/wait.h>
 
+#include "util.c"
 #include "command.c"
 
 void execute(struct command *cmd) {
@@ -79,9 +81,9 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (!cmd->path)
-			set_path(cmd, name);
+			cmd->path = get_bin_path(name);
 
-		// If $0, still set as convention
+		// Even if name == path, set $0 as convention
 		add_arg(cmd, name);
 
 		if (is_newline) {
