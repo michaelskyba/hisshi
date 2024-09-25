@@ -54,6 +54,24 @@ void until(int end) {
 	coreutil(head_bin, arg);
 }
 
-int main() {
-	until(-10);
+int main(int argc, char **argv) {
+	// head -10 as default
+	if (argc < 2)
+		until(10);
+
+	char *arg = argv[1];
+
+	int start;
+	int end;
+
+	if (sscanf(arg, "%d:%d", &start, &end) == 2) {
+		printf("%d --> %d\n", start, end);
+		return 0;
+	}
+
+	if (sscanf(arg, "%d:", &start) == 1)
+		from(start);
+
+	if (sscanf(arg, ":%d", &end) == 1)
+		until(end);
 }
