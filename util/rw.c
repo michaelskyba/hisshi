@@ -1,7 +1,8 @@
+#include <ctype.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <ctype.h>
 
 #include <sys/wait.h>
 
@@ -138,6 +139,13 @@ int main(int argc, char **argv) {
 	if (argc < 2)
 		until(10);
 
+	// 3: We don't support "rw filename" for default -10
+	if (argc == 3) {
+		int file_fd = open(argv[2], O_RDONLY);
+		close(stdin);
+		dup2(file_fd, stdin);
+	}
+
 	int start = 0;
 	int end = -0; // relative to output of start
 	int state = arg_start;
@@ -148,7 +156,7 @@ int main(int argc, char **argv) {
 
 	while (*++p) {
 		if (!isdigit(*p) && *p != '-' && *p != ':') {
-			printf("usage: rw [start]:[end]\n");
+			printf("usage: rw [start]:[end] [filename]\n");
 			return 1;
 		}
 
