@@ -3,6 +3,14 @@
 #include <unistd.h>
 #include <ctype.h>
 
+#include <sys/wait.h>
+
+#undef stdin
+#define stdin 0
+
+#undef stdout
+#define stdout 1
+
 #define head_bin "/usr/bin/uu-head"
 #define tail_bin "/usr/bin/uu-tail"
 
@@ -11,6 +19,11 @@
 enum {
 	arg_start,
 	arg_end,
+};
+
+enum {
+	head,
+	tail
 };
 
 /*
@@ -60,9 +73,49 @@ void until(int end) {
 	coreutil(head_bin, arg);
 }
 
+void coreutil_child(void (* util_func)(int), int fd_in, int fd_out, int arg) {
+	int pid = fork();
+
+	if (pid < 0) {
+		perror("rw: fork failed");
+		exit(1);
+	}
+
+	// Parent continues to next
+	if (pid > 0)
+		return;
+
+	// head replaces stdin with pipe but keeps stdout
+	if (fd_in != stdin) {
+		close(stdin);
+		dup2(fd_in, stdin);
+	}
+
+	// tail replaces stdout with pipe but keeps stdin
+	if (fd_out != stdout) {
+		close(stdout);
+		dup2(fd_out, stdout);
+	}
+
+	util_func(arg);
+}
+
 void from_until(int start, int end) {
-	printf("%d --> %d\n", start, end);
-	exit(0);
+	int pipe_fd[2];
+
+	if (pipe(pipe_fd) == -1) {
+		perror("rw: pipe failed");
+		exit(1);
+	}
+
+	int pipe_read = pipe_fd[0];
+	int pipe_write = pipe_fd[1];
+
+	// tail will be piped into head
+	coreutil_child(from, stdin, pipe_write, start);
+	coreutil_child(until, pipe_read, stdout, end);
+
+	while (wait(NULL) > 0) ;
 }
 
 int main(int argc, char **argv) {
