@@ -20,10 +20,11 @@ void execute(struct command *cmd) {
 	}
 
 	if (pid == 0) {
-		char *env[] = {NULL};
+		// Current system env variables
+		extern char **environ;
 
 		printf("%d: execve(%s)\n", getpid(), cmd->path);
-		execve(cmd->path, get_argv_array(cmd), env);
+		execve(cmd->path, get_argv_array(cmd), environ);
 
 		// execve only returns control to us if it fails
 		perror(cmd->path);
