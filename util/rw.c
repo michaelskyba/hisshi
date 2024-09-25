@@ -53,7 +53,8 @@ void coreutil(char *name, char *arg) {
 	char *env[] = {NULL};
 	execve(tail_bin, argv, env);
 
-	fprintf(stderr, "%s (%s) failed\n", name, arg);
+	fprintf(stderr, "failed: %s -n %s\n", name, arg);
+	perror(name);
 }
 
 // start from and including start
@@ -75,7 +76,7 @@ void until(int end) {
 	coreutil(head_bin, arg);
 }
 
-void coreutil_child(void (* util_func)(int), int fd_in, int fd_out, int arg) {
+void coreutil_child(int type, int pipe_fd[2], int arg) {
 	int pid = fork();
 
 	if (pid < 0) {
@@ -87,19 +88,30 @@ void coreutil_child(void (* util_func)(int), int fd_in, int fd_out, int arg) {
 	if (pid > 0)
 		return;
 
-	// head replaces stdin with pipe but keeps stdout
-	if (fd_in != stdin) {
-		close(stdin);
-		dup2(fd_in, stdin);
-	}
+	int read = pipe_fd[0];
+	int write = pipe_fd[1];
 
-	// tail replaces stdout with pipe but keeps stdin
-	if (fd_out != stdout) {
+	// tail masks stdout with (write), but continues reading from stdin
+	if (type == tail) {
+		// Don't touch head's read
+		close(read);
+
 		close(stdout);
-		dup2(fd_out, stdout);
+		dup2(write, stdout);
+
+		from(arg);
 	}
 
-	util_func(arg);
+	// head masks stdin with (read), but continueus writing to stdout
+	if (type == head) {
+		// Don't touch tail's write
+		close(write);
+
+		close(stdin);
+		dup2(read, stdin);
+
+		until(arg);
+	}
 }
 
 void from_until(int start, int end) {
@@ -110,12 +122,13 @@ void from_until(int start, int end) {
 		exit(1);
 	}
 
-	int pipe_read = pipe_fd[0];
-	int pipe_write = pipe_fd[1];
+	coreutil_child(tail, pipe_fd, start);
+	coreutil_child(head, pipe_fd, end);
 
-	// tail will be piped into head
-	coreutil_child(from, stdin, pipe_write, start);
-	coreutil_child(until, pipe_read, stdout, end);
+	close(stdin);
+	close(stdout);
+	close(pipe_fd[0]);
+	close(pipe_fd[1]);
 
 	while (wait(NULL) > 0) ;
 }
