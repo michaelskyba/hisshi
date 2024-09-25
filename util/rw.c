@@ -52,6 +52,8 @@ void coreutil(char *name, char *arg) {
 
 	char *env[] = {NULL};
 	execve(tail_bin, argv, env);
+
+	fprintf(stderr, "%s (%s) failed\n", name, arg);
 }
 
 // start from and including start
