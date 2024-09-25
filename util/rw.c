@@ -35,13 +35,25 @@ void coreutil(char *name, char *arg) {
 	execve(tail_bin, argv, env);
 }
 
+// start from and including start
+// 1-indexed positively
+// -1: last char
 void from(int start) {
 	char *arg = (char *) malloc(ARG_SIZE);
 	sprintf(arg, "%+d", start);
 	coreutil(tail_bin, arg);
 }
 
+// start at 0 and go until and including (end)
+// -0: last char
+// So until(-1) will skip the last char
+// Sounds jank / inconsistent from tail, but works fine in practice
+void until(int end) {
+	char *arg = (char *) malloc(ARG_SIZE);
+	sprintf(arg, "%d", end);
+	coreutil(head_bin, arg);
+}
+
 int main() {
-	from(-10);
-	// from(10);
+	until(-10);
 }
