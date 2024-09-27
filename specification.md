@@ -58,3 +58,39 @@ Discounting the possibility of calling a function for now, we'll follow the
 standard specification of taking the first name on a line to specify a program
 to run. We'll support standard and absolute paths, as well as ordered lookups in
 the `$PATH` variable.
+
+## Control flow
+Status: Planned
+
+To execute a series of commands only given a `0` exit code of a previous
+command one, you can use tab (spaces are unsupported) indentation.
+
+```
+false
+	p "This will not be printed."
+
+date | rg 2024
+	p "Behold! The great year of Lord Samuel is upon us!"
+	rm -rf $HOME
+```
+
+The dash character `-` is a special symbol used for branching on non-0 exit
+codes. It functions as either an `elif` or an `else`, depending on whether you
+provide another command to it.
+
+```
+date | rg 2024
+	p "It is 2024."
+- date | rg Sep
+	p "It's not 2024, but it is September."
+-
+	p "It's not 2024, and it's not September. Instead, it is over."
+```
+
+The `-` character looks at the last statement made on the same line of
+indentation. Nesting works as expected.
+
+There are no explicit `if`, `elif`, or `else` keywords.
+
+`&&` and `||` work mostly as expected, if you need similar behaviour on one
+line.
