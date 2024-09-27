@@ -6,3 +6,6 @@ readability in exchange for short-term ergonomics
 The shell doesn't exist yet. There are 10 lines of code but they don't implement anything.
 
 Is it in development? I don't know. Probably not.
+
+See the [WIP shell specification](./specification.md) for vague plans on desired
+features.
