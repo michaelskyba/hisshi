@@ -10,7 +10,8 @@
 #include "util.c"
 #include "command.c"
 
-void execute(struct command *cmd) {
+// Returns exit code
+int execute(struct command *cmd) {
 	printf("exec start ");
 	dump_command(cmd);
 
@@ -43,14 +44,13 @@ void execute(struct command *cmd) {
 	}
 
 	printf("%d-%d: Starting wait()\n", getpid(), pid);
+
 	int status = 0;
 	int wait_pid = wait(&status);
 	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
 
-	if (WIFEXITED(status))
-		printf("Exited normally, with status %d\n", WEXITSTATUS(status));
-
 	clear_command(cmd);
+	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
 void parse_script(FILE *script_file) {
@@ -59,6 +59,8 @@ void parse_script(FILE *script_file) {
 	char *p = name;
 
 	int ln = 1;
+	int last_status = 0;
+
 	struct command *cmd = create_command();
 
 	while (1) {
@@ -86,6 +88,7 @@ void parse_script(FILE *script_file) {
 
 		// TODO support leading/trailing spaces
 		// "Leading whitespace is unsupported, sorry :("
+		// 1727479203: Actually maybe we can unironically say that
 
 		if (p == name && is_newline) {
 			printf("%d: Skipping blank line\n", ln++);
@@ -99,7 +102,10 @@ void parse_script(FILE *script_file) {
 		add_arg(cmd, name);
 
 		if (is_newline) {
-			execute(cmd);
+			printf("Previous exit status: %d\n", last_status);
+			last_status = execute(cmd);
+			printf("Received new exit status: %d\n", last_status);
+
 			ln++;
 		}
 
