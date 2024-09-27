@@ -43,7 +43,7 @@ void execute(struct command *cmd) {
 
 void parse_script(FILE *script_file) {
 	// TODO address lines longer than a fixed chunk_size 100
-	char *name = (char *) malloc(100);
+	char *name = malloc(100);
 	char *p = name;
 
 	int ln = 1;

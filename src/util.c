@@ -1,5 +1,5 @@
 char *get_str_copy(char *base) {
-	char *dest = (char *) malloc(strlen(base) + 1);
+	char *dest = malloc(strlen(base) + 1);
 	strcpy(dest, base);
 	return dest;
 }
@@ -31,8 +31,7 @@ char *get_bin_path(char *target) {
 			if (strcmp(target, d->d_name) != 0)
 				continue;
 
-			int size = strlen(path_node) + strlen(target) + 1;
-			char *bin_path = (char *) malloc(size);
+			char *bin_path = malloc(strlen(path_node) + strlen(target) + 1);
 			sprintf(bin_path, "%s/%s", path_node, target);
 			return bin_path;
 		}

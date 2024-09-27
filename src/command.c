@@ -12,7 +12,7 @@ struct command {
 };
 
 struct command *create_command() {
-	struct command *cmd = (struct command *) malloc(sizeof(struct command));
+	struct command *cmd = malloc(sizeof(struct command));
 	cmd->path = NULL;
 	cmd->argc = 0;
 	cmd->arg_head = NULL;
@@ -25,7 +25,7 @@ char **get_argv_array(struct command *cmd) {
 	// +1: Room for the NULL argument
 	int len = cmd->argc + 1;
 
-	char **argv = (char **) malloc(sizeof(char *) * len);
+	char **argv = malloc(sizeof(char *) * len);
 	struct arg_node *p = cmd->arg_head;
 
 	for (int i = 0; i < cmd->argc; i++) {
@@ -39,7 +39,7 @@ char **get_argv_array(struct command *cmd) {
 
 // Creates a copy of the given name pointer
 void add_arg(struct command *cmd, char *given_arg_name) {
-	struct arg_node *arg = (struct arg_node *) malloc(sizeof(struct arg_node));
+	struct arg_node *arg = malloc(sizeof(struct arg_node));
 	arg->name = get_str_copy(given_arg_name);
 	arg->next = NULL;
 
@@ -53,7 +53,7 @@ void add_arg(struct command *cmd, char *given_arg_name) {
 
 void dump_command(struct command *cmd) {
 	if (!cmd->path) {
-		printf("cmd %p (%d): %p\n", (void *) cmd->path, cmd->argc, (void *) cmd->arg_head);
+		printf("cmd %p (%d): %p\n", cmd->path, cmd->argc, (void *) cmd->arg_head);
 		return;
 	}
 
