@@ -1,0 +1,13 @@
+#!/usr/local/bin/hsh
+
+# succes: 0
+true
+
+# generic failure: 1
+false
+
+# not executable: 126
+/etc/shadow
+
+# not found: 127
+foo

@@ -30,13 +30,25 @@ void execute(struct command *cmd) {
 
 		// execve only returns control to us if it fails
 		perror(cmd->path);
+
+		// Not found
+		if (errno == ENOENT)
+			_exit(127);
+
+		// No access to executing it
+		else if (errno == EACCES)
+			_exit(126);
+
 		_exit(1);
 	}
 
 	printf("%d-%d: Starting wait()\n", getpid(), pid);
 	int status = 0;
-	int id = wait(&status);
-	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, id, status);
+	int wait_pid = wait(&status);
+	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
+
+	if (WIFEXITED(status))
+		printf("Exited normally, with status %d\n", WEXITSTATUS(status));
 
 	clear_command(cmd);
 }
