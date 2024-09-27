@@ -3,7 +3,7 @@ This document contains some rough implementation notes. These are
 subject to change, but they provide a base for some next steps in the
 implementation.
 
-# Philosophy
+## Philosophy
 hisshi makes design decisions centered around syntactical and functional
 minimalism. When unclear, follow the Unix philosophy aggressively.
 
@@ -29,3 +29,18 @@ binary...? What if we let variables hold completely arbitrary data, with only
 some default text parsing, but with the option of leaving it raw? Then rule 2
 can kick in and allow the same SQL etc. features of filtering and parsing when
 binary programs pipe to each other?
+
+## CLI usage
+```
+$ hsh myfile.sh
+```
+
+This means that shebangs are supported.
+
+```
+#!/usr/local/bin/hsh
+echo test
+```
+
+Interactive usage is nontrivial to implement in a satisfying way. But I'd
+ideally like it to work in the future.
