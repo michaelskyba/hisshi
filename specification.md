@@ -44,3 +44,17 @@ echo test
 
 Interactive usage is nontrivial to implement in a satisfying way. But I'd
 ideally like it to work in the future.
+
+## Regular commands, PATH
+Status: Implemented
+
+```
+ls
+/usr/bin/ls
+../ls
+```
+
+Discounting the possibility of calling a function for now, we'll follow the
+standard specification of taking the first name on a line to specify a program
+to run. We'll support standard and absolute paths, as well as ordered lookups in
+the `$PATH` variable.
