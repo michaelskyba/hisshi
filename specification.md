@@ -62,8 +62,8 @@ the `$PATH` variable.
 ## Control flow
 Status: Planned
 
-To execute a series of commands only given a `0` exit code of a previous
-command one, you can use tab (spaces are unsupported) indentation.
+To execute a series of commands only given a `0` exit code of a previous one,
+you can use tab (spaces are unsupported) indentation.
 
 ```
 false

@@ -14,7 +14,7 @@ int execute(struct command *cmd) {
 		// Current system env variables
 		extern char **environ;
 
-		printf("%d: execve(%s)\n", getpid(), cmd->path);
+		// printf("%d: execve(%s)\n", getpid(), cmd->path);
 		execve(cmd->path, get_argv_array(cmd), environ);
 
 		// execve only returns control to us if it fails
@@ -31,11 +31,13 @@ int execute(struct command *cmd) {
 		_exit(1);
 	}
 
-	printf("%d-%d: Starting wait()\n", getpid(), pid);
+	// printf("%d-%d: Starting wait()\n", getpid(), pid);
 
 	int status = 0;
-	int wait_pid = wait(&status);
-	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
+	wait(&status);
+
+	// int wait_pid = wait(&status);
+	// printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
 
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }

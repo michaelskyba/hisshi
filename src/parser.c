@@ -17,9 +17,18 @@ struct parse_state {
 	// Line number
 	int ln;
 
-	// Exit code of previously run program on the top-level of indentation
-	// Default: -1 (invalid and represents a lack of record)
-	int last_status;
+	/*
+	A dynamic array storing most recent exit codes at different levels of
+	indentation
+	-1: invalid, represents a lack of record
+
+	e.g. [1, 0, -1] means
+	- A 1 exit code on the last command at the base level
+	- A 0 exit code on the last command at one indent
+	- No exit code recorded for the last command at two indents
+	*/
+	int *indent_exit_codes;
+	int indents_tracked; // size
 };
 
 struct parse_state *create_state() {
@@ -32,7 +41,10 @@ struct parse_state *create_state() {
 	state->reading_name = true;
 	state->waiting = true;
 	state->ln = 1;
-	state->last_status = -1;
+
+	state->indent_exit_codes = malloc(sizeof(int));
+	*(state->indent_exit_codes) = -1;
+	state->indents_tracked = 1;
 
 	return state;
 }
@@ -55,6 +67,22 @@ void parse_token(struct parse_state *state) {
 	}
 }
 
+void update_status(struct parse_state *state, int status) {
+	int indent = state->cmd->indent_level;
+	state->indent_exit_codes[indent] = status;
+
+	printf("Received >%d:%d\n", indent, status);
+
+	if (indent+1 == state->indents_tracked) {
+		state->indents_tracked *= 2;
+
+		int size = sizeof(int) * state->indents_tracked;
+		state->indent_exit_codes = realloc(state->indent_exit_codes, size);
+
+		printf("reallocating indent tracker to size %d\n", state->indents_tracked);
+	}
+}
+
 // The command is finished being read, so we execute it and update the parser
 // state accordingly
 void parse_command(struct parse_state *state) {
@@ -62,12 +90,15 @@ void parse_command(struct parse_state *state) {
 	if (state->reading_name && state->waiting)
 		return;
 
-	printf("Previous exit status: %d\n", state->last_status);
+	int indent = state->cmd->indent_level;
 
-	// 0: success
-	if (state->cmd->indent_level == 0 || state->last_status == 0) {
-		state->last_status = execute(state->cmd);
-		printf("Received new exit status: %d\n", state->last_status);
+	if (indent > 0)
+		printf("Last: >%d:%d\n", indent-1, state->indent_exit_codes[indent-1]);
+
+	int success = 0;
+	if (indent == 0 || state->indent_exit_codes[indent-1] == success) {
+		int status = execute(state->cmd);
+		update_status(state, status);
 	}
 
 	else printf("CF: skipping line %d\n", state->ln);
