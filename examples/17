@@ -1,0 +1,6 @@
+ true
+    echo      f    test    # bar
+date    
+
+test -f /etc/anthy-conf
+test -f /etc/anthy-conf.foo
