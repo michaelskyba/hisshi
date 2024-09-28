@@ -37,6 +37,5 @@ int execute(struct command *cmd) {
 	int wait_pid = wait(&status);
 	printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
 
-	clear_command(cmd);
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }

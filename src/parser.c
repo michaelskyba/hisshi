@@ -63,12 +63,20 @@ void parse_command(struct parse_state *state) {
 		return;
 
 	printf("Previous exit status: %d\n", state->last_status);
-	state->last_status = execute(state->cmd);
-	printf("Received new exit status: %d\n", state->last_status);
+
+	// 0: success
+	if (state->cmd->indent_level == 0 || state->last_status == 0) {
+		state->last_status = execute(state->cmd);
+		printf("Received new exit status: %d\n", state->last_status);
+	}
+
+	else printf("CF: skipping line %d\n", state->ln);
 
 	state->ln++;
 	state->reading_name = true;
 	state->waiting = true;
+
+	clear_command(state->cmd);
 }
 
 void parse_script(FILE *script_file) {
