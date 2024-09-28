@@ -86,6 +86,12 @@ void parse_script(FILE *script_file) {
 		if (*p == EOF)
 			break;
 
+		// Otherwise, treat \t as a regular character in tokens
+		if (*p == '\t' && state->reading_name && state->waiting) {
+			state->cmd->indent_level++;
+			continue;
+		}
+
 		// Delete the rest of the line for comments
 		if (*p == '#') {
 			while (getc(script_file) != '\n') ;

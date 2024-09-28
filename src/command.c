@@ -9,14 +9,20 @@ struct command {
 	int argc;
 	struct arg_node *arg_head;
 	struct arg_node *arg_tail;
+
+	// Used for determining control flow
+	// Base: 0
+	int indent_level;
 };
 
 struct command *create_command() {
 	struct command *cmd = malloc(sizeof(struct command));
+
 	cmd->path = NULL;
 	cmd->argc = 0;
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
+	cmd->indent_level = 0;
 
 	return cmd;
 }
@@ -57,7 +63,7 @@ void dump_command(struct command *cmd) {
 		return;
 	}
 
-	printf("cmd %s (%d): ", cmd->path, cmd->argc);
+	printf("cmd %s (%d) at >%d: ", cmd->path, cmd->argc, cmd->indent_level);
 
 	struct arg_node *arg;
 	for (arg = cmd->arg_head; arg != NULL; arg = arg->next)
@@ -84,6 +90,7 @@ void clear_command(struct command *cmd) {
 	cmd->argc = 0;
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
+	cmd->indent_level = 0;
 
 	free(cmd->path);
 	cmd->path = NULL;
