@@ -2,8 +2,9 @@ struct parse_state {
 	// Command we're constructing
 	struct command *cmd;
 
-	// The name (command name, argument, etc.) we're constructing
-	char *name;
+	// The segment of the command we're constructing, like the path or an
+	// argument
+	char *token;
 
 	// Line number
 	int ln;
@@ -17,8 +18,8 @@ struct parse_state *create_state() {
 	struct parse_state *state = malloc(sizeof(struct parse_state));
 	state->cmd = create_command();
 
-	// TODO address lines longer than a fixed chunk_size of 100
-	state->name = malloc(100);
+	// TODO address tokens longer than a fixed chunk_size of 100
+	state->token = malloc(100);
 
 	state->ln = 1;
 	state->last_status = -1;
@@ -28,7 +29,7 @@ struct parse_state *create_state() {
 
 void parse_script(FILE *script_file) {
 	struct parse_state *state = create_state();
-	char *p = state->name;
+	char *p = state->token;
 
 	while (1) {
 		*p = getc(script_file);
@@ -39,7 +40,7 @@ void parse_script(FILE *script_file) {
 			break;
 
 		// TODO support trailing comments
-		if (*p == '#' && p == state->name) {
+		if (*p == '#' && p == state->token) {
 			printf("%d: Skipping comment\n", state->ln++);
 			while (getc(script_file) != '\n') ;
 			continue;
@@ -57,16 +58,16 @@ void parse_script(FILE *script_file) {
 		// "Leading whitespace is unsupported, sorry :("
 		// 1727479203: Actually maybe we can unironically say that
 
-		if (p == state->name && is_newline) {
+		if (p == state->token && is_newline) {
 			printf("%d: Skipping blank line\n", state->ln++);
 			continue;
 		}
 
 		if (!state->cmd->path)
-			state->cmd->path = get_bin_path(state->name);
+			state->cmd->path = get_bin_path(state->token);
 
-		// Even if name == path, set $0 as convention
-		add_arg(state->cmd, state->name);
+		// Even if token == command name, set $0 as convention
+		add_arg(state->cmd, state->token);
 
 		if (is_newline) {
 			printf("Previous exit status: %d\n", state->last_status);
@@ -76,6 +77,6 @@ void parse_script(FILE *script_file) {
 			state->ln++;
 		}
 
-		p = state->name;
+		p = state->token;
 	}
 }

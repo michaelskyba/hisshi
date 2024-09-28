@@ -55,7 +55,7 @@ ls
 ```
 
 Discounting the possibility of calling a function for now, we'll follow the
-standard specification of taking the first name on a line to specify a program
+standard specification of taking the first token on a line to specify a program
 to run. We'll support standard and absolute paths, as well as ordered lookups in
 the `$PATH` variable.
 
