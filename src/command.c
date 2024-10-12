@@ -13,6 +13,11 @@ struct command {
 	// Used for determining control flow
 	// Base: 0
 	int indent_level;
+
+	// Whether this command was run with a dash ("-"), indicating to only
+	// run it if the previous on this indent failed
+	// Besides setting this to true, the dash will be ignored as a token
+	bool else_flag;
 };
 
 struct command *create_command() {
@@ -22,7 +27,9 @@ struct command *create_command() {
 	cmd->argc = 0;
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
+
 	cmd->indent_level = 0;
+	cmd->else_flag = false;
 
 	return cmd;
 }
@@ -73,9 +80,7 @@ void dump_command(struct command *cmd) {
 }
 
 void clear_command(struct command *cmd) {
-	// Already clear
-	if (!cmd->path)
-		return;
+	printf("Clearing state->cmd\n");
 
 	struct arg_node *arg;
 	struct arg_node *next;
@@ -90,8 +95,12 @@ void clear_command(struct command *cmd) {
 	cmd->argc = 0;
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
-	cmd->indent_level = 0;
 
-	free(cmd->path);
-	cmd->path = NULL;
+	cmd->indent_level = 0;
+	cmd->else_flag = false;
+
+	if (cmd->path) {
+		free(cmd->path);
+		cmd->path = NULL;
+	}
 }

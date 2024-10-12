@@ -1,3 +1,18 @@
+// indent_controls options, governing tracking of control flow
+enum {
+	// Default: no branch of this control flow structure has matched. elifs and
+	// elses can still activate.
+	control_waiting,
+
+	// The current branch that we're parsing commands within was matched and is
+	// active. The body should execute.
+	control_branch_active,
+
+	// The current branch is inactive, since we've matched a previous branch
+	// within the same control structure. Any new bodies should not execute.
+	control_complete,
+};
+
 struct parse_state {
 	// Command we're constructing
 	struct command *cmd;
@@ -18,17 +33,12 @@ struct parse_state {
 	int ln;
 
 	/*
-	A dynamic array storing most recent exit codes at different levels of
+	A dynamic array storing the control flow statuses at different levels of
 	indentation
-	-1: invalid, represents a lack of record
-
-	e.g. [1, 0, -1] means
-	- A 1 exit code on the last command at the base level
-	- A 0 exit code on the last command at one indent
-	- No exit code recorded for the last command at two indents
+	[n]: status at n levels of indentation (base starting at 0)
 	*/
-	int *indent_exit_codes;
-	int indents_tracked; // size
+	int *indent_controls;
+	int indents_tracked; // total allocated room
 };
 
 struct parse_state *create_state() {
@@ -42,8 +52,8 @@ struct parse_state *create_state() {
 	state->waiting = true;
 	state->ln = 1;
 
-	state->indent_exit_codes = malloc(sizeof(int));
-	*(state->indent_exit_codes) = -1;
+	state->indent_controls = malloc(sizeof(int));
+	*(state->indent_controls) = control_waiting;
 	state->indents_tracked = 1;
 
 	return state;
@@ -56,6 +66,11 @@ void parse_token(struct parse_state *state) {
 	if (state->waiting)
 		return;
 
+	if (state->reading_name && strcmp(state->token, "-") == 0) {
+		state->cmd->else_flag = true;
+		return;
+	}
+
 	printf("Reading name? (%d), but adding token |%s|\n", state->reading_name, state->token);
 
 	// Even if token == command name, set $0 as convention
@@ -67,41 +82,82 @@ void parse_token(struct parse_state *state) {
 	}
 }
 
-void update_status(struct parse_state *state, int status) {
-	int indent = state->cmd->indent_level;
-	state->indent_exit_codes[indent] = status;
+char *control_name(int control) {
+	char **names = malloc(3 * sizeof(char *));
+	names[control_waiting] = "waiting";
+	names[control_branch_active] = "active";
+	names[control_complete] = "complete";
 
-	printf("Received >%d:%d\n", indent, status);
+	return names[control];
+}
+
+void update_control(struct parse_state *state, int status) {
+	int indent = state->cmd->indent_level;
+	state->indent_controls[indent] = status;
+
+	printf("Received >%d:%s\n", indent, control_name(status));
 
 	if (indent+1 == state->indents_tracked) {
 		state->indents_tracked *= 2;
 
 		int size = sizeof(int) * state->indents_tracked;
-		state->indent_exit_codes = realloc(state->indent_exit_codes, size);
+		state->indent_controls = realloc(state->indent_controls, size);
 
 		printf("reallocating indent tracker to size %d\n", state->indents_tracked);
 	}
 }
 
-// The command is finished being read, so we execute it and update the parser
-// state accordingly
+// The command is finished being read, so we examine its context within the
+// control flow structure and potentially execute it
 void parse_command(struct parse_state *state) {
-	// No command submitted
-	if (state->reading_name && state->waiting)
-		return;
-
 	int indent = state->cmd->indent_level;
 
-	if (indent > 0)
-		printf("Last: >%d:%d\n", indent-1, state->indent_exit_codes[indent-1]);
+	// TODO: If a branch shouldn't be executed, all parsing of it should be
+	// skipped. Both for performance and because we don't want to evaluate
+	// subshells etc. in there
 
-	int success = 0;
-	if (indent == 0 || state->indent_exit_codes[indent-1] == success) {
-		int status = execute(state->cmd);
-		update_status(state, status);
+	// No command submitted
+	if (state->reading_name && state->cmd->path == NULL) {
+		// Blank "-\n", equivalent to "- true\n"
+		if (state->cmd->else_flag && state->indent_controls[indent] == control_waiting)
+			update_control(state, control_branch_active);
+
+		state->ln++;
+		state->reading_name = true;
+		state->waiting = true;
+
+		clear_command(state->cmd);
+		return;
 	}
 
-	else printf("CF: skipping line %d\n", state->ln);
+	printf("reading name? %d | waiting? %d\n", state->reading_name, state->waiting);
+
+	int parent_control = indent == 0 ? control_branch_active : state->indent_controls[indent-1];
+	int control = state->indent_controls[indent];
+	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
+
+	bool parent_permits = parent_control == control_branch_active;
+
+	// We're not supposed to be executing because the previous branch was active
+	if (state->cmd->else_flag && control == control_branch_active)
+		update_control(state, control_complete);
+
+	if (parent_permits && (!state->cmd->else_flag || control == control_waiting)) {
+		int exit_code = execute(state->cmd);
+
+		// 0: success exit code, so this if branch is now active
+		if (exit_code == 0)
+			update_control(state, control_branch_active);
+
+		// The command failed, but this is a new start of a control structure,
+		// since it's a base (if). We don't execute this body but we allow
+		// further branches to check their conditions
+		else if (!state->cmd->else_flag)
+			update_control(state, control_waiting);
+
+	}
+
+	else printf("CF: skipping execution of line %d\n", state->ln);
 
 	state->ln++;
 	state->reading_name = true;
