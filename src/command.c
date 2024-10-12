@@ -20,17 +20,39 @@ struct command {
 	bool else_flag;
 };
 
-struct command *create_command() {
-	struct command *cmd = malloc(sizeof(struct command));
+void clear_command(struct command *cmd) {
+	cmd->indent_level = 0;
+	cmd->else_flag = false;
 
-	cmd->path = NULL;
+	struct arg_node *arg;
+	struct arg_node *next;
+
+	for (arg = cmd->arg_head; arg != NULL; arg = next) {
+		next = arg->next;
+
+		free(arg->name);
+		free(arg);
+	}
+
 	cmd->argc = 0;
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
 
-	cmd->indent_level = 0;
-	cmd->else_flag = false;
+	if (cmd->path) {
+		free(cmd->path);
+		cmd->path = NULL;
+	}
+}
 
+struct command *create_command() {
+	struct command *cmd = malloc(sizeof(struct command));
+
+	// Avoid garbage values for pointers
+	cmd->path = NULL;
+	cmd->arg_head = NULL;
+	cmd->arg_tail = NULL;
+
+	clear_command(cmd);
 	return cmd;
 }
 
@@ -77,30 +99,4 @@ void dump_command(struct command *cmd) {
 		printf("%s,", arg->name);
 
 	printf("\n");
-}
-
-void clear_command(struct command *cmd) {
-	printf("Clearing state->cmd\n");
-
-	struct arg_node *arg;
-	struct arg_node *next;
-
-	for (arg = cmd->arg_head; arg != NULL; arg = next) {
-		next = arg->next;
-
-		free(arg->name);
-		free(arg);
-	}
-
-	cmd->argc = 0;
-	cmd->arg_head = NULL;
-	cmd->arg_tail = NULL;
-
-	cmd->indent_level = 0;
-	cmd->else_flag = false;
-
-	if (cmd->path) {
-		free(cmd->path);
-		cmd->path = NULL;
-	}
 }
