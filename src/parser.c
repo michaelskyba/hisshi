@@ -109,7 +109,7 @@ void update_control(struct parse_state *state, int status) {
 void parse_command(struct parse_state *state) {
 	int indent = state->cmd->indent_level;
 
-	printf("starting parse_command at phase %d\n", state->phase);
+	printf("parse_command: P%d, path |%s|\n", state->phase, state->cmd->path);
 
 	// TODO: If a branch shouldn't be executed, all parsing of it should be
 	// skipped. Both for performance and because we don't want to evaluate
@@ -118,7 +118,10 @@ void parse_command(struct parse_state *state) {
 	// indent for it and see it's outside of the intended range
 
 	// No command submitted
-	if (state->cmd->path == NULL) {
+	// Latter happens if we save "" as the path, through a blank line
+	if (state->cmd->path == NULL || *state->cmd->path == '\0') {
+		printf("L%d: Blank\n", state->ln);
+
 		// Blank "-\n", equivalent to "- true\n"
 		if (state->cmd->else_flag && state->indent_controls[indent] == control_waiting)
 			update_control(state, control_branch_active);
@@ -155,7 +158,7 @@ void parse_command(struct parse_state *state) {
 
 	}
 
-	else printf("CF: skipping execution of line %d\n", state->ln);
+	else printf("L%d: CF skip\n", state->ln);
 
 	state->ln++;
 	state->phase = reading_indents;

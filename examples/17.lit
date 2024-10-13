@@ -6,5 +6,8 @@ date
 date 
 file 
 
+true
+	
+
 test -f /etc/anthy-conf
 test -f /etc/anthy-conf.foo
