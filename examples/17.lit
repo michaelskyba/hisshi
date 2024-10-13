@@ -1,6 +1,10 @@
+# These are mostly supposed to fail.
+# spaces are always treated as splitting tokens
  true
     echo      f    test    # bar
 date    
+date 
+file 
 
 test -f /etc/anthy-conf
 test -f /etc/anthy-conf.foo

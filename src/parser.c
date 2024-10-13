@@ -13,6 +13,13 @@ enum {
 	control_complete,
 };
 
+// parse_state's phase
+enum {
+	reading_indents,
+	reading_name,
+	reading_arg,
+};
+
 struct parse_state {
 	// Command we're constructing
 	struct command *cmd;
@@ -21,13 +28,8 @@ struct parse_state {
 	// argument
 	char *token;
 
-	// Whether we're reading a command name token (true) or an argument (false)
-	bool reading_name;
-
-	// Whether we've started receiving content for the current token (false),
-	// or if we have nothing yet, either because we haven't asked or have
-	// received spaces (true)
-	bool waiting;
+	// Which part of the line we're parsing (above enum)
+	int phase;
 
 	// Line number
 	int ln;
@@ -48,8 +50,7 @@ struct parse_state *create_state() {
 	// TODO address tokens longer than a fixed chunk_size of 100
 	state->token = malloc(100);
 
-	state->reading_name = true;
-	state->waiting = true;
+	state->phase = reading_indents;
 	state->ln = 1;
 
 	state->indent_controls = malloc(sizeof(int));
@@ -62,23 +63,19 @@ struct parse_state *create_state() {
 // Before parse_token(), we have just read an entire token and can now
 // look at it, to place it inside state->cmd
 void parse_token(struct parse_state *state) {
-	// We just had empty spaces given, not a token
-	if (state->waiting)
-		return;
-
-	if (state->reading_name && strcmp(state->token, "-") == 0) {
+	if (state->phase == reading_name && strcmp(state->token, "-") == 0) {
 		state->cmd->else_flag = true;
 		return;
 	}
 
-	printf("Reading name? (%d), but adding token |%s|\n", state->reading_name, state->token);
+	printf("On phase %d, adding token |%s|\n", state->phase, state->token);
 
 	// Even if token == command name, set $0 as convention
 	add_arg(state->cmd, state->token);
 
-	if (state->reading_name) {
+	if (state->phase == reading_name) {
 		state->cmd->path = get_bin_path(state->token);
-		state->reading_name = false;
+		state->phase = reading_arg;
 	}
 }
 
@@ -112,25 +109,26 @@ void update_control(struct parse_state *state, int status) {
 void parse_command(struct parse_state *state) {
 	int indent = state->cmd->indent_level;
 
+	printf("starting parse_command at phase %d\n", state->phase);
+
 	// TODO: If a branch shouldn't be executed, all parsing of it should be
 	// skipped. Both for performance and because we don't want to evaluate
 	// subshells etc. in there
+	// 1728777039: We can skip the rest of the line as soon as we read the
+	// indent for it and see it's outside of the intended range
 
 	// No command submitted
-	if (state->reading_name && state->cmd->path == NULL) {
+	if (state->cmd->path == NULL) {
 		// Blank "-\n", equivalent to "- true\n"
 		if (state->cmd->else_flag && state->indent_controls[indent] == control_waiting)
 			update_control(state, control_branch_active);
 
 		state->ln++;
-		state->reading_name = true;
-		state->waiting = true;
+		state->phase = reading_indents;
 
 		clear_command(state->cmd);
 		return;
 	}
-
-	printf("reading name? %d | waiting? %d\n", state->reading_name, state->waiting);
 
 	int parent_control = indent == 0 ? control_branch_active : state->indent_controls[indent-1];
 	int control = state->indent_controls[indent];
@@ -160,9 +158,7 @@ void parse_command(struct parse_state *state) {
 	else printf("CF: skipping execution of line %d\n", state->ln);
 
 	state->ln++;
-	state->reading_name = true;
-	state->waiting = true;
-
+	state->phase = reading_indents;
 	clear_command(state->cmd);
 }
 
@@ -182,9 +178,12 @@ void parse_script(FILE *script_file) {
 			break;
 
 		// Otherwise, treat \t as a regular character in tokens
-		if (*p == '\t' && state->reading_name && state->waiting) {
-			state->cmd->indent_level++;
-			continue;
+		if (state->phase == reading_indents) {
+			if (*p == '\t') {
+				state->cmd->indent_level++;
+				continue;
+			}
+			else state->phase = reading_name;
 		}
 
 		// Delete the rest of the line for comments
@@ -194,8 +193,6 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (*p != ' ' && *p != '\n') {
-			state->waiting = false;
-
 			p++;
 			continue;
 		}
@@ -209,9 +206,6 @@ void parse_script(FILE *script_file) {
 
 		if (sep == '\n')
 			parse_command(state);
-
-		if (sep == ' ')
-			state->waiting = true;
 
 		p = state->token;
 	}
