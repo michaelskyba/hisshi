@@ -1,4 +1,4 @@
-// For parse_state.indent_controls
+// For ParseState.indent_controls
 enum {
 	// Default: no branch of this control flow structure has matched. elifs and
 	// elses can still activate.
@@ -13,7 +13,7 @@ enum {
 	CONTROL_COMPLETE,
 };
 
-// For parse_state.phase
+// For ParseState.phase
 enum {
 	READING_INDENTS,
 	READING_NAME,
@@ -22,7 +22,7 @@ enum {
 
 typedef struct {
 	// Command we're constructing
-	command *cmd;
+	Command *cmd;
 
 	// The segment of the command we're constructing, like the path or an
 	// argument
@@ -41,10 +41,10 @@ typedef struct {
 	*/
 	int *indent_controls;
 	int indents_tracked; // total allocated room
-} parse_state;
+} ParseState;
 
-parse_state *create_state() {
-	parse_state *state = malloc(sizeof(parse_state));
+ParseState *create_state() {
+	ParseState *state = malloc(sizeof(ParseState));
 	state->cmd = create_command();
 
 	// TODO address tokens longer than a fixed chunk_size of 100
@@ -62,7 +62,7 @@ parse_state *create_state() {
 
 // Before parse_token(), we have just read an entire token and can now
 // look at it, to place it inside state->cmd
-void parse_token(parse_state *state) {
+void parse_token(ParseState *state) {
 	if (state->phase == READING_NAME && strcmp(state->token, "-") == 0) {
 		state->cmd->else_flag = true;
 		return;
@@ -93,7 +93,7 @@ char *control_name(int control) {
 	return "control not found";
 }
 
-void update_control(parse_state *state, int status) {
+void update_control(ParseState *state, int status) {
 	int indent = state->cmd->indent_level;
 	state->indent_controls[indent] = status;
 
@@ -111,7 +111,7 @@ void update_control(parse_state *state, int status) {
 
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
-void parse_command(parse_state *state) {
+void parse_command(ParseState *state) {
 	int indent = state->cmd->indent_level;
 
 	printf("parse_command: P%d, path |%s|\n", state->phase, state->cmd->path);
@@ -171,7 +171,7 @@ void parse_command(parse_state *state) {
 }
 
 void parse_script(FILE *script_file) {
-	parse_state *state = create_state();
+	ParseState *state = create_state();
 
 	char *p = state->token;
 

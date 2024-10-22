@@ -1,5 +1,5 @@
 // Returns exit code
-int execute(command *cmd) {
+int execute(Command *cmd) {
 	printf("exec start ");
 	dump_command(cmd);
 
