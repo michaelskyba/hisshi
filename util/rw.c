@@ -18,13 +18,13 @@
 #define ARG_SIZE 100
 
 enum {
-	arg_start,
+	ARG_START,
 	arg_end,
 };
 
 enum {
-	head,
-	tail
+	HEAD,
+	TAIL
 };
 
 /*
@@ -93,7 +93,7 @@ void coreutil_child(int type, int pipe_fd[2], int arg) {
 	int write = pipe_fd[1];
 
 	// tail masks stdout with (write), but continues reading from stdin
-	if (type == tail) {
+	if (type == TAIL) {
 		// Don't touch head's read
 		close(read);
 
@@ -104,7 +104,7 @@ void coreutil_child(int type, int pipe_fd[2], int arg) {
 	}
 
 	// head masks stdin with (read), but continueus writing to stdout
-	if (type == head) {
+	if (type == HEAD) {
 		// Don't touch tail's write
 		close(write);
 
@@ -123,8 +123,8 @@ void from_until(int start, int end) {
 		exit(1);
 	}
 
-	coreutil_child(tail, pipe_fd, start);
-	coreutil_child(head, pipe_fd, end);
+	coreutil_child(TAIL, pipe_fd, start);
+	coreutil_child(HEAD, pipe_fd, end);
 
 	close(stdin);
 	close(stdout);
@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
 
 	int start = 0;
 	int end = -0; // relative to output of start
-	int state = arg_start;
+	int state = ARG_START;
 
 	char *arg = argv[1];
 	char *content = arg;
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
 	// We never hit any colon, so we were just given one number
 	// Take this to mean n:1
-	if (state == arg_start) {
+	if (state == ARG_START) {
 		start = atoi(content);
 		end = 1;
 	}

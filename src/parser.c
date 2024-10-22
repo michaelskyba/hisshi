@@ -1,23 +1,23 @@
-// indent_controls options, governing tracking of control flow
+// For parse_state.indent_controls
 enum {
 	// Default: no branch of this control flow structure has matched. elifs and
 	// elses can still activate.
-	control_waiting,
+	CONTROL_WAITING,
 
 	// The current branch that we're parsing commands within was matched and is
 	// active. The body should execute.
-	control_branch_active,
+	CONTROL_BRANCH_ACTIVE,
 
 	// The current branch is inactive, since we've matched a previous branch
 	// within the same control structure. Any new bodies should not execute.
-	control_complete,
+	CONTROL_COMPLETE,
 };
 
-// parse_state's phase
+// For parse_state.phase
 enum {
-	reading_indents,
-	reading_name,
-	reading_arg,
+	READING_INDENTS,
+	READING_NAME,
+	READING_ARG,
 };
 
 typedef struct {
@@ -28,7 +28,7 @@ typedef struct {
 	// argument
 	char *token;
 
-	// Which part of the line we're parsing (above enum)
+	// Which part of the line we're parsing
 	int phase;
 
 	// Line number
@@ -50,11 +50,11 @@ parse_state *create_state() {
 	// TODO address tokens longer than a fixed chunk_size of 100
 	state->token = malloc(100);
 
-	state->phase = reading_indents;
+	state->phase = READING_INDENTS;
 	state->ln = 1;
 
 	state->indent_controls = malloc(sizeof(int));
-	*(state->indent_controls) = control_waiting;
+	*(state->indent_controls) = CONTROL_WAITING;
 	state->indents_tracked = 1;
 
 	return state;
@@ -63,7 +63,7 @@ parse_state *create_state() {
 // Before parse_token(), we have just read an entire token and can now
 // look at it, to place it inside state->cmd
 void parse_token(parse_state *state) {
-	if (state->phase == reading_name && strcmp(state->token, "-") == 0) {
+	if (state->phase == READING_NAME && strcmp(state->token, "-") == 0) {
 		state->cmd->else_flag = true;
 		return;
 	}
@@ -73,19 +73,24 @@ void parse_token(parse_state *state) {
 	// Even if token == command name, set $0 as convention
 	add_arg(state->cmd, state->token);
 
-	if (state->phase == reading_name) {
+	if (state->phase == READING_NAME) {
 		state->cmd->path = get_bin_path(state->token);
-		state->phase = reading_arg;
+		state->phase = READING_ARG;
 	}
 }
 
 char *control_name(int control) {
-	char **names = malloc(3 * sizeof(char *));
-	names[control_waiting] = "waiting";
-	names[control_branch_active] = "active";
-	names[control_complete] = "complete";
+	if (control == CONTROL_WAITING)
+		return "waiting";
 
-	return names[control];
+	if (control == CONTROL_BRANCH_ACTIVE)
+		return "active";
+
+	if (control == CONTROL_COMPLETE)
+		return "complete";
+
+	assert(false);
+	return "control not found";
 }
 
 void update_control(parse_state *state, int status) {
@@ -123,45 +128,45 @@ void parse_command(parse_state *state) {
 		printf("L%d: Blank\n", state->ln);
 
 		// Blank "-\n", equivalent to "- true\n"
-		if (state->cmd->else_flag && state->indent_controls[indent] == control_waiting)
-			update_control(state, control_branch_active);
+		if (state->cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
+			update_control(state, CONTROL_BRANCH_ACTIVE);
 
 		state->ln++;
-		state->phase = reading_indents;
+		state->phase = READING_INDENTS;
 
 		clear_command(state->cmd);
 		return;
 	}
 
-	int parent_control = indent == 0 ? control_branch_active : state->indent_controls[indent-1];
+	int parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : state->indent_controls[indent-1];
 	int control = state->indent_controls[indent];
 	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
 
-	bool parent_permits = parent_control == control_branch_active;
+	bool parent_permits = parent_control == CONTROL_BRANCH_ACTIVE;
 
 	// We're not supposed to be executing because the previous branch was active
-	if (state->cmd->else_flag && control == control_branch_active)
-		update_control(state, control_complete);
+	if (state->cmd->else_flag && control == CONTROL_BRANCH_ACTIVE)
+		update_control(state, CONTROL_COMPLETE);
 
-	if (parent_permits && (!state->cmd->else_flag || control == control_waiting)) {
+	if (parent_permits && (!state->cmd->else_flag || control == CONTROL_WAITING)) {
 		int exit_code = execute(state->cmd);
 
 		// 0: success exit code, so this if branch is now active
 		if (exit_code == 0)
-			update_control(state, control_branch_active);
+			update_control(state, CONTROL_BRANCH_ACTIVE);
 
 		// The command failed, but this is a new start of a control structure,
 		// since it's a base (if). We don't execute this body but we allow
 		// further branches to check their conditions
 		else if (!state->cmd->else_flag)
-			update_control(state, control_waiting);
+			update_control(state, CONTROL_WAITING);
 
 	}
 
 	else printf("L%d: CF skip\n", state->ln);
 
 	state->ln++;
-	state->phase = reading_indents;
+	state->phase = READING_INDENTS;
 	clear_command(state->cmd);
 }
 
@@ -181,12 +186,12 @@ void parse_script(FILE *script_file) {
 			break;
 
 		// Otherwise, treat \t as a regular character in tokens
-		if (state->phase == reading_indents) {
+		if (state->phase == READING_INDENTS) {
 			if (*p == '\t') {
 				state->cmd->indent_level++;
 				continue;
 			}
-			else state->phase = reading_name;
+			else state->phase = READING_NAME;
 		}
 
 		// Delete the rest of the line for comments
