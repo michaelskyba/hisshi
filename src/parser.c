@@ -20,9 +20,9 @@ enum {
 	reading_arg,
 };
 
-struct parse_state {
+typedef struct {
 	// Command we're constructing
-	struct command *cmd;
+	command *cmd;
 
 	// The segment of the command we're constructing, like the path or an
 	// argument
@@ -41,10 +41,10 @@ struct parse_state {
 	*/
 	int *indent_controls;
 	int indents_tracked; // total allocated room
-};
+} parse_state;
 
-struct parse_state *create_state() {
-	struct parse_state *state = malloc(sizeof(struct parse_state));
+parse_state *create_state() {
+	parse_state *state = malloc(sizeof(parse_state));
 	state->cmd = create_command();
 
 	// TODO address tokens longer than a fixed chunk_size of 100
@@ -62,7 +62,7 @@ struct parse_state *create_state() {
 
 // Before parse_token(), we have just read an entire token and can now
 // look at it, to place it inside state->cmd
-void parse_token(struct parse_state *state) {
+void parse_token(parse_state *state) {
 	if (state->phase == reading_name && strcmp(state->token, "-") == 0) {
 		state->cmd->else_flag = true;
 		return;
@@ -88,7 +88,7 @@ char *control_name(int control) {
 	return names[control];
 }
 
-void update_control(struct parse_state *state, int status) {
+void update_control(parse_state *state, int status) {
 	int indent = state->cmd->indent_level;
 	state->indent_controls[indent] = status;
 
@@ -106,7 +106,7 @@ void update_control(struct parse_state *state, int status) {
 
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
-void parse_command(struct parse_state *state) {
+void parse_command(parse_state *state) {
 	int indent = state->cmd->indent_level;
 
 	printf("parse_command: P%d, path |%s|\n", state->phase, state->cmd->path);
@@ -166,7 +166,7 @@ void parse_command(struct parse_state *state) {
 }
 
 void parse_script(FILE *script_file) {
-	struct parse_state *state = create_state();
+	parse_state *state = create_state();
 
 	char *p = state->token;
 

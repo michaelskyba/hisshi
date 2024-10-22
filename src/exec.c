@@ -1,5 +1,5 @@
 // Returns exit code
-int execute(struct command *cmd) {
+int execute(command *cmd) {
 	printf("exec start ");
 	dump_command(cmd);
 
