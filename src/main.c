@@ -13,6 +13,7 @@
 #include "util.c"
 #include "command.c"
 #include "exec.c"
+#include "tokenizer.c"
 #include "parser.c"
 
 int main(int argc, char **argv) {
