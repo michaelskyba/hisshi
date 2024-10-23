@@ -1,0 +1,13 @@
+cd foo
+	echo worked 1
+	date
+-
+	echo didnt 1
+	pwd
+
+cd /
+	echo worked 2
+	pwd
+-
+	echo didnt 2
+	date

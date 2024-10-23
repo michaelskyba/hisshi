@@ -107,18 +107,6 @@ void parse_command(ParseState *state) {
 	// 1729642499: Eh maybe we can tokenize it but not evaluate any subshells.
 	// Just do whatever is cleaner
 
-	// No command submitted
-	// Latter happens if we save "" as the path, through a blank line
-	if (state->cmd->path == NULL || *state->cmd->path == '\0') {
-		printf("L%d: Blank\n", ln);
-
-		// Blank "-\n", equivalent to "- true\n"
-		if (state->cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
-			update_control(state, CONTROL_BRANCH_ACTIVE);
-
-		return;
-	}
-
 	int parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : state->indent_controls[indent-1];
 	int control = state->indent_controls[indent];
 	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
@@ -130,6 +118,18 @@ void parse_command(ParseState *state) {
 		update_control(state, CONTROL_COMPLETE);
 
 	if (parent_permits && (!state->cmd->else_flag || control == CONTROL_WAITING)) {
+		// No command submitted
+		// Latter happens if we save "" as the path, through a blank line
+		if (state->cmd->path == NULL || *state->cmd->path == '\0') {
+			printf("L%d: Blank\n", ln);
+
+			// Blank "-\n", equivalent to "- true\n"
+			if (state->cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
+				update_control(state, CONTROL_BRANCH_ACTIVE);
+
+			return;
+		}
+
 		int exit_code = execute(state->cmd);
 
 		// 0: success exit code, so this if branch is now active

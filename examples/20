@@ -1,3 +1,5 @@
+# Expected: 1,2,4,5,9,10,11,14
+
 echo 1
 	echo 2
 	false
