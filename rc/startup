@@ -1,0 +1,28 @@
+#!/usr/local/bin/hsh
+
+hisshi_alias al hisshi_alias
+al p echo
+
+# Short-form for built-ins
+p alias unalias exit continue break return shift eval export unset bg fg jobs exec trap wait |= builtins
+p $builtins | tr ' ' '\n' | each: al $i "hisshi_$i"
+
+pwd |= OLDPWD
+pwd |= PWD
+
+# Can be overwritten by the user if needed
+# hisshi_after_cd: ls
+hisshi_after_cd: true
+
+# Supports $HOME with "cd" and one-dir history with "cd -"
+cd:
+	p $OLDPWD |= _tmp
+	p $PWD |= OLDPWD
+
+	p $1 | eq -
+		hisshi_cd $_tmp
+	-
+		hisshi_cd ${1:-$HOME}
+
+	pwd |= PWD
+	hisshi_after_cd
