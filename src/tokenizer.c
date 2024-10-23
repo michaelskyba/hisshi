@@ -61,6 +61,30 @@ bool read_token(Token *tk, FILE *script_file) {
 		// Otherwise it's part of a name
 	}
 
+	if (c == '"' || c == '\'') {
+		char match = c;
+		tk->type = TOKEN_NAME;
+
+		// Don't insert the initial "/'
+		char *p = tk->str;
+
+		while ((c = getc(script_file)) != match) {
+			*p++ = c;
+
+			if (p - tk->str == tk->str_len) {
+				int offset = p - tk->str;
+				tk->str_len *= 2;
+
+				// str_len doesn't include \0
+				tk->str = realloc(tk->str, tk->str_len + 1);
+				p = tk->str + offset;
+			}
+		}
+
+		*p = '\0';
+		return true;
+	}
+
 	tk->type = TOKEN_NAME;
 
 	char *p = tk->str;

@@ -5,3 +5,14 @@
 /home/oboro/src/hisshi/util/dump2_args "foo ' bar"
 /home/oboro/src/hisshi/util/dump2_args 'foo ' "bar" baz
 /home/oboro/src/hisshi/util/dump2_args "" foo
+
+# As of 1729700024 this will be taken as literal. Normal shells still parse it
+# but it looks so jank that I think we can leave it like this
+/home/oboro/src/hisshi/util/dump2_args foo"bar"
+
+# But this will be two arguments. That's not exactly consistent from the user
+# POV but it's probably fine.
+/home/oboro/src/hisshi/util/dump2_args "foo"bar
+
+# Normal shells work fine with this too
+"ls"
