@@ -67,8 +67,8 @@ bool read_token(Token *tk, FILE *script_file) {
 	while (!isspace(c) && c != '#') {
 		*p++ = c;
 
-		if (tk->str - p == tk->str_len) {
-			int offset = tk->str - p;
+		if (p - tk->str == tk->str_len) {
+			int offset = p - tk->str;
 			tk->str_len *= 2;
 
 			// str_len doesn't include \0
