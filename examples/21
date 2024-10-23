@@ -1,0 +1,7 @@
+/home/oboro/src/hisshi/util/dump2_args
+/home/oboro/src/hisshi/util/dump2_args foo
+/home/oboro/src/hisshi/util/dump2_args foo bar
+/home/oboro/src/hisshi/util/dump2_args "foo bar"
+/home/oboro/src/hisshi/util/dump2_args "foo ' bar"
+/home/oboro/src/hisshi/util/dump2_args 'foo ' "bar" baz
+/home/oboro/src/hisshi/util/dump2_args "" foo
