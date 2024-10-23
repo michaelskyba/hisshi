@@ -1,5 +1,5 @@
-# These are mostly supposed to fail.
-# spaces are always treated as splitting tokens
+# As of 1729648836, misc whitespace is mostly ignored. None of 17.lit should be
+# taken as blank "" arguments
  true
     echo      f    test    # bar
 date    

@@ -20,24 +20,44 @@ enum {
 	READING_ARG,
 };
 
+// For Token.type
+enum {
+	TOKEN_INDENT,
+	TOKEN_DASH,
+	TOKEN_NAME,
+	TOKEN_NEWLINE,
+	TOKEN_EOF,
+};
+
+typedef struct {
+	int type;
+
+	// Dynamic char array: text content. Not used for all types
+	char *str;
+
+	// Length not including the \0; str's real size is +1
+	int str_len;
+
+	// Line number. Stored in the token because it needs to be read while
+	// tokenizing, and lets us separate the token from the rest of the state
+	int ln;
+} Token;
+
 typedef struct {
 	// Command we're constructing
 	Command *cmd;
 
-	// The segment of the command we're constructing, like the path or an
-	// argument
-	char *token;
-
-	// Which part of the line we're parsing
+	// enum: Which part of the line we're parsing
 	int phase;
 
-	// Line number
-	int ln;
+	Token *tk;
 
 	/*
-	A dynamic array storing the control flow statuses at different levels of
+	A dynamic array storing the control flow status enum at different levels of
 	indentation
-	[n]: status at n levels of indentation (base starting at 0)
+
+	indent_controls[n]: status at n levels of indentation
+	[0]: base level
 	*/
 	int *indent_controls;
 	int indents_tracked; // total allocated room
@@ -47,11 +67,13 @@ ParseState *create_state() {
 	ParseState *state = malloc(sizeof(ParseState));
 	state->cmd = create_command();
 
-	// TODO address tokens longer than a fixed chunk_size of 100
-	state->token = malloc(100);
-
 	state->phase = READING_INDENTS;
-	state->ln = 1;
+
+	state->tk = malloc(sizeof(Token));
+	state->tk->type = TOKEN_EOF; // Will be replaced when initially read
+	state->tk->str = malloc(sizeof(char) * 2); // Include terminator
+	state->tk->str_len = 1;
+	state->tk->ln = 1;
 
 	state->indent_controls = malloc(sizeof(int));
 	*(state->indent_controls) = CONTROL_WAITING;
@@ -60,23 +82,66 @@ ParseState *create_state() {
 	return state;
 }
 
-// Before parse_token(), we have just read an entire token and can now
-// look at it, to place it inside state->cmd
-void parse_token(ParseState *state) {
-	if (state->phase == READING_NAME && strcmp(state->token, "-") == 0) {
-		state->cmd->else_flag = true;
-		return;
+// rt: whether to keep reading (type != EOF)
+bool read_token(Token *tk, FILE *script_file) {
+	char c;
+	while ((c = getc(script_file)) == ' ') ;
+
+	if (c == EOF) {
+		tk->type = TOKEN_EOF;
+		return false;
 	}
 
-	printf("On phase %d, adding token |%s|\n", state->phase, state->token);
-
-	// Even if token == command name, set $0 as convention
-	add_arg(state->cmd, state->token);
-
-	if (state->phase == READING_NAME) {
-		state->cmd->path = get_bin_path(state->token);
-		state->phase = READING_ARG;
+	if (c == '\t') {
+		tk->type = TOKEN_INDENT;
+		return true;
 	}
+
+	if (c == '#') {
+		while (getc(script_file) != '\n') ;
+		tk->type = TOKEN_NEWLINE;
+		return true;
+	}
+
+	if (c == '\n') {
+		tk->type = TOKEN_NEWLINE;
+		return true;
+	}
+
+	if (c == '-') {
+		char n = getc(script_file);
+		ungetc(n, script_file);
+
+		if (isspace(n) || n == '#') {
+			tk->type = TOKEN_DASH;
+			return true;
+		}
+
+		// Otherwise it's part of a name
+	}
+
+	tk->type = TOKEN_NAME;
+
+	char *p = tk->str;
+	while (!isspace(c) && c != '#') {
+		*p++ = c;
+
+		if (tk->str - p == tk->str_len) {
+			int offset = tk->str - p;
+			tk->str_len *= 2;
+
+			// str_len doesn't include \0
+			tk->str = realloc(tk->str, tk->str_len + 1);
+			p = tk->str + offset;
+		}
+
+		c = getc(script_file);
+	}
+
+	ungetc(c, script_file);
+
+	*p = '\0';
+	return true;
 }
 
 char *control_name(int control) {
@@ -121,20 +186,18 @@ void parse_command(ParseState *state) {
 	// subshells etc. in there
 	// 1728777039: We can skip the rest of the line as soon as we read the
 	// indent for it and see it's outside of the intended range
+	// 1729642499: Eh maybe we can tokenize it but not evaluate any subshells.
+	// Just do whatever is cleaner
 
 	// No command submitted
 	// Latter happens if we save "" as the path, through a blank line
 	if (state->cmd->path == NULL || *state->cmd->path == '\0') {
-		printf("L%d: Blank\n", state->ln);
+		printf("L%d: Blank\n", state->tk->ln);
 
 		// Blank "-\n", equivalent to "- true\n"
 		if (state->cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
 			update_control(state, CONTROL_BRANCH_ACTIVE);
 
-		state->ln++;
-		state->phase = READING_INDENTS;
-
-		clear_command(state->cmd);
 		return;
 	}
 
@@ -163,58 +226,66 @@ void parse_command(ParseState *state) {
 
 	}
 
-	else printf("L%d: CF skip\n", state->ln);
-
-	state->ln++;
-	state->phase = READING_INDENTS;
-	clear_command(state->cmd);
+	else printf("L%d: CF skip\n", state->tk->ln);
 }
 
 void parse_script(FILE *script_file) {
 	ParseState *state = create_state();
 
-	char *p = state->token;
+	while (read_token(state->tk, script_file)) {
+		int tk_type = state->tk->type;
 
-	// Build up space/newline separated tokens, and then parse them
-	// once constructed
-	while (true) {
-		*p = getc(script_file);
+		// printf("Received token type %d\n", tk_type);
 
-		// Doesn't require any parsing because we declare that every file must
-		// end with a \n
-		if (*p == EOF)
-			break;
-
-		// Otherwise, treat \t as a regular character in tokens
-		if (state->phase == READING_INDENTS) {
-			if (*p == '\t') {
+		if (tk_type == TOKEN_INDENT) {
+			if (state->phase == READING_INDENTS) {
 				state->cmd->indent_level++;
 				continue;
 			}
-			else state->phase = READING_NAME;
+
+			// (If you want a literal tab character then you're supposed to
+			// quote it so that it's a string token)
+
+			// TODO better error handling to stderr and line number
+			printf("Unexpected indent\n");
+			assert(false);
 		}
 
-		// Delete the rest of the line for comments
-		if (*p == '#') {
-			while (getc(script_file) != '\n') ;
-			*p = '\n';
-		}
+		// We were reading indents but now finally found a non-indent
+		if (state->phase == READING_INDENTS)
+			state->phase = READING_NAME;
 
-		if (*p != ' ' && *p != '\n') {
-			p++;
+		if (tk_type == TOKEN_DASH) {
+			if (state->phase == READING_NAME)
+				state->cmd->else_flag = true;
+			else if (state->phase == READING_ARG)
+				add_arg(state->cmd, "-");
+
 			continue;
 		}
 
-		// We're now ending a token
+		if (tk_type == TOKEN_NAME) {
+			printf("Parsing name token |%s|\n", state->tk->str);
 
-		char sep = *p;
-		*p = '\0';
+			if (state->phase == READING_NAME) {
+				state->cmd->path = get_bin_path(state->tk->str);
+				state->phase = READING_ARG;
+			}
 
-		parse_token(state);
+			// Even if READING_NAME, set $0 as convention
+			add_arg(state->cmd, state->tk->str);
+			continue;
+		}
 
-		if (sep == '\n')
+		if (tk_type == TOKEN_NEWLINE) {
 			parse_command(state);
 
-		p = state->token;
+			state->phase = READING_INDENTS;
+			clear_command(state->cmd);
+			continue;
+		}
+
+		// Invalid token type returned if nothing has triggered
+		assert(false);
 	}
 }
