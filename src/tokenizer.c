@@ -69,6 +69,7 @@ bool read_token(Token *tk, FILE *script_file) {
 		char *p = tk->str;
 
 		while ((c = getc(script_file)) != match) {
+			assert(c != EOF);
 			*p++ = c;
 
 			if (p - tk->str == tk->str_len) {
@@ -89,6 +90,7 @@ bool read_token(Token *tk, FILE *script_file) {
 
 	char *p = tk->str;
 	while (!isspace(c) && c != '#') {
+		assert(c != EOF);
 		*p++ = c;
 
 		if (p - tk->str == tk->str_len) {

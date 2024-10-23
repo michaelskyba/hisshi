@@ -5,6 +5,8 @@
 /home/oboro/src/hisshi/util/dump2_args "foo ' bar"
 /home/oboro/src/hisshi/util/dump2_args 'foo ' "bar" baz
 /home/oboro/src/hisshi/util/dump2_args "" foo
+/home/oboro/src/hisshi/util/dump2_args "foo
+bar"
 
 # As of 1729700024 this will be taken as literal. Normal shells still parse it
 # but it looks so jank that I think we can leave it like this
@@ -16,3 +18,8 @@
 
 # Normal shells work fine with this too
 "ls"
+
+# Syntax error --> failed assert
+foo "
+bar
+baz
