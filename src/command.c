@@ -7,6 +7,7 @@ typedef struct ArgNode_struct ArgNode;
 typedef struct {
 	char *path;
 
+	// The arg list and argc include the $0 name
 	int argc;
 	ArgNode *arg_head;
 	ArgNode *arg_tail;

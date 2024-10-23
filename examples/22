@@ -1,0 +1,11 @@
+pwd
+cd /
+pwd
+cd /home/oboro/src/hisshi
+pwd
+
+exit
+cd /foo
+
+exit 69
+echo foo
