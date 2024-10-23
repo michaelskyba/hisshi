@@ -26,13 +26,34 @@ int builtin_cd(Command *cmd) {
 	return 0;
 }
 
+int builtin_exit(Command *cmd) {
+	if (cmd->argc < 2) {
+		printf("builtin exit: no status specified\n");
+		return 1;
+	}
+
+	if (cmd->argc > 2) {
+		printf("builtin exit: multiple codes given\n");
+		return 1;
+	}
+
+	int status = atoi(cmd->arg_head->next->name);
+	exit(status);
+
+	// Shouldn't reach but we need a return value
+	return 0;
+}
+
 // Returns exit code
 int execute(Command *cmd) {
 	printf("exec start ");
 	dump_command(cmd);
 
+	// Check for builtins and run in the parent process
 	if (strcmp(cmd->path, "cd") == 0)
 		return builtin_cd(cmd);
+	if (strcmp(cmd->path, "exit") == 0)
+		return builtin_exit(cmd);
 
 	int pid = fork();
 
