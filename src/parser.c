@@ -105,6 +105,8 @@ bool read_token(Token *tk, FILE *script_file) {
 
 	if (c == '\n') {
 		tk->type = TOKEN_NEWLINE;
+		tk->ln++;
+
 		return true;
 	}
 
@@ -179,6 +181,9 @@ void update_control(ParseState *state, int status) {
 void parse_command(ParseState *state) {
 	int indent = state->cmd->indent_level;
 
+	// The last token read was the \n, tk->ln is one above state->cmd
+	int ln = state->tk->ln - 1;
+
 	printf("parse_command: P%d, path |%s|\n", state->phase, state->cmd->path);
 
 	// TODO: If a branch shouldn't be executed, all parsing of it should be
@@ -192,7 +197,7 @@ void parse_command(ParseState *state) {
 	// No command submitted
 	// Latter happens if we save "" as the path, through a blank line
 	if (state->cmd->path == NULL || *state->cmd->path == '\0') {
-		printf("L%d: Blank\n", state->tk->ln);
+		printf("L%d: Blank\n", ln);
 
 		// Blank "-\n", equivalent to "- true\n"
 		if (state->cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
@@ -226,7 +231,7 @@ void parse_command(ParseState *state) {
 
 	}
 
-	else printf("L%d: CF skip\n", state->tk->ln);
+	else printf("L%d: CF skip\n", ln);
 }
 
 void parse_script(FILE *script_file) {
@@ -234,8 +239,6 @@ void parse_script(FILE *script_file) {
 
 	while (read_token(state->tk, script_file)) {
 		int tk_type = state->tk->type;
-
-		// printf("Received token type %d\n", tk_type);
 
 		if (tk_type == TOKEN_INDENT) {
 			if (state->phase == READING_INDENTS) {
