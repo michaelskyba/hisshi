@@ -1,4 +1,9 @@
+echo	foo
+
 echo foo
+date |
+rg 20 |
+
 date | rg 20 |
 	tac |
 	cat |

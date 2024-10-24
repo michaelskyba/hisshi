@@ -163,17 +163,17 @@ void parse_script(FILE *script_file) {
 		int tk_type = state->tk->type;
 
 		if (tk_type == TOKEN_INDENT) {
-			if (state->phase == READING_INDENTS) {
+			if (state->phase == READING_INDENTS)
 				state->cmd->indent_level++;
-				continue;
-			}
 
-			// (If you want a literal tab character then you're supposed to
-			// quote it so that it's a string token)
+			// Otherwise, it's just whitespace that we can ignore. We shouldn't
+			// panic here, since tab separation, especially after a newline
+			// during pipes etc. is a pretty common pattern:
+			// echo foo |
+			// \ttail |
+			// \tcat
 
-			// TODO better error handling to stderr and line number
-			printf("Unexpected indent\n");
-			assert(false);
+			continue;
 		}
 
 		// We were reading indents but now finally found a non-indent
