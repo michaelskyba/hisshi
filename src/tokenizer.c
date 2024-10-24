@@ -3,6 +3,7 @@ enum {
 	TOKEN_INDENT,
 	TOKEN_DASH,
 	TOKEN_NAME,
+	TOKEN_PIPE,
 	TOKEN_NEWLINE,
 	TOKEN_EOF,
 };
@@ -46,6 +47,11 @@ bool read_token(Token *tk, FILE *script_file) {
 		tk->type = TOKEN_NEWLINE;
 		tk->ln++;
 
+		return true;
+	}
+
+	if (c == '|') {
+		tk->type = TOKEN_PIPE;
 		return true;
 	}
 

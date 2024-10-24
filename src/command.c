@@ -4,7 +4,7 @@ struct ArgNode_struct {
 };
 typedef struct ArgNode_struct ArgNode;
 
-typedef struct {
+struct Command_struct {
 	char *path;
 
 	// The arg list and argc include the $0 name
@@ -20,7 +20,12 @@ typedef struct {
 	// run it if the previous on this indent failed
 	// Besides setting this to true, the dash will be ignored as a token
 	bool else_flag;
-} Command;
+
+	// The next command within the current pipeline
+	// NULL if this is the last
+	struct Command_struct *next_pipeline;
+};
+typedef struct Command_struct Command;
 
 void clear_command(Command *cmd) {
 	cmd->indent_level = 0;
@@ -44,6 +49,11 @@ void clear_command(Command *cmd) {
 		free(cmd->path);
 		cmd->path = NULL;
 	}
+
+	if (cmd->next_pipeline) {
+		clear_command(cmd->next_pipeline);
+		cmd->next_pipeline = NULL;
+	}
 }
 
 Command *create_command() {
@@ -53,6 +63,7 @@ Command *create_command() {
 	cmd->path = NULL;
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
+	cmd->next_pipeline = NULL;
 
 	clear_command(cmd);
 	return cmd;

@@ -1,0 +1,2 @@
+echo foo
+date | rg 20 | cat

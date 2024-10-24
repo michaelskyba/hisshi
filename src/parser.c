@@ -21,7 +21,12 @@ enum {
 };
 
 typedef struct {
-	// Command we're constructing
+	// The head of a linked list of commands we're constructing
+	// "foo | bar | baz" would be three
+	Command *cmd_pipeline;
+
+	// Points to the current, which is the last in the list of
+	// ParseState.pipeline
 	Command *cmd;
 
 	// enum: Which part of the line we're parsing
@@ -43,6 +48,7 @@ typedef struct {
 ParseState *create_state() {
 	ParseState *state = malloc(sizeof(ParseState));
 	state->cmd = create_command();
+	state->cmd_pipeline = state->cmd;
 
 	state->phase = READING_INDENTS;
 
@@ -92,12 +98,15 @@ void update_control(ParseState *state, int status) {
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
 void parse_command(ParseState *state) {
-	int indent = state->cmd->indent_level;
+	// For now only take the first in the pipeline
+	Command *cmd = state->cmd_pipeline;
 
-	// The last token read was the \n, tk->ln is one above state->cmd
+	int indent = cmd->indent_level;
+
+	// The last token read was the \n, tk->ln is one above cmd
 	int ln = state->tk->ln - 1;
 
-	printf("parse_command: P%d, path |%s|\n", state->phase, state->cmd->path);
+	printf("parse_command: P%d, path |%s|\n", state->phase, cmd->path);
 
 	// TODO: If a branch shouldn't be executed, all parsing of it should be
 	// skipped. Both for performance and because we don't want to evaluate
@@ -114,23 +123,23 @@ void parse_command(ParseState *state) {
 	bool parent_permits = parent_control == CONTROL_BRANCH_ACTIVE;
 
 	// We're not supposed to be executing because the previous branch was active
-	if (state->cmd->else_flag && control == CONTROL_BRANCH_ACTIVE)
+	if (cmd->else_flag && control == CONTROL_BRANCH_ACTIVE)
 		update_control(state, CONTROL_COMPLETE);
 
-	if (parent_permits && (!state->cmd->else_flag || control == CONTROL_WAITING)) {
+	if (parent_permits && (!cmd->else_flag || control == CONTROL_WAITING)) {
 		// No command submitted
 		// Latter happens if we save "" as the path, through a blank line
-		if (state->cmd->path == NULL || *state->cmd->path == '\0') {
+		if (cmd->path == NULL || *cmd->path == '\0') {
 			printf("L%d: Blank\n", ln);
 
 			// Blank "-\n", equivalent to "- true\n"
-			if (state->cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
+			if (cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
 				update_control(state, CONTROL_BRANCH_ACTIVE);
 
 			return;
 		}
 
-		int exit_code = execute(state->cmd);
+		int exit_code = execute(cmd);
 
 		// 0: success exit code, so this if branch is now active
 		if (exit_code == 0)
@@ -139,7 +148,7 @@ void parse_command(ParseState *state) {
 		// The command failed, but this is a new start of a control structure,
 		// since it's a base (if). We don't execute this body but we allow
 		// further branches to check their conditions
-		else if (!state->cmd->else_flag)
+		else if (!cmd->else_flag)
 			update_control(state, CONTROL_WAITING);
 
 	}
@@ -180,6 +189,14 @@ void parse_script(FILE *script_file) {
 			continue;
 		}
 
+		if (tk_type == TOKEN_PIPE) {
+			state->cmd->next_pipeline = create_command();
+			state->cmd = state->cmd->next_pipeline;
+
+			state->phase = READING_NAME;
+			continue;
+		}
+
 		if (tk_type == TOKEN_NAME) {
 			printf("Parsing name token |%s|\n", state->tk->str);
 
@@ -194,8 +211,14 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (tk_type == TOKEN_NEWLINE) {
-			parse_command(state);
+			Command *cmd;
+			for (cmd = state->cmd_pipeline; cmd != NULL; cmd = cmd->next_pipeline) {
+				printf("pipeline: ");
+				dump_command(cmd);
+			}
+			printf("We're only going to the submit the first.\n");
 
+			parse_command(state);
 			state->phase = READING_INDENTS;
 			clear_command(state->cmd);
 			continue;
