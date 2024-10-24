@@ -1,2 +1,3 @@
 echo foo
 date | rg 20 | cat
+date "|" rg 20 "| cat"

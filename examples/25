@@ -1,0 +1,7 @@
+echo foo
+date | rg 20 |
+	tac |
+	cat |
+	head
+
+echo test | tee /tmp/0

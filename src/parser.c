@@ -220,7 +220,10 @@ void parse_script(FILE *script_file) {
 
 			parse_command(state);
 			state->phase = READING_INDENTS;
-			clear_command(state->cmd);
+
+			clear_command(state->cmd_pipeline);
+			state->cmd = state->cmd_pipeline;
+
 			continue;
 		}
 
