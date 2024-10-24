@@ -27,5 +27,6 @@ int main(int argc, char **argv) {
 	printf("%s: received file %s\n", argv[0], argv[1]);
 
 	FILE *script_file = fopen(argv[1], "r");
+	assert(script_file);
 	parse_script(script_file);
 }
