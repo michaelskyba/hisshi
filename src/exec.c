@@ -44,16 +44,20 @@ int builtin_exit(Command *cmd) {
 	return 0;
 }
 
-// Returns exit code
-int execute(Command *cmd) {
-	printf("exec start ");
-	dump_command(cmd);
+int (*get_builtin(char *name)) (Command *) {
+	if (strcmp(name, "cd") == 0)
+		return builtin_cd;
 
-	// Check for builtins and run in the parent process
-	if (strcmp(cmd->path, "cd") == 0)
-		return builtin_cd(cmd);
-	if (strcmp(cmd->path, "exit") == 0)
-		return builtin_exit(cmd);
+	if (strcmp(name, "exit") == 0)
+		return builtin_exit;
+
+	return NULL;
+}
+
+// Forks and returns child PID
+int execute_child(Command *cmd) {
+	printf("execute_child start ");
+	dump_command(cmd);
 
 	int pid = fork();
 
@@ -62,28 +66,49 @@ int execute(Command *cmd) {
 		exit(1);
 	}
 
-	if (pid == 0) {
-		// Current system env variables
-		extern char **environ;
+	if (pid > 0)
+		return pid;
 
-		// printf("%d: execve(%s)\n", getpid(), cmd->path);
-		execve(cmd->path, get_argv_array(cmd), environ);
-
-		// execve only returns control to us if it fails
-		perror(cmd->path);
-
-		// Not found
-		if (errno == ENOENT)
-			_exit(127);
-
-		// No access to executing it
-		else if (errno == EACCES)
-			_exit(126);
-
-		_exit(1);
+	int (*builtin)(Command *) = get_builtin(cmd->path);
+	if (builtin) {
+		int status = builtin(cmd);
+		_exit(status);
 	}
 
-	// printf("%d-%d: Starting wait()\n", getpid(), pid);
+	// Current system env variables
+	extern char **environ;
+
+	// printf("%d: execve(%s)\n", getpid(), cmd->path);
+	execve(cmd->path, get_argv_array(cmd), environ);
+
+	// execve only returns control to us if it fails
+	perror(cmd->path);
+
+	// Not found
+	if (errno == ENOENT)
+		_exit(127);
+
+	// No access to executing it
+	else if (errno == EACCES)
+		_exit(126);
+
+	_exit(1);
+}
+
+// Returns exit code
+int execute(Command *cmd) {
+	// For now duplicated, but later we want to be able to run builtins in
+	// parent and child processes
+	int (*builtin)(Command *) = get_builtin(cmd->path);
+	if (builtin) {
+		int status = builtin(cmd);
+		return status;
+	}
+
+	int pid = execute_child(cmd);
+	// int pid = execute_child(cmd);
+
+	printf("%d-%d: Starting wait()\n", getpid(), pid);
 
 	int status = 0;
 	wait(&status);
