@@ -1,12 +1,17 @@
 echo	foo
 
 echo foo
-date |
-rg 20 |
+date +%s | cat
+# rg 20 |
 
-date | rg 20 |
-	tac |
-	cat |
-	head
+date | rg -o 20 |
+	xargs seq |
+	head |
+	tac
 
 echo test | tee /tmp/0
+
+foo echo hi
+	echo success
+-
+	echo fail

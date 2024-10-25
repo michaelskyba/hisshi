@@ -127,15 +127,14 @@ void parse_command(ParseState *state) {
 		update_control(state, CONTROL_COMPLETE);
 
 	if (parent_permits && (!cmd->else_flag || control == CONTROL_WAITING)) {
-		// No command submitted
-		// Latter happens if we save "" as the path, through a blank line
-		if (cmd->path == NULL || *cmd->path == '\0') {
-			printf("L%d: Blank\n", ln);
+		if (cmd->path == NULL) {
+			// cmd->path should only be blank if we submitted a blank "-\n". If
+			// you submit a completely blank line, parse_command shouldn't be
+			// called.
+			assert(cmd->else_flag);
 
-			// Blank "-\n", equivalent to "- true\n"
-			if (cmd->else_flag && state->indent_controls[indent] == CONTROL_WAITING)
-				update_control(state, CONTROL_BRANCH_ACTIVE);
-
+			// If so, it's equivalent to "- true\n"
+			update_control(state, CONTROL_BRANCH_ACTIVE);
 			return;
 		}
 
@@ -211,6 +210,12 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (tk_type == TOKEN_NEWLINE) {
+			// They had the bright idea of splitting the next command across
+			// multiple lines, or otherwise leaving it blank
+			// (Acceptable)
+			if (state->phase == READING_NAME && !state->cmd->else_flag)
+				continue;
+
 			parse_command(state);
 
 			clear_command(state->cmd_pipeline);
