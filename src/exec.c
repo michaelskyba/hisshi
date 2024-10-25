@@ -151,7 +151,7 @@ int execute_pipeline(Command *pipeline) {
 
 	// Stores (r0, w0, r1, w1, ..., -1)
 	// -1 to mark end, and not have to track length
-	int *pipes = malloc(sizeof(int) * num_fds * 2 + 1);
+	int *pipes = malloc(sizeof(int) * (num_fds + 1));
 	pipes[num_fds] = -1;
 
 	for (int i = 0; i < pipeline_length-1; i++) {
@@ -175,6 +175,8 @@ int execute_pipeline(Command *pipeline) {
 	}
 
 	while (wait(NULL) > 0) ;
+	free(pipes);
+
 	return 0;
 
 	// int pid = execute_child(cmd);
