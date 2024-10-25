@@ -55,8 +55,10 @@ int (*get_builtin(char *name)) (Command *) {
 }
 
 // Forks and returns child PID
-int execute_child(Command *cmd) {
-	printf("execute_child start ");
+// pipes: full list of pipes created for the whole pipeline, most of which each
+// child should close
+int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes) {
+	printf("execute_child (r%d --> w%d) start: ", read_fd, write_fd);
 	dump_command(cmd);
 
 	int pid = fork();
@@ -68,6 +70,22 @@ int execute_child(Command *cmd) {
 
 	if (pid > 0)
 		return pid;
+
+	for (int *fd = pipes; fd != NULL && *fd != -1; fd++)
+		if (*fd != read_fd && *fd != write_fd)
+			close(*fd);
+
+	if (read_fd != STDIN_FILENO) {
+		close(STDIN_FILENO);
+		dup2(read_fd, STDIN_FILENO);
+		close(read_fd);
+	}
+
+	if (write_fd != STDOUT_FILENO) {
+		close(STDOUT_FILENO);
+		dup2(write_fd, STDOUT_FILENO);
+		close(write_fd);
+	}
 
 	int (*builtin)(Command *) = get_builtin(cmd->path);
 	if (builtin) {
@@ -117,8 +135,8 @@ int execute_pipeline(Command *pipeline) {
 			return status;
 		}
 
-		// execute_child(cmd);
-		int pid = execute_child(cmd);
+		// execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
+		int pid = execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
 
 		int status = 0;
 		// wait(&status);
@@ -129,11 +147,19 @@ int execute_pipeline(Command *pipeline) {
 		return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 	}
 
-	// Stores (r0, w0, r1, w1, ...)
-	int *pipes = malloc(sizeof(int) * (pipeline_length - 1) * 2);
+	int num_fds = (pipeline_length-1) * 2;
+
+	// Stores (r0, w0, r1, w1, ..., -1)
+	// -1 to mark end, and not have to track length
+	int *pipes = malloc(sizeof(int) * num_fds * 2 + 1);
+	pipes[num_fds] = -1;
 
 	for (int i = 0; i < pipeline_length-1; i++) {
-		pipe(pipes + i*2);
+		if (pipe(pipes + i*2) == -1) {
+			perror("pipe() failed");
+			assert(false);
+		}
+
 		printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
 	}
 
@@ -141,12 +167,14 @@ int execute_pipeline(Command *pipeline) {
 		int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
 		int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
 
-		printf("r%d --> w%d: ", r, w);
-		dump_command(cmd);
+		execute_child(cmd, r, w, pipes);
+		if (r != STDIN_FILENO) close(r);
+		if (w != STDOUT_FILENO) close(w);
 
 		cmd = cmd->next_pipeline;
 	}
 
+	while (wait(NULL) > 0) ;
 	return 0;
 
 	// int pid = execute_child(cmd);
