@@ -95,26 +95,70 @@ int execute_child(Command *cmd) {
 	_exit(1);
 }
 
-// Returns exit code
-int execute(Command *cmd) {
-	// For now duplicated, but later we want to be able to run builtins in
-	// parent and child processes
-	int (*builtin)(Command *) = get_builtin(cmd->path);
-	if (builtin) {
-		int status = builtin(cmd);
-		return status;
+// foo | bar --> 2
+int get_pipeline_length(Command *pipeline) {
+	int i = 0;
+
+	for (Command *cmd = pipeline; cmd != NULL; i++)
+		cmd = cmd->next_pipeline;
+
+	return i;
+}
+
+// Returns exit code of last command
+int execute_pipeline(Command *pipeline) {
+	Command *cmd = pipeline;
+	int pipeline_length = get_pipeline_length(pipeline);
+
+	if (pipeline_length == 1) {
+		int (*builtin)(Command *) = get_builtin(cmd->path);
+		if (builtin) {
+			int status = builtin(cmd);
+			return status;
+		}
+
+		// execute_child(cmd);
+		int pid = execute_child(cmd);
+
+		int status = 0;
+		// wait(&status);
+
+		int wait_pid = wait(&status);
+		printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
+
+		return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 	}
 
-	int pid = execute_child(cmd);
+	// Stores (r0, w0, r1, w1, ...)
+	int *pipes = malloc(sizeof(int) * (pipeline_length - 1) * 2);
+
+	for (int i = 0; i < pipeline_length-1; i++) {
+		pipe(pipes + i*2);
+		printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
+	}
+
+	for (int i = 0; i < pipeline_length; i++) {
+		int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
+		int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
+
+		printf("r%d --> w%d: ", r, w);
+		dump_command(cmd);
+
+		cmd = cmd->next_pipeline;
+	}
+
+	return 0;
+
+	// int pid = execute_child(cmd);
 	// int pid = execute_child(cmd);
 
-	printf("%d-%d: Starting wait()\n", getpid(), pid);
+	// printf("%d-%d: Starting wait()\n", getpid(), pid);
 
-	int status = 0;
-	wait(&status);
+	// int status = 0;
+	// wait(&status);
 
 	// int wait_pid = wait(&status);
 	// printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
 
-	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+	// return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }

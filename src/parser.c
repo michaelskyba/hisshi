@@ -98,7 +98,7 @@ void update_control(ParseState *state, int status) {
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
 void parse_command(ParseState *state) {
-	// For now only take the first in the pipeline
+	// Control flow (indent level, else flag) is tracked on the head
 	Command *cmd = state->cmd_pipeline;
 
 	int indent = cmd->indent_level;
@@ -139,7 +139,7 @@ void parse_command(ParseState *state) {
 			return;
 		}
 
-		int exit_code = execute(cmd);
+		int exit_code = execute_pipeline(state->cmd_pipeline);
 
 		// 0: success exit code, so this if branch is now active
 		if (exit_code == 0)
@@ -211,18 +211,11 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (tk_type == TOKEN_NEWLINE) {
-			Command *cmd;
-			for (cmd = state->cmd_pipeline; cmd != NULL; cmd = cmd->next_pipeline) {
-				printf("pipeline: ");
-				dump_command(cmd);
-			}
-			printf("We're only going to the submit the first.\n");
-
 			parse_command(state);
-			state->phase = READING_INDENTS;
 
 			clear_command(state->cmd_pipeline);
 			state->cmd = state->cmd_pipeline;
+			state->phase = READING_INDENTS;
 
 			continue;
 		}

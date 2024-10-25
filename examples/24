@@ -1,3 +1,3 @@
 echo foo
-date | rg 20 | cat
+date | rg -o 20 | tr 0 x
 date "|" rg 20 "| cat"
