@@ -34,6 +34,8 @@ char *get_bin_path(char *target) {
 
 			char *bin_path = malloc(strlen(path_node) + strlen(target) + 1);
 			sprintf(bin_path, "%s/%s", path_node, target);
+
+			closedir(dir);
 			return bin_path;
 		}
 

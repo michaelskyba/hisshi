@@ -15,3 +15,5 @@ foo echo hi
 	echo success
 -
 	echo fail
+
+cat
