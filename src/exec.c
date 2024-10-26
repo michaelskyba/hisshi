@@ -163,32 +163,26 @@ int execute_pipeline(Command *pipeline) {
 		printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
 	}
 
+	int last_pid = 0;
 	for (int i = 0; i < pipeline_length; i++) {
 		int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
 		int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
 
-		execute_child(cmd, r, w, pipes);
+		last_pid = execute_child(cmd, r, w, pipes);
 		if (r != STDIN_FILENO) close(r);
 		if (w != STDOUT_FILENO) close(w);
 
 		cmd = cmd->next_pipeline;
 	}
 
-	while (wait(NULL) > 0) ;
+	int wait_pid;
+	int status;
+	int last_status = 0;
+
+	while ((wait_pid = wait(&status)) > 0)
+		if (wait_pid == last_pid)
+			last_status = status;
+
 	free(pipes);
-
-	return 0;
-
-	// int pid = execute_child(cmd);
-	// int pid = execute_child(cmd);
-
-	// printf("%d-%d: Starting wait()\n", getpid(), pid);
-
-	// int status = 0;
-	// wait(&status);
-
-	// int wait_pid = wait(&status);
-	// printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
-
-	// return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+	return WIFEXITED(last_status) ? WEXITSTATUS(last_status) : 1;
 }
