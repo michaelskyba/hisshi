@@ -128,6 +128,8 @@ int execute_pipeline(Command *pipeline) {
 	Command *cmd = pipeline;
 	int pipeline_length = get_pipeline_length(pipeline);
 
+	int last_pid;
+
 	if (pipeline_length == 1) {
 		int (*builtin)(Command *) = get_builtin(cmd->path);
 		if (builtin) {
@@ -135,44 +137,38 @@ int execute_pipeline(Command *pipeline) {
 			return status;
 		}
 
-		// execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
-		int pid = execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
-
-		int status = 0;
-		// wait(&status);
-
-		int wait_pid = wait(&status);
-		printf("%d-%d: Done wait() on %d. Rec status %d\n", getpid(), pid, wait_pid, status);
-
-		return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+		last_pid = execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
 	}
 
-	int num_fds = (pipeline_length-1) * 2;
+	else {
+		int num_fds = (pipeline_length-1) * 2;
 
-	// Stores (r0, w0, r1, w1, ..., -1)
-	// -1 to mark end, and not have to track length
-	int *pipes = malloc(sizeof(int) * (num_fds + 1));
-	pipes[num_fds] = -1;
+		// Stores (r0, w0, r1, w1, ..., -1)
+		// -1 to mark end, and not have to track length
+		int *pipes = malloc(sizeof(int) * (num_fds + 1));
+		pipes[num_fds] = -1;
 
-	for (int i = 0; i < pipeline_length-1; i++) {
-		if (pipe(pipes + i*2) == -1) {
-			perror("pipe() failed");
-			assert(false);
+		for (int i = 0; i < pipeline_length-1; i++) {
+			if (pipe(pipes + i*2) == -1) {
+				perror("pipe() failed");
+				assert(false);
+			}
+
+			printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
 		}
 
-		printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
-	}
+		for (int i = 0; i < pipeline_length; i++) {
+			int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
+			int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
 
-	int last_pid = 0;
-	for (int i = 0; i < pipeline_length; i++) {
-		int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
-		int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
+			last_pid = execute_child(cmd, r, w, pipes);
+			if (r != STDIN_FILENO) close(r);
+			if (w != STDOUT_FILENO) close(w);
 
-		last_pid = execute_child(cmd, r, w, pipes);
-		if (r != STDIN_FILENO) close(r);
-		if (w != STDOUT_FILENO) close(w);
+			cmd = cmd->next_pipeline;
+		}
 
-		cmd = cmd->next_pipeline;
+		free(pipes);
 	}
 
 	int wait_pid;
@@ -183,6 +179,5 @@ int execute_pipeline(Command *pipeline) {
 		if (wait_pid == last_pid)
 			last_status = status;
 
-	free(pipes);
 	return WIFEXITED(last_status) ? WEXITSTATUS(last_status) : 1;
 }
