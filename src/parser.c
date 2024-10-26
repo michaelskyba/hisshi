@@ -80,7 +80,7 @@ char *control_name(int control) {
 }
 
 void update_control(ParseState *state, int status) {
-	int indent = state->cmd->indent_level;
+	int indent = state->cmd_pipeline->indent_level;
 	state->indent_controls[indent] = status;
 
 	printf("Received >%d:%s\n", indent, control_name(status));

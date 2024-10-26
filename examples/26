@@ -8,10 +8,9 @@ echo 5 | xargs seq | rg 6
 
 false | true
 	echo "false --> true 0"
+	true | false
+		echo "true --> false 0"
+	-
+		echo "true --> false 1"
 -
 	echo "false --> true 1"
-
-true | false
-	echo "true --> false 0"
--
-	echo "true --> false 1"
