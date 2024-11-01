@@ -32,8 +32,8 @@ int main(int argc, char **argv) {
 	assert(script_file);
 	parse_script(script_file);
 
-	printf("%d\n", hash_str("foo"));
-	printf("%d\n", hash_str("foo2"));
-	printf("%d\n", hash_str("bar"));
-	printf("%d\n", hash_str("barz"));
+	ShellState *state = create_shell_state();
+	state->shell_vars[0] = create_variable_struct("key 1730495909", "value 1730495911");
+	printf("%s\n", state->shell_vars[0]->name);
+	printf("%s\n", state->shell_vars[0]->value);
 }
