@@ -12,6 +12,7 @@
 
 #include "util.c"
 #include "command.c"
+#include "shell_state.c"
 #include "exec.c"
 #include "tokenizer.c"
 #include "parse_state.c"
@@ -30,4 +31,9 @@ int main(int argc, char **argv) {
 	FILE *script_file = fopen(argv[1], "r");
 	assert(script_file);
 	parse_script(script_file);
+
+	printf("%d\n", hash_str("foo"));
+	printf("%d\n", hash_str("foo2"));
+	printf("%d\n", hash_str("bar"));
+	printf("%d\n", hash_str("barz"));
 }
