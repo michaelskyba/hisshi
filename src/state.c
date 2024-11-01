@@ -45,7 +45,7 @@ typedef struct {
 	int indents_tracked; // total allocated room
 } ParseState;
 
-ParseState *create_state() {
+ParseState *create_parse_state() {
 	ParseState *state = malloc(sizeof(ParseState));
 	state->cmd = create_command();
 	state->cmd_pipeline = state->cmd;

@@ -1,15 +1,15 @@
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
-void parse_command(ParseState *state) {
+void parse_command(ParseState *parse_state) {
 	// Control flow (indent level, else flag) is tracked on the head
-	Command *cmd = state->cmd_pipeline;
+	Command *cmd = parse_state->cmd_pipeline;
 
 	int indent = cmd->indent_level;
 
 	// The last token read was the \n, tk->ln is one above cmd
-	int ln = state->tk->ln - 1;
+	int ln = parse_state->tk->ln - 1;
 
-	printf("parse_command: P%d, path |%s|\n", state->phase, cmd->path);
+	printf("parse_command: P%d, path |%s|\n", parse_state->phase, cmd->path);
 
 	// TODO: If a branch shouldn't be executed, all parsing of it should be
 	// skipped. Both for performance and because we don't want to evaluate
@@ -19,15 +19,15 @@ void parse_command(ParseState *state) {
 	// 1729642499: Eh maybe we can tokenize it but not evaluate any subshells.
 	// Just do whatever is cleaner
 
-	int parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : state->indent_controls[indent-1];
-	int control = state->indent_controls[indent];
+	int parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : parse_state->indent_controls[indent-1];
+	int control = parse_state->indent_controls[indent];
 	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
 
 	bool parent_permits = parent_control == CONTROL_BRANCH_ACTIVE;
 
 	// We're not supposed to be executing because the previous branch was active
 	if (cmd->else_flag && control == CONTROL_BRANCH_ACTIVE)
-		update_control(state, CONTROL_COMPLETE);
+		update_control(parse_state, CONTROL_COMPLETE);
 
 	if (parent_permits && (!cmd->else_flag || control == CONTROL_WAITING)) {
 		if (cmd->path == NULL) {
@@ -37,21 +37,21 @@ void parse_command(ParseState *state) {
 			assert(cmd->else_flag);
 
 			// If so, it's equivalent to "- true\n"
-			update_control(state, CONTROL_BRANCH_ACTIVE);
+			update_control(parse_state, CONTROL_BRANCH_ACTIVE);
 			return;
 		}
 
-		int exit_code = execute_pipeline(state->cmd_pipeline);
+		int exit_code = execute_pipeline(parse_state->cmd_pipeline);
 
 		// 0: success exit code, so this if branch is now active
 		if (exit_code == 0)
-			update_control(state, CONTROL_BRANCH_ACTIVE);
+			update_control(parse_state, CONTROL_BRANCH_ACTIVE);
 
 		// The command failed, but this is a new start of a control structure,
 		// since it's a base (if). We don't execute this body but we allow
 		// further branches to check their conditions
 		else if (!cmd->else_flag)
-			update_control(state, CONTROL_WAITING);
+			update_control(parse_state, CONTROL_WAITING);
 
 	}
 
@@ -59,14 +59,14 @@ void parse_command(ParseState *state) {
 }
 
 void parse_script(FILE *script_file) {
-	ParseState *state = create_state();
+	ParseState *parse_state = create_parse_state();
 
-	while (read_token(state->tk, script_file)) {
-		int tk_type = state->tk->type;
+	while (read_token(parse_state->tk, script_file)) {
+		int tk_type = parse_state->tk->type;
 
 		if (tk_type == TOKEN_INDENT) {
-			if (state->phase == READING_INDENTS)
-				state->cmd->indent_level++;
+			if (parse_state->phase == READING_INDENTS)
+				parse_state->cmd->indent_level++;
 
 			// Otherwise, it's just whitespace that we can ignore. We shouldn't
 			// panic here, since tab separation, especially after a newline
@@ -79,39 +79,39 @@ void parse_script(FILE *script_file) {
 		}
 
 		// We were reading indents but now finally found a non-indent
-		if (state->phase == READING_INDENTS)
-			state->phase = READING_NAME;
+		if (parse_state->phase == READING_INDENTS)
+			parse_state->phase = READING_NAME;
 
 		if (tk_type == TOKEN_DASH) {
-			if (state->phase == READING_NAME)
-				state->cmd->else_flag = true;
-			else if (state->phase == READING_ARG)
-				add_arg(state->cmd, "-");
+			if (parse_state->phase == READING_NAME)
+				parse_state->cmd->else_flag = true;
+			else if (parse_state->phase == READING_ARG)
+				add_arg(parse_state->cmd, "-");
 
 			continue;
 		}
 
 		if (tk_type == TOKEN_PIPE) {
-			state->cmd->next_pipeline = create_command();
-			state->cmd = state->cmd->next_pipeline;
+			parse_state->cmd->next_pipeline = create_command();
+			parse_state->cmd = parse_state->cmd->next_pipeline;
 
-			state->phase = READING_NAME;
+			parse_state->phase = READING_NAME;
 			continue;
 		}
 
 		if (tk_type == TOKEN_NAME || tk_type == TOKEN_VARIABLE) {
 			if (tk_type == TOKEN_NAME)
-				printf("Parsing name token |%s|\n", state->tk->str);
+				printf("Parsing name token |%s|\n", parse_state->tk->str);
 			else
-				printf("Parsing variable token. Temp taking value as |%s|\n", state->tk->str);
+				printf("Parsing variable token. Temp taking value as |%s|\n", parse_state->tk->str);
 
-			if (state->phase == READING_NAME) {
-				state->cmd->path = get_bin_path(state->tk->str);
-				state->phase = READING_ARG;
+			if (parse_state->phase == READING_NAME) {
+				parse_state->cmd->path = get_bin_path(parse_state->tk->str);
+				parse_state->phase = READING_ARG;
 			}
 
 			// Even if READING_NAME, set $0 as convention
-			add_arg(state->cmd, state->tk->str);
+			add_arg(parse_state->cmd, parse_state->tk->str);
 			continue;
 		}
 
@@ -119,14 +119,14 @@ void parse_script(FILE *script_file) {
 			// They had the bright idea of splitting the next command across
 			// multiple lines, or otherwise leaving it blank
 			// (Acceptable)
-			if (state->phase == READING_NAME && !state->cmd->else_flag)
+			if (parse_state->phase == READING_NAME && !parse_state->cmd->else_flag)
 				continue;
 
-			parse_command(state);
+			parse_command(parse_state);
 
-			clear_command(state->cmd_pipeline);
-			state->cmd = state->cmd_pipeline;
-			state->phase = READING_INDENTS;
+			clear_command(parse_state->cmd_pipeline);
+			parse_state->cmd = parse_state->cmd_pipeline;
+			parse_state->phase = READING_INDENTS;
 
 			continue;
 		}
