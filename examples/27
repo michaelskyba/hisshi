@@ -1,0 +1,6 @@
+date | rg 2024
+	echo "It is 2024."
+- date | rg Sep
+	echo "It's not 2024, but it is September."
+-
+	echo "It's not 2024, and it's not September. Instead, it is over."

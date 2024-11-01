@@ -1,0 +1,2 @@
+date | rg 40
+	htop
