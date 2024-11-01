@@ -3,6 +3,7 @@ enum {
 	TOKEN_INDENT,
 	TOKEN_DASH,
 	TOKEN_NAME,
+	TOKEN_VARIABLE,
 	TOKEN_PIPE,
 	TOKEN_NEWLINE,
 	TOKEN_EOF,
@@ -56,15 +57,30 @@ bool read_token(Token *tk, FILE *script_file) {
 	}
 
 	if (c == '-') {
-		char n = getc(script_file);
-		ungetc(n, script_file);
+		c = getc(script_file);
+		ungetc(c, script_file);
 
-		if (isspace(n) || n == '#') {
+		if (isspace(c) || c == '#') {
 			tk->type = TOKEN_DASH;
 			return true;
 		}
 
 		// Otherwise it's part of a name
+	}
+
+	if (c == '$') {
+		c = getc(script_file);
+		assert(isalnum(c));
+		ungetc(c, script_file);
+
+		// For now rely on regular name parsing for the variable name,
+		// but overwrite the type
+
+		if (!read_token(tk, script_file))
+			return false;
+
+		tk->type = TOKEN_VARIABLE;
+		return true;
 	}
 
 	if (c == '"' || c == '\'') {

@@ -1,0 +1,5 @@
+rg $ctype
+echo $foo
+
+# Currently literal \$baz if in quotes
+echo "test" $foo bar "$baz"

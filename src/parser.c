@@ -196,8 +196,11 @@ void parse_script(FILE *script_file) {
 			continue;
 		}
 
-		if (tk_type == TOKEN_NAME) {
-			printf("Parsing name token |%s|\n", state->tk->str);
+		if (tk_type == TOKEN_NAME || tk_type == TOKEN_VARIABLE) {
+			if (tk_type == TOKEN_NAME)
+				printf("Parsing name token |%s|\n", state->tk->str);
+			else
+				printf("Parsing variable token. Temp taking value as |%s|\n", state->tk->str);
 
 			if (state->phase == READING_NAME) {
 				state->cmd->path = get_bin_path(state->tk->str);
