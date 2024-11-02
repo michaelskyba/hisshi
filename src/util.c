@@ -32,7 +32,8 @@ char *get_bin_path(char *target) {
 			if (strcmp(target, d->d_name) != 0)
 				continue;
 
-			char *bin_path = malloc(strlen(path_node) + strlen(target) + 1);
+			// +2: /, \0
+			char *bin_path = malloc(strlen(path_node) + strlen(target) + 2);
 			sprintf(bin_path, "%s/%s", path_node, target);
 
 			closedir(dir);
