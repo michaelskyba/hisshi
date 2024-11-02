@@ -4,7 +4,10 @@ enum {
 	TOKEN_DASH,
 	TOKEN_NAME,
 	TOKEN_VARIABLE,
+	TOKEN_REDIRECT_READ,
 	TOKEN_PIPE,
+	TOKEN_REDIRECT_WRITE,
+	TOKEN_REDIRECT_APPEND,
 	TOKEN_NEWLINE,
 	TOKEN_EOF,
 };
@@ -31,6 +34,24 @@ bool read_token(Token *tk, FILE *script_file) {
 	if (c == EOF) {
 		tk->type = TOKEN_EOF;
 		return false;
+	}
+
+	if (c == '<') {
+		tk->type = TOKEN_REDIRECT_READ;
+		return true;
+	}
+
+	if (c == '>') {
+		c = getc(script_file);
+
+		if (c == '>')
+			tk->type = TOKEN_REDIRECT_APPEND;
+		else {
+			tk->type = TOKEN_REDIRECT_WRITE;
+			ungetc(c, script_file);
+		}
+
+		return true;
 	}
 
 	if (c == '\t') {

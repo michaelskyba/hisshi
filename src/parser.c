@@ -96,6 +96,27 @@ void parse_script(FILE *script_file) {
 			continue;
 		}
 
+		if (
+			tk_type == TOKEN_REDIRECT_READ ||
+			tk_type == TOKEN_REDIRECT_WRITE ||
+			tk_type == TOKEN_REDIRECT_APPEND
+		) {
+			int redirect_type = tk_type;
+
+			// TODO variable etc. support
+			read_token(parse_state->tk, script_file);
+			assert(parse_state->tk->type == TOKEN_NAME);
+
+			if (redirect_type == TOKEN_REDIRECT_READ)
+				printf("cmd reads stdin from %s\n", parse_state->tk->str);
+			if (redirect_type == TOKEN_REDIRECT_WRITE)
+				printf("cmd writes stdout to %s\n", parse_state->tk->str);
+			if (redirect_type == TOKEN_REDIRECT_APPEND)
+				printf("cmd appends stdout to %s\n", parse_state->tk->str);
+
+			continue;
+		}
+
 		if (tk_type == TOKEN_PIPE) {
 			parse_state->cmd->next_pipeline = create_command();
 			parse_state->cmd = parse_state->cmd->next_pipeline;
@@ -144,6 +165,8 @@ void parse_script(FILE *script_file) {
 
 			continue;
 		}
+
+		printf("Received invalid token type %d\n", tk_type);
 
 		// Invalid token type returned if nothing has triggered
 		assert(false);

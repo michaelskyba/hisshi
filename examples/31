@@ -1,0 +1,3 @@
+echo hi > overwrite
+date >> append
+cat < read | rg flag
