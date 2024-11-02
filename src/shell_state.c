@@ -47,6 +47,7 @@ Variable *create_variable_struct(char *name, char *value) {
 	Variable *var = malloc(sizeof(Variable));
 	var->name = get_str_copy(name);
 	var->value = get_str_copy(value);
+	var->next = NULL;
 	return var;
 }
 
@@ -140,8 +141,8 @@ void load_env_vars(Variable **table) {
 
 ShellState *create_shell_state() {
 	ShellState *state = malloc(sizeof(ShellState));
-	state->shell_vars = malloc(sizeof(Variable*) * HASH_BUCKETS);
-	state->env_vars   = malloc(sizeof(Variable*) * HASH_BUCKETS);
+	state->shell_vars = calloc(HASH_BUCKETS, sizeof(Variable*));
+	state->env_vars   = calloc(HASH_BUCKETS, sizeof(Variable*));
 	load_env_vars(state->env_vars);
 
 	return state;
