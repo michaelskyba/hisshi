@@ -109,7 +109,7 @@ void parse_script(FILE *script_file) {
 
 			if (tk_type == TOKEN_VARIABLE) {
 				printf("Script asks for var |%s|\n", str);
-				str = get_table_variable(shell_state->shell_vars, str);
+				str = get_variable(shell_state, str);
 
 				if (str == NULL)
 					str = "";

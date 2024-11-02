@@ -137,7 +137,13 @@ ShellState *create_shell_state() {
 	state->env_vars   = malloc(sizeof(Variable*) * HASH_BUCKETS);
 	load_env_vars(state->env_vars);
 
-	printf("e.g. HOME was loaded as %s\n", get_table_variable(state->env_vars, "HOME"));
-
 	return state;
+}
+
+char *get_variable(ShellState *state, char *name) {
+	char *val = get_table_variable(state->env_vars, name);
+	if (!val)
+		val = get_table_variable(state->shell_vars, name);
+
+	return val;
 }
