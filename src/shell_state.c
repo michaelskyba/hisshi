@@ -34,7 +34,7 @@ ShellState *create_shell_state() {
 }
 
 int hash_str(char *str) {
-	int hash_val = 0;
+	long hash_val = 0;
 	int len = strlen(str);
 
 	for (int i = 0; i < len; i++)

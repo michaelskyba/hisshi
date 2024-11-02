@@ -60,6 +60,11 @@ void parse_command(ParseState *parse_state) {
 
 void parse_script(FILE *script_file) {
 	ParseState *parse_state = create_parse_state();
+	ShellState *shell_state = create_shell_state();
+
+	// Testing makeshift: default variable
+	set_table_variable(shell_state->shell_vars, "foo", "bar");
+	set_table_variable(shell_state->shell_vars, "search", "ctype");
 
 	while (read_token(parse_state->tk, script_file)) {
 		int tk_type = parse_state->tk->type;
@@ -100,18 +105,27 @@ void parse_script(FILE *script_file) {
 		}
 
 		if (tk_type == TOKEN_NAME || tk_type == TOKEN_VARIABLE) {
-			if (tk_type == TOKEN_NAME)
-				printf("Parsing name token |%s|\n", parse_state->tk->str);
-			else
-				printf("Parsing variable token. Temp taking value as |%s|\n", parse_state->tk->str);
+			char *str = parse_state->tk->str;
+
+			if (tk_type == TOKEN_VARIABLE) {
+				printf("Script asks for var |%s|\n", str);
+				str = get_table_variable(shell_state->shell_vars, str);
+
+				if (str == NULL)
+					str = "";
+
+				printf("We queried and received value |%s|\n", str);
+			}
+
+			printf("Parsing str token |%s|\n", str);
 
 			if (parse_state->phase == READING_NAME) {
-				parse_state->cmd->path = get_bin_path(parse_state->tk->str);
+				parse_state->cmd->path = get_bin_path(str);
 				parse_state->phase = READING_ARG;
 			}
 
 			// Even if READING_NAME, set $0 as convention
-			add_arg(parse_state->cmd, parse_state->tk->str);
+			add_arg(parse_state->cmd, str);
 			continue;
 		}
 
