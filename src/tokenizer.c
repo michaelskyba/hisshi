@@ -27,6 +27,7 @@ typedef struct {
 } Token;
 
 // rt: whether to keep reading (type != EOF)
+// tk->str will be overwritten, so copy it if you need it
 bool read_token(Token *tk, FILE *script_file) {
 	char c;
 	while ((c = getc(script_file)) == ' ') ;

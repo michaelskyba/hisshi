@@ -137,6 +137,13 @@ int execute_pipeline(Command *pipeline) {
 			return status;
 		}
 
+		if (cmd->redirect_read)
+			printf("This child is supposed to read from %s\n", cmd->redirect_read);
+		if (cmd->redirect_write)
+			printf("This child is supposed to write to %s\n", cmd->redirect_write);
+		if (cmd->redirect_append)
+			printf("This child is supposed to append to %s\n", cmd->redirect_append);
+
 		last_pid = execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
 	}
 
@@ -160,6 +167,13 @@ int execute_pipeline(Command *pipeline) {
 		for (int i = 0; i < pipeline_length; i++) {
 			int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
 			int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
+
+			if (cmd->redirect_read)
+				printf("This child is supposed to read from %s\n", cmd->redirect_read);
+			if (cmd->redirect_write)
+				printf("This child is supposed to write to %s\n", cmd->redirect_write);
+			if (cmd->redirect_append)
+				printf("This child is supposed to append to %s\n", cmd->redirect_append);
 
 			last_pid = execute_child(cmd, r, w, pipes);
 			if (r != STDIN_FILENO) close(r);

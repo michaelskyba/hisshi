@@ -24,6 +24,11 @@ struct Command_struct {
 	// The next command within the current pipeline
 	// NULL if this is the last
 	struct Command_struct *next_pipeline;
+
+	// Point to a literal filename string if used. NULL otherwise
+	char *redirect_read;
+	char *redirect_write;
+	char *redirect_append;
 };
 typedef struct Command_struct Command;
 
@@ -45,14 +50,27 @@ void clear_command(Command *cmd) {
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
 
+	if (cmd->next_pipeline) {
+		clear_command(cmd->next_pipeline);
+		cmd->next_pipeline = NULL;
+	}
+
+	// Strings
 	if (cmd->path) {
 		free(cmd->path);
 		cmd->path = NULL;
 	}
-
-	if (cmd->next_pipeline) {
-		clear_command(cmd->next_pipeline);
-		cmd->next_pipeline = NULL;
+	if (cmd->redirect_read) {
+		free(cmd->redirect_read);
+		cmd->redirect_read = NULL;
+	}
+	if (cmd->redirect_write) {
+		free(cmd->redirect_write);
+		cmd->redirect_write = NULL;
+	}
+	if (cmd->redirect_append) {
+		free(cmd->redirect_append);
+		cmd->redirect_append = NULL;
 	}
 }
 
@@ -64,6 +82,9 @@ Command *create_command() {
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
 	cmd->next_pipeline = NULL;
+	cmd->redirect_read = NULL;
+	cmd->redirect_write = NULL;
+	cmd->redirect_append = NULL;
 
 	clear_command(cmd);
 	return cmd;
