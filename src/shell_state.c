@@ -25,14 +25,6 @@ typedef struct {
 	Variable **env_vars;
 } ShellState;
 
-ShellState *create_shell_state() {
-	ShellState *state = malloc(sizeof(ShellState));
-	state->shell_vars = malloc(sizeof(Variable*) * HASH_BUCKETS);
-	state->env_vars   = malloc(sizeof(Variable*) * HASH_BUCKETS);
-
-	return state;
-}
-
 int hash_str(char *str) {
 	long hash_val = 0;
 	int len = strlen(str);
@@ -109,4 +101,43 @@ char *get_table_variable(Variable **table, char *name) {
 	}
 
 	return NULL;
+}
+
+void load_env_vars(Variable **table) {
+	// Automatically set by C
+	extern char **environ;
+
+	for (char **p = environ; *p != NULL; p++) {
+		char *entry = *p;
+
+		// It seems possible in oksh to at least set variables with equal signs
+		// in their names, but we do not condone such a practice
+		char *split = strchr(entry, '=');
+
+		// To avoid having to clone the string twice, modify it temporarily
+		// and then revert it, to avoid destroying the real entry
+		*split = '\0';
+
+		// Terminates at the \0 we just set
+		char *name = entry;
+
+		// Terminates at the original \0 that environ had for this entry
+		char *value = split + 1;
+
+		set_table_variable(table, name, value);
+
+		// Revert
+		*split = '=';
+	}
+}
+
+ShellState *create_shell_state() {
+	ShellState *state = malloc(sizeof(ShellState));
+	state->shell_vars = malloc(sizeof(Variable*) * HASH_BUCKETS);
+	state->env_vars   = malloc(sizeof(Variable*) * HASH_BUCKETS);
+	load_env_vars(state->env_vars);
+
+	printf("e.g. HOME was loaded as %s\n", get_table_variable(state->env_vars, "HOME"));
+
+	return state;
 }
