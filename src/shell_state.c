@@ -32,7 +32,14 @@ int hash_str(char *str) {
 	for (int i = 0; i < len; i++)
 		hash_val = hash_val * HASH_ROLL_CONSTANT + str[i];
 
-	return hash_val % HASH_BUCKETS;
+	hash_val = hash_val % HASH_BUCKETS;
+
+	// If it rolled over already and is negative, modulo still works well enough,
+	// except -x % y = -(x % y)
+	if (hash_val < 0)
+		hash_val += HASH_BUCKETS;
+
+	return hash_val;
 }
 
 // Copies args
