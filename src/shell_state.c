@@ -50,3 +50,63 @@ Variable *create_variable_struct(char *name, char *value) {
 	var->value = get_str_copy(value);
 	return var;
 }
+
+void dump_table(Variable **table) {
+	bool empty = true;
+
+	for (int hash = 0; hash < HASH_BUCKETS; hash++) {
+		if (table[hash] == NULL)
+			continue;
+
+		empty = false;
+		printf("table[%d]:\n", hash);
+
+		for (Variable *var = table[hash]; var != NULL; var = var->next)
+			printf("\t%s=|%s| --> %p\n", var->name, var->value, (void *) var->next);
+	}
+
+	if (empty)
+		printf("(empty table)\n");
+}
+
+// Copies args
+void set_table_variable(Variable **table, char *name, char *value) {
+	int hash = hash_str(name);
+	printf("Setting %s (%d) to %s\n", name, hash, value);
+
+	for (Variable *var = table[hash]; var != NULL; var = var->next) {
+		printf("Found existing %s=%s on %d\n", var->name, var->value, hash);
+
+		if (strcmp(var->name, name) == 0) {
+			printf("%s=%s, so overwriting %s --> %s\n", var->name, name, var->value, value);
+
+			free(var->value);
+			var->value = get_str_copy(value);
+			return;
+		}
+	}
+
+	// If none found, insert at start of list
+	Variable *var = create_variable_struct(name, value);
+	if (table[hash] != NULL)
+		var->next = table[hash];
+
+	table[hash] = var;
+}
+
+// Returns original, not copy
+char *get_table_variable(Variable **table, char *name) {
+	int hash = hash_str(name);
+	printf("Searching for value of %s (%d)\n", name, hash);
+
+	for (Variable *var = table[hash]; var != NULL; var = var->next) {
+		printf("Found existing %s=%s on %d\n", var->name, var->value, hash);
+
+		if (strcmp(var->name, name) == 0) {
+			printf("%s=%s, so returning %s\n", var->name, name, var->value);
+			return var->value;
+		}
+	}
+
+	return NULL;
+}

@@ -33,7 +33,22 @@ int main(int argc, char **argv) {
 	parse_script(script_file);
 
 	ShellState *state = create_shell_state();
-	state->shell_vars[0] = create_variable_struct("key 1730495909", "value 1730495911");
-	printf("%s\n", state->shell_vars[0]->name);
-	printf("%s\n", state->shell_vars[0]->value);
+	dump_table(state->shell_vars);
+
+	state->shell_vars[69] = create_variable_struct("E", "val0");
+	dump_table(state->shell_vars);
+
+	set_table_variable(state->shell_vars, "Rk", "val1");
+	state->shell_vars[69]->next->next = create_variable_struct("SF", "val2");
+	dump_table(state->shell_vars);
+
+	printf("trying official retrieval\n");
+	printf("received %s\n", get_table_variable(state->shell_vars, "Rk"));
+	printf("received %s\n", get_table_variable(state->shell_vars, "SF"));
+
+	set_table_variable(state->shell_vars, "SF", "val2 new");
+	dump_table(state->shell_vars);
+
+	printf("trying official retrieval\n");
+	printf("received %s\n", get_table_variable(state->shell_vars, "SF"));
 }
