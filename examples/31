@@ -1,3 +1,5 @@
 echo hi > overwrite
+cat < /home/oboro/src/hisshi/examples/31-read.txt | rg "flag$"
 date >> append
-cat < read | rg flag
+true
+	rg flag2 < /home/oboro/src/hisshi/examples/31-read.txt

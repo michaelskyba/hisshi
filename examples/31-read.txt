@@ -1,0 +1,5 @@
+foo
+bar
+hisshi has read the flag
+hisshi has read the second flag2
+baz
