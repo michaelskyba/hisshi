@@ -1,8 +1,10 @@
+# Shouldn't initially exist
 echo $tmp
+
 mktemp -u |= tmp
 
 # Overwrites env var because it probably already exists
 echo $tmp |= HISTFILE
 
-# Should see the update
+# Should see the updated HISTFILE but not tmp
 env | rg hist

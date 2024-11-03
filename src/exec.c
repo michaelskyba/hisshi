@@ -1,5 +1,9 @@
+// How many bytes to read at a time, from a pipe into a char buffer
+#define READ_PIPE_BYTES 4096
+
 // -rw-r--r--
 #define REDIR_CREATE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+
 // Forks and returns child PID
 // pipes: full list of pipes created for the whole pipeline, most of which each
 // child should close
@@ -89,6 +93,33 @@ int get_pipeline_length(Command *pipeline) {
 	return i;
 }
 
+char *read_pipe_var(int read_fd) {
+	int last_bytes_read = 0;
+
+	// buf's size should always be a multiple of how much we're reading
+	int buf_size = READ_PIPE_BYTES;
+	char *buf = malloc(buf_size+1);
+	char *p = buf;
+
+	while ((last_bytes_read = read(read_fd, p, READ_PIPE_BYTES)) > 0) {
+		p += last_bytes_read;
+
+		if (p - buf == buf_size) {
+			buf_size *= 2;
+			buf = realloc(buf, buf_size+1);
+
+			// Return p to where it was before the realloc
+			p = buf + buf_size/2;
+		}
+	}
+
+	if (last_bytes_read == -1)
+		perror("read_pipe_var");
+
+	*p = '\0';
+	return buf;
+}
+
 // Returns exit code of last command
 int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 	Command *cmd = pipeline;
@@ -133,6 +164,12 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 		}
 
 		last_pid = execute_child(cmd, STDIN_FILENO, last_write_fd, pipes);
+
+		// Don't close read because we will actually use it later. Only children
+		// close it
+		if (last_cmd->pipe_variable)
+			close(pipe_variable_fds[1]);
+
 		free(pipes);
 	}
 
@@ -187,11 +224,17 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 
 	if (last_cmd->pipe_variable) {
 		char *name = last_cmd->pipe_variable;
+		int read_fd = pipe_variable_fds[0];
 
-		printf("Now we're supposed to read from fd %d, into var |%s|\n", pipe_variable_fds[0], name);
-		close(pipe_variable_fds[0]);
+		char *value = read_pipe_var(read_fd);
+		printf("Received value |%s| from fd %d. Placing into var |%s|\n", value, read_fd, name);
 
-		set_table_variable(shell_state->shell_vars, name, "placeholder");
+		// Clones value
+		set_variable(shell_state, name, value);
+		free(value);
+
+		// The write end has already been closed by us (parent) earlier
+		close(read_fd);
 		free(pipe_variable_fds);
 	}
 

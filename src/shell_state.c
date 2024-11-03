@@ -180,3 +180,17 @@ char *get_variable(ShellState *state, char *name) {
 
 	return val;
 }
+
+void set_variable(ShellState *state, char *name, char *value) {
+	if (get_table_variable(state->env_vars, name)) {
+		// Update it externally so that when we copy environ in execve, it will
+		// be reflected. The point of state->env_vars is for quick reading.
+		int overwrite = 1;
+		assert(setenv(name, value, overwrite) != -1);
+
+		set_table_variable(state->env_vars, name, value);
+		return;
+	}
+
+	set_table_variable(state->shell_vars, name, value);
+}
