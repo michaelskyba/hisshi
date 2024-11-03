@@ -15,6 +15,7 @@
 #include "util.c"
 #include "command.c"
 #include "shell_state.c"
+#include "builtin.c"
 #include "exec.c"
 #include "tokenizer.c"
 #include "parse_state.c"
