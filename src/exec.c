@@ -1,3 +1,6 @@
+// -rw-r--r--
+#define REDIR_CREATE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+
 /*
 TODO: Implement a wrapper cd function to be included in the default config with
 additional logic. Then make all builtins actually called "hisshi_cd" etc. to
@@ -58,9 +61,6 @@ int (*get_builtin(char *name)) (Command *) {
 // pipes: full list of pipes created for the whole pipeline, most of which each
 // child should close
 int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes) {
-	printf("execute_child (r%d --> w%d) start: ", read_fd, write_fd);
-	dump_command(cmd);
-
 	int pid = fork();
 
 	if (pid < 0) {
@@ -70,6 +70,28 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes) {
 
 	if (pid > 0)
 		return pid;
+
+	if (cmd->redirect_read) {
+		read_fd = open(cmd->redirect_read, O_RDONLY);
+		printf("read_fd override: file |%s| (%d)\n", cmd->redirect_read, read_fd);
+		assert(read_fd != -1);
+	}
+
+	if (cmd->redirect_write) {
+		int flags = O_WRONLY | O_CREAT | O_TRUNC;
+		write_fd = open(cmd->redirect_write, flags, REDIR_CREATE_MODE);
+		printf("write_fd write override: file |%s| (%d)\n", cmd->redirect_write, write_fd);
+		assert(write_fd != -1);
+	}
+	else if (cmd->redirect_append) {
+		int flags = O_WRONLY | O_CREAT | O_APPEND;
+		write_fd = open(cmd->redirect_append, flags, REDIR_CREATE_MODE);
+		printf("write_fd append override: file |%s| (%d)\n", cmd->redirect_append, write_fd);
+		assert(write_fd != -1);
+	}
+
+	printf("execute_child (r%d --> w%d) start: ", read_fd, write_fd);
+	dump_command(cmd);
 
 	for (int *fd = pipes; fd != NULL && *fd != -1; fd++)
 		if (*fd != read_fd && *fd != write_fd)
@@ -137,20 +159,7 @@ int execute_pipeline(Command *pipeline) {
 			return status;
 		}
 
-		int r = STDIN_FILENO;
-
-		if (cmd->redirect_read) {
-			r = open(cmd->redirect_read, O_RDONLY);
-			printf("This child is now reading from %s (%d)\n", cmd->redirect_read, r);
-			assert(r);
-		}
-
-		if (cmd->redirect_write)
-			printf("This child is supposed to write to %s\n", cmd->redirect_write);
-		if (cmd->redirect_append)
-			printf("This child is supposed to append to %s\n", cmd->redirect_append);
-
-		last_pid = execute_child(cmd, r, STDOUT_FILENO, NULL);
+		last_pid = execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
 	}
 
 	else {
@@ -173,17 +182,6 @@ int execute_pipeline(Command *pipeline) {
 		for (int i = 0; i < pipeline_length; i++) {
 			int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
 			int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
-
-			if (cmd->redirect_read) {
-				r = open(cmd->redirect_read, O_RDONLY);
-				printf("This child is now reading from %s (%d)\n", cmd->redirect_read, r);
-				assert(r);
-			}
-
-			if (cmd->redirect_write)
-				printf("This child is supposed to write to %s\n", cmd->redirect_write);
-			if (cmd->redirect_append)
-				printf("This child is supposed to append to %s\n", cmd->redirect_append);
 
 			last_pid = execute_child(cmd, r, w, pipes);
 			if (r != STDIN_FILENO) close(r);
