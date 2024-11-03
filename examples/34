@@ -1,0 +1,5 @@
+echo CORRECT1
+	echo CORRECT2
+-
+	false
+		echo WRONG

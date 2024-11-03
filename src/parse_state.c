@@ -93,11 +93,20 @@ void update_control(ParseState *state, int status) {
 		int size = sizeof(int) * state->indents_tracked;
 		state->indent_controls = realloc(state->indent_controls, size);
 
-		// Initialize default value for new batch
-		int original_tracked = state->indents_tracked/2;
-		for (int i = original_tracked; i < state->indents_tracked; i++)
-			state->indent_controls[i] = CONTROL_WAITING;
-
 		printf("reallocating indent tracker to size %d\n", state->indents_tracked);
 	}
+
+	/*
+	If we still have other indents tracked beyond this one, reset them to
+	prevent future overlap. e.g. We don't want cmd to run in:
+	true
+		true
+	-
+		false
+			command
+	but it otherwise would, because the second true sets the second indent to
+	active, and false doesn't run so it doesn't override
+	*/
+	for (int i = indent+1; i < state->indents_tracked; i++)
+		state->indent_controls[i] = CONTROL_WAITING;
 }
