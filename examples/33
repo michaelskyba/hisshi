@@ -1,0 +1,8 @@
+echo $tmp
+mktemp -u |= tmp
+
+# Overwrites env var because it probably already exists
+echo $tmp |= HISTFILE
+
+# Should see the update
+env | rg hist

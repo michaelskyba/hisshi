@@ -6,6 +6,7 @@ enum {
 	TOKEN_VARIABLE,
 	TOKEN_REDIRECT_READ,
 	TOKEN_PIPE,
+	TOKEN_PIPE_VARIABLE,
 	TOKEN_REDIRECT_WRITE,
 	TOKEN_REDIRECT_APPEND,
 	TOKEN_NEWLINE,
@@ -88,7 +89,15 @@ bool read_token(Token *tk, FILE *script_file) {
 	}
 
 	if (c == '|') {
-		tk->type = TOKEN_PIPE;
+		c = getc(script_file);
+
+		if (c == '=')
+			tk->type = TOKEN_PIPE_VARIABLE;
+		else {
+			tk->type = TOKEN_PIPE;
+			ungetc(c, script_file);
+		}
+
 		return true;
 	}
 

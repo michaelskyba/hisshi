@@ -59,10 +59,6 @@ void parse_command(ParseState *parse_state) {
 }
 
 void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_state) {
-	// Testing makeshift: default variable
-	set_table_variable(shell_state->shell_vars, "foo", "bar");
-	set_table_variable(shell_state->shell_vars, "search", "ctype");
-
 	while (read_token(parse_state->tk, script_file)) {
 		int tk_type = parse_state->tk->type;
 
@@ -114,6 +110,18 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			if (redirect_type == TOKEN_REDIRECT_APPEND)
 				parse_state->cmd->redirect_append = filename;
 
+			continue;
+		}
+
+		if (tk_type == TOKEN_PIPE_VARIABLE) {
+			// TODO variable (date |= $foo) etc. support
+			read_token(parse_state->tk, script_file);
+			assert(parse_state->tk->type == TOKEN_NAME);
+
+			char *var_name = get_str_copy(parse_state->tk->str);
+			printf("Ack intention to pipe to var |%s|\n", var_name);
+
+			free(var_name);
 			continue;
 		}
 
