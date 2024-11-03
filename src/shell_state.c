@@ -148,6 +148,31 @@ ShellState *create_shell_state() {
 	return state;
 }
 
+void free_table(Variable **table) {
+	Variable *next;
+
+	for (int hash = 0; hash < HASH_BUCKETS; hash++) {
+		if (table[hash] == NULL)
+			continue;
+
+		for (Variable *var = table[hash]; var != NULL; var = next) {
+			next = var->next;
+
+			free(var->name);
+			free(var->value);
+			free(var);
+		}
+	}
+
+	free(table);
+}
+
+void free_shell_state(ShellState *state) {
+	free_table(state->shell_vars);
+	free_table(state->env_vars);
+	free(state);
+}
+
 char *get_variable(ShellState *state, char *name) {
 	char *val = get_table_variable(state->env_vars, name);
 	if (!val)

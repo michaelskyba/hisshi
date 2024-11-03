@@ -175,4 +175,5 @@ void parse_script(FILE *script_file) {
 	}
 
 	free_parse_state(parse_state);
+	free_shell_state(shell_state);
 }
