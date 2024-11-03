@@ -32,7 +32,8 @@ char *get_bin_path(char *target) {
 		// matches
 		struct dirent *d = NULL;
 		while ((d = readdir(dir)) != NULL) {
-			if (strcmp(target, d->d_name) != 0)
+			bool valid_file = d->d_type == DT_LNK || d->d_type == DT_REG;
+			if (strcmp(target, d->d_name) != 0 || !valid_file)
 				continue;
 
 			// +2: /, \0
