@@ -1,3 +1,6 @@
+// Assuming -fsanitize=address
+#define STACKTRACE	char *stacktrace_tmp = malloc(1); *(stacktrace_tmp + 5) = 1
+
 char *get_str_copy(char *base) {
 	char *dest = malloc(strlen(base) + 1);
 	strcpy(dest, base);

@@ -42,7 +42,7 @@ typedef struct {
 	[0]: base level
 	*/
 	int *indent_controls;
-	int indents_tracked; // total allocated room
+	int indents_tracked; // total allocated room. starts at 1
 } ParseState;
 
 ParseState *create_parse_state() {
@@ -90,6 +90,11 @@ void update_control(ParseState *state, int status) {
 
 		int size = sizeof(int) * state->indents_tracked;
 		state->indent_controls = realloc(state->indent_controls, size);
+
+		// Initialize default value for new batch
+		int original_tracked = state->indents_tracked/2;
+		for (int i = original_tracked; i < state->indents_tracked; i++)
+			state->indent_controls[i] = CONTROL_WAITING;
 
 		printf("reallocating indent tracker to size %d\n", state->indents_tracked);
 	}
