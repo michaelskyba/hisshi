@@ -78,6 +78,8 @@ bool read_token(Token *tk, FILE *script_file) {
 	if (c == '#') {
 		while (getc(script_file) != '\n') ;
 		tk->type = TOKEN_NEWLINE;
+		tk->ln++;
+
 		return true;
 	}
 
@@ -139,6 +141,9 @@ bool read_token(Token *tk, FILE *script_file) {
 		while ((c = getc(script_file)) != match) {
 			assert(c != EOF);
 			*p++ = c;
+
+			if (c == '\n')
+				tk->ln++;
 
 			if (p - tk->str == tk->str_len) {
 				int offset = p - tk->str;

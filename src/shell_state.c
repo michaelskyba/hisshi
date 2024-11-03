@@ -13,7 +13,7 @@ typedef struct variable_struct Variable;
 
 typedef struct {
 	/*
-    We populate our own representation of env_vars at startup and then they're
+	We populate our own representation of env_vars at startup and then they're
 	automatically synced. The only way for them to change is for a hisshi script
 	to modify them or export a local variable, both of which we catch and
 	setenv() accordingly. There's no way to source a C program etc. to run in
