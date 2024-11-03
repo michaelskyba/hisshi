@@ -102,6 +102,7 @@ bool read_token(Token *tk, FILE *script_file) {
 		}
 
 		// Otherwise it's part of a name
+		c = '-';
 	}
 
 	if (c == '$') {
