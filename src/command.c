@@ -25,6 +25,10 @@ struct Command_struct {
 	// NULL if this is the last
 	struct Command_struct *next_pipeline;
 
+	// Points to a variable name, that should be piped to and set, or NULL if
+	// unused. Only the last Command in a pipeline will set this
+	char *pipe_variable;
+
 	// Point to a literal filename string if used. NULL otherwise
 	char *redirect_read;
 	char *redirect_write;
@@ -61,6 +65,10 @@ void clear_command(Command *cmd) {
 		free(cmd->path);
 		cmd->path = NULL;
 	}
+	if (cmd->pipe_variable) {
+		free(cmd->pipe_variable);
+		cmd->pipe_variable = NULL;
+	}
 	if (cmd->redirect_read) {
 		free(cmd->redirect_read);
 		cmd->redirect_read = NULL;
@@ -83,6 +91,7 @@ Command *create_command() {
 	cmd->arg_head = NULL;
 	cmd->arg_tail = NULL;
 	cmd->next_pipeline = NULL;
+	cmd->pipe_variable = NULL;
 	cmd->redirect_read = NULL;
 	cmd->redirect_write = NULL;
 	cmd->redirect_append = NULL;

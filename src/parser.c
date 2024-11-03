@@ -1,6 +1,6 @@
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
-void parse_command(ParseState *parse_state) {
+void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	// Control flow (indent level, else flag) is tracked on the head
 	Command *cmd = parse_state->cmd_pipeline;
 
@@ -41,7 +41,7 @@ void parse_command(ParseState *parse_state) {
 			return;
 		}
 
-		int exit_code = execute_pipeline(parse_state->cmd_pipeline);
+		int exit_code = execute_pipeline(parse_state->cmd_pipeline, shell_state);
 
 		// 0: success exit code, so this if branch is now active
 		if (exit_code == 0)
@@ -119,9 +119,12 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			assert(parse_state->tk->type == TOKEN_NAME);
 
 			char *var_name = get_str_copy(parse_state->tk->str);
-			printf("Ack intention to pipe to var |%s|\n", var_name);
+			parse_state->cmd->pipe_variable = var_name;
 
-			free(var_name);
+			// Don't worry about cmd because we assume this will be the last
+			// token before TOKEN_NEWLINE
+
+			printf("Ack intention to pipe to var |%s|\n", var_name);
 			continue;
 		}
 
@@ -165,7 +168,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			if (parse_state->phase == READING_NAME && !parse_state->cmd->else_flag)
 				continue;
 
-			parse_command(parse_state);
+			parse_command(parse_state, shell_state);
 
 			clear_command(parse_state->cmd_pipeline);
 			parse_state->cmd = parse_state->cmd_pipeline;

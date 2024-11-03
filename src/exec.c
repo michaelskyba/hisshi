@@ -136,21 +136,40 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes) {
 }
 
 // foo | bar --> 2
+// |= does not count as an extra command in the pipeline
 int get_pipeline_length(Command *pipeline) {
 	int i = 0;
 
-	for (Command *cmd = pipeline; cmd != NULL; i++)
-		cmd = cmd->next_pipeline;
+	for (Command *cmd = pipeline; cmd != NULL; cmd = cmd->next_pipeline)
+		i++;
 
 	return i;
 }
 
 // Returns exit code of last command
-int execute_pipeline(Command *pipeline) {
+int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 	Command *cmd = pipeline;
 	int pipeline_length = get_pipeline_length(pipeline);
 
 	int last_pid;
+	int *pipe_variable_fds;
+	int last_write_fd = STDOUT_FILENO;
+
+	Command *last_cmd = pipeline;
+	while (last_cmd->next_pipeline != NULL)
+		last_cmd = last_cmd->next_pipeline;
+
+	// This pipeline ends with a |=
+	if (last_cmd->pipe_variable) {
+		pipe_variable_fds = malloc(sizeof(int) * 2);
+		if (pipe(pipe_variable_fds) == -1) {
+			perror("pipe() failed");
+			assert(false);
+		}
+
+		last_write_fd = pipe_variable_fds[1];
+		printf("|= pipe: %d --> %d\n", pipe_variable_fds[1], pipe_variable_fds[0]);
+	}
 
 	if (pipeline_length == 1) {
 		int (*builtin)(Command *) = get_builtin(cmd->path);
@@ -159,7 +178,19 @@ int execute_pipeline(Command *pipeline) {
 			return status;
 		}
 
-		last_pid = execute_child(cmd, STDIN_FILENO, STDOUT_FILENO, NULL);
+		int *pipes = NULL;
+		if (last_cmd->pipe_variable) {
+			pipes = malloc(sizeof(int) * 3);
+
+			// Include read end so the child closes it
+			pipes[0] = pipe_variable_fds[0];
+
+			pipes[1] = pipe_variable_fds[1];
+			pipes[2] = -1;
+		}
+
+		last_pid = execute_child(cmd, STDIN_FILENO, last_write_fd, pipes);
+		free(pipes);
 	}
 
 	else {
@@ -179,11 +210,21 @@ int execute_pipeline(Command *pipeline) {
 			printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
 		}
 
+		// Not read/written to directly from this pipes array, but still
+		// included so that each execute_child closes them
+		if (last_cmd->pipe_variable) {
+			pipes = realloc(pipes, sizeof(int) * (num_fds + 1 + 2));
+			pipes[num_fds] = pipe_variable_fds[0];
+			pipes[num_fds+1] = pipe_variable_fds[1];
+			pipes[num_fds+2] = -1;
+		}
+
 		for (int i = 0; i < pipeline_length; i++) {
 			int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
-			int w = i == pipeline_length - 1 ? STDOUT_FILENO : pipes[i*2 + 1];
+			int w = i == pipeline_length - 1 ? last_write_fd : pipes[i*2 + 1];
 
 			last_pid = execute_child(cmd, r, w, pipes);
+
 			if (r != STDIN_FILENO) close(r);
 			if (w != STDOUT_FILENO) close(w);
 
@@ -200,6 +241,16 @@ int execute_pipeline(Command *pipeline) {
 	while ((wait_pid = wait(&status)) > 0)
 		if (wait_pid == last_pid)
 			last_status = status;
+
+	if (last_cmd->pipe_variable) {
+		char *name = last_cmd->pipe_variable;
+
+		printf("Now we're supposed to read from fd %d, into var |%s|\n", pipe_variable_fds[0], name);
+		close(pipe_variable_fds[0]);
+
+		set_table_variable(shell_state->shell_vars, name, "placeholder");
+		free(pipe_variable_fds);
+	}
 
 	return WIFEXITED(last_status) ? WEXITSTATUS(last_status) : 1;
 }
