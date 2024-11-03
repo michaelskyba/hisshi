@@ -58,10 +58,7 @@ void parse_command(ParseState *parse_state) {
 	else printf("L%d: CF skip\n", ln);
 }
 
-void parse_script(FILE *script_file) {
-	ParseState *parse_state = create_parse_state();
-	ShellState *shell_state = create_shell_state();
-
+void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_state) {
 	// Testing makeshift: default variable
 	set_table_variable(shell_state->shell_vars, "foo", "bar");
 	set_table_variable(shell_state->shell_vars, "search", "ctype");
@@ -173,7 +170,4 @@ void parse_script(FILE *script_file) {
 		printf("Received invalid token type %d\n", tk_type);
 		assert(false);
 	}
-
-	free_parse_state(parse_state);
-	free_shell_state(shell_state);
 }
