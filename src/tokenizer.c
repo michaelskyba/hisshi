@@ -30,7 +30,7 @@ typedef struct {
 Token *create_token() {
 	Token *tk = malloc(sizeof(Token));
 	tk->type = TOKEN_EOF; // Will be replaced when initially read
-	tk->str = malloc(sizeof(char) * 2); // Include terminator
+	tk->str = malloc(2); // Include terminator
 	tk->str_len = 1;
 	tk->ln = 1;
 	return tk;
