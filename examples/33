@@ -7,4 +7,6 @@ mktemp -u |= tmp
 echo $tmp |= HISTFILE
 
 # Should see the updated HISTFILE but not tmp
-env | rg hist
+env | rg HISTFILE
+env | rg "^tmp="
+- echo "There's no tmp. hisshi wins again"

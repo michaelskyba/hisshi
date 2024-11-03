@@ -117,6 +117,12 @@ char *read_pipe_var(int read_fd) {
 		perror("read_pipe_var");
 
 	*p = '\0';
+
+	// Crop trailing \n
+	p--;
+	if (p > buf && *p == '\n')
+		*p = '\0';
+
 	return buf;
 }
 
