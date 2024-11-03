@@ -40,6 +40,8 @@ char *get_bin_path(char *target) {
 			sprintf(bin_path, "%s/%s", path_node, target);
 
 			closedir(dir);
+			free(path_list);
+
 			return bin_path;
 		}
 
@@ -49,6 +51,8 @@ char *get_bin_path(char *target) {
 		// Our local path_list copy is remembered by strtok
 		path_node = strtok(NULL, ":");
 	}
+
+	free(path_list);
 
 	// Found nothing. Give back original to spark the eventual execve error
 	return get_str_copy(target);

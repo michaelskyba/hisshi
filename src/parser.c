@@ -173,4 +173,6 @@ void parse_script(FILE *script_file) {
 		printf("Received invalid token type %d\n", tk_type);
 		assert(false);
 	}
+
+	free_parse_state(parse_state);
 }

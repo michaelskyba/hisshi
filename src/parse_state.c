@@ -51,18 +51,20 @@ ParseState *create_parse_state() {
 	state->cmd_pipeline = state->cmd;
 
 	state->phase = READING_INDENTS;
-
-	state->tk = malloc(sizeof(Token));
-	state->tk->type = TOKEN_EOF; // Will be replaced when initially read
-	state->tk->str = malloc(sizeof(char) * 2); // Include terminator
-	state->tk->str_len = 1;
-	state->tk->ln = 1;
+	state->tk = create_token();
 
 	state->indent_controls = malloc(sizeof(int));
 	*(state->indent_controls) = CONTROL_WAITING;
 	state->indents_tracked = 1;
 
 	return state;
+}
+
+void free_parse_state(ParseState *state) {
+	free_command(state->cmd_pipeline);
+	free_token(state->tk);
+	free(state->indent_controls);
+	free(state);
 }
 
 char *control_name(int control) {

@@ -52,6 +52,7 @@ void clear_command(Command *cmd) {
 
 	if (cmd->next_pipeline) {
 		clear_command(cmd->next_pipeline);
+		free(cmd->next_pipeline);
 		cmd->next_pipeline = NULL;
 	}
 
@@ -88,6 +89,11 @@ Command *create_command() {
 
 	clear_command(cmd);
 	return cmd;
+}
+
+void free_command(Command *cmd) {
+	clear_command(cmd);
+	free(cmd);
 }
 
 char **get_argv_array(Command *cmd) {

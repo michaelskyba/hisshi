@@ -26,6 +26,20 @@ typedef struct {
 	int ln;
 } Token;
 
+Token *create_token() {
+	Token *tk = malloc(sizeof(Token));
+	tk->type = TOKEN_EOF; // Will be replaced when initially read
+	tk->str = malloc(sizeof(char) * 2); // Include terminator
+	tk->str_len = 1;
+	tk->ln = 1;
+	return tk;
+}
+
+void free_token(Token *tk) {
+	free(tk->str);
+	free(tk);
+}
+
 // rt: whether to keep reading (type != EOF)
 // tk->str will be overwritten, so copy it if you need it
 bool read_token(Token *tk, FILE *script_file) {
