@@ -162,11 +162,16 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 		}
 
 		if (tk_type == TOKEN_NEWLINE) {
-			// They had the bright idea of splitting the next command across
-			// multiple lines, or otherwise leaving it blank
-			// (Acceptable)
-			if (parse_state->phase == READING_NAME && !parse_state->cmd->else_flag)
+			// User is splitting the next command across multiple lines, or is
+			// otherwise leaving it blank (supported)
+			if (parse_state->phase == READING_NAME && !parse_state->cmd->else_flag) {
+				// If this is an entirely blank submission, then the next line
+				// still needs to read indents again
+				if (parse_state->cmd_pipeline->path == NULL)
+					parse_state->phase = READING_INDENTS;
+
 				continue;
+			}
 
 			parse_command(parse_state, shell_state);
 
