@@ -50,12 +50,32 @@ int builtin_exit(Command *cmd, ShellState *state) {
 	return 0;
 }
 
+int builtin_unset(Command *cmd, ShellState *state) {
+	if (cmd->argc < 2) {
+		printf("builtin unset: no variable specified\n");
+		return 1;
+	}
+
+	if (cmd->argc > 2) {
+		printf("builtin unset: multiple variables specified\n");
+		return 1;
+	}
+
+	char *var_name = cmd->arg_head->next->name;
+	unset_variable(state, var_name);
+
+	return 0;
+}
+
 int (*get_builtin(char *name)) (Command *, ShellState *) {
 	if (strcmp(name, "cd") == 0)
 		return builtin_cd;
 
 	if (strcmp(name, "exit") == 0)
 		return builtin_exit;
+
+	if (strcmp(name, "unset") == 0)
+		return builtin_unset;
 
 	return NULL;
 }

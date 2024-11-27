@@ -111,6 +111,38 @@ char *get_table_variable(Variable **table, char *name) {
 	return NULL;
 }
 
+// Returns whether we found and removed it
+// 0: The variable didn't exist in the first place
+int unset_table_variable(Variable **table, char *name) {
+	int hash = hash_str(name);
+	printf("Planning to unset %s (%d)\n", name, hash);
+
+	Variable *prev = NULL;
+
+	for (Variable *var = table[hash]; var != NULL; var = var->next) {
+		printf("Found existing %s=%s on %d\n", var->name, var->value, hash);
+
+		if (strcmp(var->name, name) == 0) {
+			printf("%s=%s, so unsetting\n", var->name, name);
+
+			if (prev == NULL)
+				table[hash] = var->next;
+			else
+				prev->next = var->next;
+
+			free(var->name);
+			free(var->value);
+			free(var);
+
+			return 1;
+		}
+
+		prev = var;
+	}
+
+	return 0;
+}
+
 void load_env_vars(Variable **table) {
 	// Automatically set by C
 	extern char **environ;
@@ -173,6 +205,7 @@ void free_shell_state(ShellState *state) {
 	free(state);
 }
 
+// Returns NULL rather than "" if not found
 char *get_variable(ShellState *state, char *name) {
 	char *val = get_table_variable(state->env_vars, name);
 	if (!val)
@@ -193,4 +226,11 @@ void set_variable(ShellState *state, char *name, char *value) {
 	}
 
 	set_table_variable(state->shell_vars, name, value);
+}
+
+void unset_variable(ShellState *state, char *name) {
+	if (unset_table_variable(state->env_vars, name))
+		assert(unsetenv(name) != -1);
+	else
+		unset_table_variable(state->shell_vars, name);
 }

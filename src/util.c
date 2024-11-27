@@ -15,7 +15,6 @@ char *get_bin_path(char *target) {
 
 	// We need a copy because strtok modifies your input
 	// If we modify what getenv returns, it actually updates the variable
-	// TODO free, and do a more systematic review to free all allocated memory
 	char *path_list = get_str_copy(getenv("PATH"));
 	char *path_node = strtok(path_list, ":");
 

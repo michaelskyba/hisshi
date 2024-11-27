@@ -1,0 +1,12 @@
+echo foo |= bar
+echo $bar
+
+unset bar
+echo $bar
+
+unset
+unset a b c
+
+env | rg MSK
+unset MSK_MUSIC_REFRESH
+env | rg MSK
