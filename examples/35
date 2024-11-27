@@ -1,0 +1,7 @@
+date | arg 1 | eq Tue
+	echo "It is Tuesday"
+date | arg 1 | eq Wed
+	echo "It is Wednesday"
+
+ls /tmp/tmp.ahfBEfHGaJ | hasin
+- echo Nothing
