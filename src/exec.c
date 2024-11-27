@@ -7,7 +7,9 @@
 // Forks and returns child PID
 // pipes: full list of pipes created for the whole pipeline, most of which each
 // child should close
-int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes) {
+// shell_state: children won't modify the parent state, but they can keep a copy
+// of it, to modify and perform some logic surrounding it
+int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes, ShellState *shell_state) {
 	int pid = fork();
 
 	if (pid < 0) {
@@ -56,9 +58,9 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes) {
 		close(write_fd);
 	}
 
-	int (*builtin)(Command *) = get_builtin(cmd->path);
+	int (*builtin)(Command *, ShellState *) = get_builtin(cmd->path);
 	if (builtin) {
-		int status = builtin(cmd);
+		int status = builtin(cmd, shell_state);
 		_exit(status);
 	}
 
@@ -152,9 +154,9 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 	}
 
 	if (pipeline_length == 1) {
-		int (*builtin)(Command *) = get_builtin(cmd->path);
+		int (*builtin)(Command *, ShellState *) = get_builtin(cmd->path);
 		if (builtin) {
-			int status = builtin(cmd);
+			int status = builtin(cmd, shell_state);
 			return status;
 		}
 
@@ -169,7 +171,7 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 			pipes[2] = -1;
 		}
 
-		last_pid = execute_child(cmd, STDIN_FILENO, last_write_fd, pipes);
+		last_pid = execute_child(cmd, STDIN_FILENO, last_write_fd, pipes, shell_state);
 
 		// Don't close read because we will actually use it later. Only children
 		// close it
@@ -209,7 +211,7 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 			int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
 			int w = i == pipeline_length - 1 ? last_write_fd : pipes[i*2 + 1];
 
-			last_pid = execute_child(cmd, r, w, pipes);
+			last_pid = execute_child(cmd, r, w, pipes, shell_state);
 
 			if (r != STDIN_FILENO) close(r);
 			if (w != STDOUT_FILENO) close(w);

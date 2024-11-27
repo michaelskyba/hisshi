@@ -6,7 +6,10 @@ exit=hisshi_exit etc. for those that are fine without a wrapper
 
 Draft in /home/oboro/src/hisshi/rc/startup
 */
-int builtin_cd(Command *cmd) {
+int builtin_cd(Command *cmd, ShellState *state) {
+	// Technically mark as used
+	(void) state;
+
 	if (cmd->argc < 2) {
 		printf("builtin cd: no directory specified\n");
 		return 1;
@@ -26,7 +29,10 @@ int builtin_cd(Command *cmd) {
 	return 0;
 }
 
-int builtin_exit(Command *cmd) {
+int builtin_exit(Command *cmd, ShellState *state) {
+	// Technically mark as used
+	(void) state;
+
 	if (cmd->argc < 2) {
 		printf("builtin exit: no status specified\n");
 		return 1;
@@ -44,7 +50,7 @@ int builtin_exit(Command *cmd) {
 	return 0;
 }
 
-int (*get_builtin(char *name)) (Command *) {
+int (*get_builtin(char *name)) (Command *, ShellState *) {
 	if (strcmp(name, "cd") == 0)
 		return builtin_cd;
 
