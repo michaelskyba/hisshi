@@ -22,9 +22,5 @@ int main(int argc, char *argv[]) {
 	if (len > 0 && buffer[len - 1] == '\n')
 		buffer[len - 1] = '\0';
 
-	// Compare with the CLI argument
-	if (strcmp(buffer, argv[1]) == 0)
-		return 0;
-	else
-		return 1;
+	return strcmp(buffer, argv[1]) == 0 ? 0 : 1;
 }
