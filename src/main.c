@@ -14,6 +14,7 @@
 
 #include "util.c"
 #include "command.c"
+#include "hash_table.c"
 #include "shell_state.c"
 #include "builtin.c"
 #include "exec.c"
