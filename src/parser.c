@@ -149,27 +149,27 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 		}
 
 		if (tk_type == TOKEN_FUNC_NAME_SINGLE) {
-			char *func_name = parse_state->tk->str;
-			printf("Ack intention to define single-line function with name |%s|\n", func_name);
+			// Needs to be copied manually or else overwritten by
+			// get_function_body
+			char *func_name = get_str_copy(parse_state->tk->str);
 
 			get_function_body_single(parse_state->tk, script_file);
-
 			char *func_body = parse_state->tk->str;
-			printf("Intended body |%s|\n", func_body);
 
+			set_function(shell_state, func_name, func_body);
+			free(func_name);
 			continue;
 		}
 
 		if (tk_type == TOKEN_FUNC_NAME_MULTI) {
-			char *func_name = parse_state->tk->str;
-			printf("Ack intention to define multi-line function with name |%s|\n", func_name);
+			char *func_name = get_str_copy(parse_state->tk->str);
 
 			int body_indent_level = parse_state->cmd->indent_level + 1;
 			get_function_body_multi(parse_state->tk, body_indent_level, script_file);
-
 			char *func_body = parse_state->tk->str;
-			printf("Intended body |%s|\n", func_body);
 
+			set_function(shell_state, func_name, func_body);
+			free(func_name);
 			continue;
 		}
 

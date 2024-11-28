@@ -18,7 +18,9 @@ void get_function_body_single(Token *tk, FILE *script_file) {
 		c = getcb(script_file);
 	}
 
+	p = append_tk_p(tk, p, '\n');
 	*p = '\0';
+
 	ungetcb(c);
 }
 

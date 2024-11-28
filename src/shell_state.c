@@ -9,9 +9,13 @@ typedef struct {
 	the parent process.
 	*/
 
+	// TODO scope system
+
 	// Hash tables, size HASH_BUCKETS
 	Binding **shell_vars;
 	Binding **env_vars;
+
+	Binding **functions;
 } ShellState;
 
 void load_env_vars(Binding **table) {
@@ -46,6 +50,7 @@ ShellState *create_shell_state() {
 	ShellState *state = malloc(sizeof(ShellState));
 	state->shell_vars = calloc(HASH_BUCKETS, sizeof(Binding*));
 	state->env_vars   = calloc(HASH_BUCKETS, sizeof(Binding*));
+	state->functions  = calloc(HASH_BUCKETS, sizeof(Binding*));
 	load_env_vars(state->env_vars);
 
 	return state;
@@ -54,6 +59,7 @@ ShellState *create_shell_state() {
 void free_shell_state(ShellState *state) {
 	free_table(state->shell_vars);
 	free_table(state->env_vars);
+	free_table(state->functions);
 	free(state);
 }
 
@@ -100,4 +106,13 @@ void export_variable(ShellState *state, char *name) {
 
 	// Clears val too
 	unset_table_binding(state->shell_vars, name);
+}
+
+void set_function(ShellState *state, char *name, char *body) {
+	printf("Defining function |%s| --> |%s|\n", name, body);
+	set_table_binding(state->functions, name, body);
+}
+
+char *get_function(ShellState *state, char *name) {
+	return get_table_binding(state->functions, name);
 }
