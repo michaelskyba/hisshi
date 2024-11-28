@@ -5,6 +5,7 @@ myfunc: false 1 2 3 # this is a comment
 myfunc2:
 	true
 		date
+
 	echo bar
 pwd
 

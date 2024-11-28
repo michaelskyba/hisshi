@@ -270,6 +270,23 @@ void get_function_body_multi(Token *tk, int func_indent, FILE *script_file) {
 
 		printf("Inside function body, read >%d, c=%c\n", line_indent, c);
 
+		// If the line is blank, we consider it part of the function either way
+		if (c == '\n') {
+			for (int i = 0; i < line_indent - func_indent; i++) {
+				*p++ = '\t';
+
+				if (p - tk->str == tk->str_len)
+					p = resize_tk_str(tk, p);
+			}
+
+			*p++ = '\n';
+			if (p - tk->str == tk->str_len)
+				p = resize_tk_str(tk, p);
+
+			tk->ln++;
+			continue;
+		}
+
 		// If the function body is finished, give back the lookahead and exit
 		if (line_indent < func_indent) {
 
