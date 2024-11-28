@@ -18,6 +18,7 @@
 #include "builtin.c"
 #include "exec.c"
 #include "tokenizer.c"
+#include "function.c"
 #include "parse_state.c"
 #include "parser.c"
 
