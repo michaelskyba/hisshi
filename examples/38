@@ -3,7 +3,9 @@ date
 myfunc: false 1 2 3 # this is a comment
 
 myfunc2:
-	echo foo
+	true
+		date
 	echo bar
+pwd
 
 myfunc

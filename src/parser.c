@@ -164,6 +164,12 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			char *func_name = parse_state->tk->str;
 			printf("Ack intention to define multi-line function with name |%s|\n", func_name);
 
+			int body_indent_level = parse_state->cmd->indent_level + 1;
+			get_function_body_multi(parse_state->tk, body_indent_level, script_file);
+
+			char *func_body = parse_state->tk->str;
+			printf("Intended body |%s|\n", func_body);
+
 			continue;
 		}
 
