@@ -19,6 +19,10 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	// 1729642499: Eh maybe we can tokenize it but not evaluate any subshells.
 	// Just do whatever is cleaner
 
+	// If the user spammed tabs on a new line with no parent that dynamically
+	// resized indent_controls
+	assert(parse_state->indents_tracked > indent);
+
 	int parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : parse_state->indent_controls[indent-1];
 	int control = parse_state->indent_controls[indent];
 	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
