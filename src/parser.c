@@ -59,7 +59,10 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 }
 
 void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_state) {
-	while (read_token(parse_state->tk, script_file)) {
+	// Start with at_line_start == true
+	TokenizerState *tokenizer_state = create_tokenizer_state();
+
+	while (read_token(parse_state->tk, tokenizer_state, script_file)) {
 		int tk_type = parse_state->tk->type;
 
 		if (tk_type == TOKEN_INDENT) {
@@ -89,6 +92,9 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			continue;
 		}
 
+		// We're done with indents, and the current token isn't a dash
+		tokenizer_state->at_line_start = false;
+
 		if (
 			tk_type == TOKEN_REDIRECT_READ ||
 			tk_type == TOKEN_REDIRECT_WRITE ||
@@ -97,7 +103,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			int redirect_type = tk_type;
 
 			// TODO variable etc. support
-			read_token(parse_state->tk, script_file);
+			read_token(parse_state->tk, tokenizer_state, script_file);
 			assert(parse_state->tk->type == TOKEN_NAME);
 			char *filename = get_str_copy(parse_state->tk->str);
 
@@ -115,7 +121,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 
 		if (tk_type == TOKEN_PIPE_VARIABLE) {
 			// TODO variable (date |= $foo) etc. support
-			read_token(parse_state->tk, script_file);
+			read_token(parse_state->tk, tokenizer_state, script_file);
 			assert(parse_state->tk->type == TOKEN_NAME);
 
 			char *var_name = get_str_copy(parse_state->tk->str);
@@ -162,6 +168,8 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 		}
 
 		if (tk_type == TOKEN_NEWLINE) {
+			tokenizer_state->at_line_start = true;
+
 			// User is splitting the next command across multiple lines, or is
 			// otherwise leaving it blank (supported)
 			if (parse_state->phase == READING_NAME && !parse_state->cmd->else_flag) {
@@ -186,4 +194,6 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 		printf("Received invalid token type %d\n", tk_type);
 		assert(false);
 	}
+
+	free(tokenizer_state);
 }

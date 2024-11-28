@@ -41,9 +41,20 @@ void free_token(Token *tk) {
 	free(tk);
 }
 
+typedef struct {
+	// Used to distinguish colons from defining functions or being regular chars
+	bool at_line_start;
+} TokenizerState;
+
+TokenizerState *create_tokenizer_state() {
+	TokenizerState *state = malloc(sizeof(TokenizerState));
+	state->at_line_start = true;
+	return state;
+}
+
 // rt: whether to keep reading (type != EOF)
 // tk->str will be overwritten, so copy it if you need it
-bool read_token(Token *tk, FILE *script_file) {
+bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	char c;
 	while ((c = getc(script_file)) == ' ') ;
 
@@ -124,7 +135,7 @@ bool read_token(Token *tk, FILE *script_file) {
 		// For now rely on regular name parsing for the variable name,
 		// but overwrite the type
 
-		if (!read_token(tk, script_file))
+		if (!read_token(tk, state, script_file))
 			return false;
 
 		tk->type = TOKEN_VARIABLE;
@@ -179,6 +190,8 @@ bool read_token(Token *tk, FILE *script_file) {
 	}
 
 	ungetc(c, script_file);
+
+	printf("returning name token. line start? %d\n", state->at_line_start);
 
 	*p = '\0';
 	return true;
