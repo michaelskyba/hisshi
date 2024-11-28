@@ -1,0 +1,5 @@
+myfunc: false
+myfunc2:
+	echo foo
+	echo bar
+myfunc

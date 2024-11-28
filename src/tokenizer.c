@@ -3,6 +3,7 @@ enum {
 	TOKEN_INDENT,
 	TOKEN_DASH,
 	TOKEN_NAME,
+	TOKEN_FUNC_NAME,
 	TOKEN_VARIABLE,
 	TOKEN_REDIRECT_READ,
 	TOKEN_PIPE,
@@ -170,29 +171,39 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 		return true;
 	}
 
-	tk->type = TOKEN_NAME;
+	// Unquoted regular or function name
+	else {
+		char *p = tk->str;
+		while (!isspace(c) && c != '#') {
+			assert(c != EOF);
+			*p++ = c;
 
-	char *p = tk->str;
-	while (!isspace(c) && c != '#') {
-		assert(c != EOF);
-		*p++ = c;
+			if (p - tk->str == tk->str_len) {
+				int offset = p - tk->str;
+				tk->str_len *= 2;
 
-		if (p - tk->str == tk->str_len) {
-			int offset = p - tk->str;
-			tk->str_len *= 2;
+				// str_len doesn't include \0
+				tk->str = realloc(tk->str, tk->str_len + 1);
+				p = tk->str + offset;
+			}
 
-			// str_len doesn't include \0
-			tk->str = realloc(tk->str, tk->str_len + 1);
-			p = tk->str + offset;
+			c = getc(script_file);
 		}
 
-		c = getc(script_file);
+		// Defined as ^myfunc:
+		if (state->at_line_start && *(p-1) == ':') {
+			tk->type = TOKEN_FUNC_NAME;
+			printf("Func decl ending: %d\n", c);
+
+			// Don't include the colon in tk->str
+			*(p-1) = '\0';
+		}
+		else {
+			tk->type = TOKEN_NAME;
+			*p = '\0';
+		}
+
+		ungetc(c, script_file);
+		return true;
 	}
-
-	ungetc(c, script_file);
-
-	printf("returning name token. line start? %d\n", state->at_line_start);
-
-	*p = '\0';
-	return true;
 }
