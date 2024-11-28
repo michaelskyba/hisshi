@@ -73,12 +73,14 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			if (parse_state->phase == READING_INDENTS)
 				parse_state->cmd->indent_level++;
 
-			// Otherwise, it's just whitespace that we can ignore. We shouldn't
-			// panic here, since tab separation, especially after a newline
-			// during pipes etc. is a pretty common pattern:
-			// echo foo |
-			// \ttail |
-			// \tcat
+			/*
+			Otherwise, it's just whitespace that we can ignore. We shouldn't
+			panic here, since tab separation, especially after a newline
+			during pipes etc. is a pretty common pattern:
+			echo foo |
+				tail |
+				cat
+			*/
 
 			continue;
 		}
@@ -150,9 +152,10 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			char *func_name = parse_state->tk->str;
 			printf("Ack intention to define single-line function with name |%s|\n", func_name);
 
-			char *func_body = get_function_body_single(script_file);
+			get_function_body_single(parse_state->tk, script_file);
+
+			char *func_body = parse_state->tk->str;
 			printf("Intended body |%s|\n", func_body);
-			free(func_body);
 
 			continue;
 		}
