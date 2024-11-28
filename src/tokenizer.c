@@ -3,7 +3,8 @@ enum {
 	TOKEN_INDENT,
 	TOKEN_DASH,
 	TOKEN_NAME,
-	TOKEN_FUNC_NAME,
+	TOKEN_FUNC_NAME_SINGLE, // body defined on the same line as the name
+	TOKEN_FUNC_NAME_MULTI, // body defined across indented lines
 	TOKEN_VARIABLE,
 	TOKEN_REDIRECT_READ,
 	TOKEN_PIPE,
@@ -190,8 +191,8 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 
 		// Defined as ^myfunc:
 		if (state->at_line_start && *(p-1) == ':') {
-			tk->type = TOKEN_FUNC_NAME;
-			printf("Func decl ending: %d\n", c);
+			char delim = c;
+			tk->type = delim == '\n' ? TOKEN_FUNC_NAME_MULTI : TOKEN_FUNC_NAME_SINGLE;
 
 			// Don't include the colon in tk->str
 			*(p-1) = '\0';
@@ -208,7 +209,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 
 // Reads until the end of the line into a returned char buffer. Used to get
 // the body of a single-line functions.
-char *get_function_line(FILE *script_file) {
+char *get_function_body_single(FILE *script_file) {
 	int buf_size = 128;
 
 	// Avoid tk->str because a multi-line function body may be significantly

@@ -146,13 +146,20 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			continue;
 		}
 
-		if (tk_type == TOKEN_FUNC_NAME) {
+		if (tk_type == TOKEN_FUNC_NAME_SINGLE) {
 			char *func_name = parse_state->tk->str;
-			printf("Ack intention to define function with name |%s|\n", func_name);
+			printf("Ack intention to define single-line function with name |%s|\n", func_name);
 
-			char *func_body = get_function_line(script_file);
+			char *func_body = get_function_body_single(script_file);
 			printf("Intended body |%s|\n", func_body);
 			free(func_body);
+
+			continue;
+		}
+
+		if (tk_type == TOKEN_FUNC_NAME_MULTI) {
+			char *func_name = parse_state->tk->str;
+			printf("Ack intention to define multi-line function with name |%s|\n", func_name);
 
 			continue;
 		}
