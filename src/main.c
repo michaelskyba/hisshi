@@ -22,13 +22,13 @@
 #include "parse_state.c"
 #include "parser.c"
 
-void set_cli_args(Variable **table, char argc, char **argv) {
+void set_cli_args(Binding **table, char argc, char **argv) {
 	// 15: Assume we will have low digit counts of argc
 	char *name = malloc(15);
 
 	for (int i = 0; i < argc; i++) {
 		sprintf(name, "%d", i);
-		set_table_variable(table, name, argv[i]);
+		set_table_binding(table, name, argv[i]);
 	}
 
 	free(name);

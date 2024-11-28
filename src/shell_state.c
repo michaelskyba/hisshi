@@ -2,15 +2,18 @@
 #define HASH_ROLL_CONSTANT 37
 #define SETENV_OVERWRITE 1
 
-// Used to represent both internal shell variables and environment variables
-struct variable_struct {
+// Used to represent
+// - Internal shell variables
+// - Environment variables
+// - Functions
+struct binding_struct {
 	char *name;
 	char *value;
 
 	// This is part of a hash table, so we use LL to handle collision
-	struct variable_struct *next;
+	struct binding_struct *next;
 };
-typedef struct variable_struct Variable;
+typedef struct binding_struct Binding;
 
 typedef struct {
 	/*
@@ -22,8 +25,8 @@ typedef struct {
 	*/
 
 	// Hash tables, size HASH_BUCKETS
-	Variable **shell_vars;
-	Variable **env_vars;
+	Binding **shell_vars;
+	Binding **env_vars;
 } ShellState;
 
 int hash_str(char *str) {
@@ -44,15 +47,15 @@ int hash_str(char *str) {
 }
 
 // Copies args
-Variable *create_variable_struct(char *name, char *value) {
-	Variable *var = malloc(sizeof(Variable));
-	var->name = get_str_copy(name);
-	var->value = get_str_copy(value);
-	var->next = NULL;
-	return var;
+Binding *create_binding_struct(char *name, char *value) {
+	Binding *bnd = malloc(sizeof(Binding));
+	bnd->name = get_str_copy(name);
+	bnd->value = get_str_copy(value);
+	bnd->next = NULL;
+	return bnd;
 }
 
-void dump_table(Variable **table) {
+void dump_table(Binding **table) {
 	bool empty = true;
 
 	for (int hash = 0; hash < HASH_BUCKETS; hash++) {
@@ -62,8 +65,8 @@ void dump_table(Variable **table) {
 		empty = false;
 		printf("table[%d]:\n", hash);
 
-		for (Variable *var = table[hash]; var != NULL; var = var->next)
-			printf("\t%s=|%s| --> %p\n", var->name, var->value, (void *) var->next);
+		for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next)
+			printf("\t%s=|%s| --> %p\n", bnd->name, bnd->value, (void *) bnd->next);
 	}
 
 	if (empty)
@@ -71,41 +74,41 @@ void dump_table(Variable **table) {
 }
 
 // Copies args
-void set_table_variable(Variable **table, char *name, char *value) {
+void set_table_binding(Binding **table, char *name, char *value) {
 	int hash = hash_str(name);
 	printf("Setting %s (%d) to %s\n", name, hash, value);
 
-	for (Variable *var = table[hash]; var != NULL; var = var->next) {
-		printf("Found existing %s=%s on %d\n", var->name, var->value, hash);
+	for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next) {
+		printf("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
 
-		if (strcmp(var->name, name) == 0) {
-			printf("%s=%s, so overwriting %s --> %s\n", var->name, name, var->value, value);
+		if (strcmp(bnd->name, name) == 0) {
+			printf("%s=%s, so overwriting %s --> %s\n", bnd->name, name, bnd->value, value);
 
-			free(var->value);
-			var->value = get_str_copy(value);
+			free(bnd->value);
+			bnd->value = get_str_copy(value);
 			return;
 		}
 	}
 
 	// If none found, insert at start of list
-	Variable *var = create_variable_struct(name, value);
+	Binding *bnd = create_binding_struct(name, value);
 	if (table[hash] != NULL)
-		var->next = table[hash];
+		bnd->next = table[hash];
 
-	table[hash] = var;
+	table[hash] = bnd;
 }
 
 // Returns original, not copy
-char *get_table_variable(Variable **table, char *name) {
+char *get_table_binding(Binding **table, char *name) {
 	int hash = hash_str(name);
 	printf("Searching for value of %s (%d)\n", name, hash);
 
-	for (Variable *var = table[hash]; var != NULL; var = var->next) {
-		printf("Found existing %s=%s on %d\n", var->name, var->value, hash);
+	for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next) {
+		printf("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
 
-		if (strcmp(var->name, name) == 0) {
-			printf("%s=%s, so returning %s\n", var->name, name, var->value);
-			return var->value;
+		if (strcmp(bnd->name, name) == 0) {
+			printf("%s=%s, so returning %s\n", bnd->name, name, bnd->value);
+			return bnd->value;
 		}
 	}
 
@@ -113,45 +116,45 @@ char *get_table_variable(Variable **table, char *name) {
 }
 
 // Returns whether we found and removed it
-// 0: The variable didn't exist in the first place
-int unset_table_variable(Variable **table, char *name) {
+// 0: The binding didn't exist in the first place
+int unset_table_binding(Binding **table, char *name) {
 	int hash = hash_str(name);
 	printf("Planning to unset %s (%d)\n", name, hash);
 
-	Variable *prev = NULL;
+	Binding *prev = NULL;
 
-	for (Variable *var = table[hash]; var != NULL; var = var->next) {
-		printf("Found existing %s=%s on %d\n", var->name, var->value, hash);
+	for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next) {
+		printf("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
 
-		if (strcmp(var->name, name) == 0) {
-			printf("%s=%s, so unsetting\n", var->name, name);
+		if (strcmp(bnd->name, name) == 0) {
+			printf("%s=%s, so unsetting\n", bnd->name, name);
 
 			if (prev == NULL)
-				table[hash] = var->next;
+				table[hash] = bnd->next;
 			else
-				prev->next = var->next;
+				prev->next = bnd->next;
 
-			free(var->name);
-			free(var->value);
-			free(var);
+			free(bnd->name);
+			free(bnd->value);
+			free(bnd);
 
 			return 1;
 		}
 
-		prev = var;
+		prev = bnd;
 	}
 
 	return 0;
 }
 
-void load_env_vars(Variable **table) {
+void load_env_vars(Binding **table) {
 	// Automatically set by C
 	extern char **environ;
 
 	for (char **p = environ; *p != NULL; p++) {
 		char *entry = *p;
 
-		// It seems possible in oksh to at least set variables with equal signs
+		// It seems possible in oksh to at least set bindings with equal signs
 		// in their names, but we do not condone such a practice
 		char *split = strchr(entry, '=');
 
@@ -165,7 +168,7 @@ void load_env_vars(Variable **table) {
 		// Terminates at the original \0 that environ had for this entry
 		char *value = split + 1;
 
-		set_table_variable(table, name, value);
+		set_table_binding(table, name, value);
 
 		// Revert
 		*split = '=';
@@ -174,26 +177,26 @@ void load_env_vars(Variable **table) {
 
 ShellState *create_shell_state() {
 	ShellState *state = malloc(sizeof(ShellState));
-	state->shell_vars = calloc(HASH_BUCKETS, sizeof(Variable*));
-	state->env_vars   = calloc(HASH_BUCKETS, sizeof(Variable*));
+	state->shell_vars = calloc(HASH_BUCKETS, sizeof(Binding*));
+	state->env_vars   = calloc(HASH_BUCKETS, sizeof(Binding*));
 	load_env_vars(state->env_vars);
 
 	return state;
 }
 
-void free_table(Variable **table) {
-	Variable *next;
+void free_table(Binding **table) {
+	Binding *next;
 
 	for (int hash = 0; hash < HASH_BUCKETS; hash++) {
 		if (table[hash] == NULL)
 			continue;
 
-		for (Variable *var = table[hash]; var != NULL; var = next) {
-			next = var->next;
+		for (Binding *bnd = table[hash]; bnd != NULL; bnd = next) {
+			next = bnd->next;
 
-			free(var->name);
-			free(var->value);
-			free(var);
+			free(bnd->name);
+			free(bnd->value);
+			free(bnd);
 		}
 	}
 
@@ -208,35 +211,35 @@ void free_shell_state(ShellState *state) {
 
 // Returns NULL rather than "" if not found
 char *get_variable(ShellState *state, char *name) {
-	char *val = get_table_variable(state->env_vars, name);
+	char *val = get_table_binding(state->env_vars, name);
 	if (!val)
-		val = get_table_variable(state->shell_vars, name);
+		val = get_table_binding(state->shell_vars, name);
 
 	return val;
 }
 
 void set_variable(ShellState *state, char *name, char *value) {
-	if (get_table_variable(state->env_vars, name)) {
+	if (get_table_binding(state->env_vars, name)) {
 		// Update it externally so that when we copy environ in execve, it will
 		// be reflected. The point of state->env_vars is for quick reading.
 		assert(setenv(name, value, SETENV_OVERWRITE) != -1);
 
-		set_table_variable(state->env_vars, name, value);
+		set_table_binding(state->env_vars, name, value);
 		return;
 	}
 
-	set_table_variable(state->shell_vars, name, value);
+	set_table_binding(state->shell_vars, name, value);
 }
 
 void unset_variable(ShellState *state, char *name) {
-	if (unset_table_variable(state->env_vars, name))
+	if (unset_table_binding(state->env_vars, name))
 		assert(unsetenv(name) != -1);
 	else
-		unset_table_variable(state->shell_vars, name);
+		unset_table_binding(state->shell_vars, name);
 }
 
 void export_variable(ShellState *state, char *name) {
-	char *val = get_table_variable(state->shell_vars, name);
+	char *val = get_table_binding(state->shell_vars, name);
 
 	// Either it doesn't exist at all, or it's already exported and thus not in
 	// shell_vars
@@ -244,9 +247,9 @@ void export_variable(ShellState *state, char *name) {
 		return;
 
 	// Set before unsetting to avoid having val cleared
-	set_table_variable(state->env_vars, name, val);
+	set_table_binding(state->env_vars, name, val);
 	assert(setenv(name, val, SETENV_OVERWRITE) != -1);
 
 	// Clears val too
-	unset_table_variable(state->shell_vars, name);
+	unset_table_binding(state->shell_vars, name);
 }
