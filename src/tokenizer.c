@@ -53,6 +53,16 @@ TokenizerState *create_tokenizer_state() {
 	return state;
 }
 
+// Returns the same p but relative to the new str pointer
+char *resize_tk_str(Token *tk, char *p) {
+	int offset = p - tk->str;
+	tk->str_len *= 2;
+
+	// str_len doesn't include \0
+	tk->str = realloc(tk->str, tk->str_len + 1);
+	return tk->str + offset;
+}
+
 // rt: whether to keep reading (type != EOF)
 // tk->str will be overwritten, so copy it if you need it
 bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
@@ -157,14 +167,8 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 			if (c == '\n')
 				tk->ln++;
 
-			if (p - tk->str == tk->str_len) {
-				int offset = p - tk->str;
-				tk->str_len *= 2;
-
-				// str_len doesn't include \0
-				tk->str = realloc(tk->str, tk->str_len + 1);
-				p = tk->str + offset;
-			}
+			if (p - tk->str == tk->str_len)
+				p = resize_tk_str(tk, p);
 		}
 
 		*p = '\0';
@@ -178,14 +182,8 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 			assert(c != EOF);
 			*p++ = c;
 
-			if (p - tk->str == tk->str_len) {
-				int offset = p - tk->str;
-				tk->str_len *= 2;
-
-				// str_len doesn't include \0
-				tk->str = realloc(tk->str, tk->str_len + 1);
-				p = tk->str + offset;
-			}
+			if (p - tk->str == tk->str_len)
+				p = resize_tk_str(tk, p);
 
 			c = getc(script_file);
 		}
