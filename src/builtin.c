@@ -50,6 +50,27 @@ int builtin_exit(Command *cmd, ShellState *state) {
 	return 0;
 }
 
+int builtin_export(Command *cmd, ShellState *state) {
+	// TODO Make docs describing exact design decisions and POSIX adherence. In
+	// this case we are choosing not to support no args and multiple args,
+	// as well as no `export foo=bar`
+
+	if (cmd->argc < 2) {
+		printf("builtin export: no variable specified\n");
+		return 1;
+	}
+
+	if (cmd->argc > 2) {
+		printf("builtin export: multiple variables specified\n");
+		return 1;
+	}
+
+	char *var_name = cmd->arg_head->next->name;
+	export_variable(state, var_name);
+
+	return 0;
+}
+
 int builtin_unset(Command *cmd, ShellState *state) {
 	if (cmd->argc < 2) {
 		printf("builtin unset: no variable specified\n");
@@ -73,6 +94,9 @@ int (*get_builtin(char *name)) (Command *, ShellState *) {
 
 	if (strcmp(name, "exit") == 0)
 		return builtin_exit;
+
+	if (strcmp(name, "export") == 0)
+		return builtin_export;
 
 	if (strcmp(name, "unset") == 0)
 		return builtin_unset;

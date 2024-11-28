@@ -1,5 +1,6 @@
 #define HASH_BUCKETS 1024
 #define HASH_ROLL_CONSTANT 37
+#define SETENV_OVERWRITE 1
 
 // Used to represent both internal shell variables and environment variables
 struct variable_struct {
@@ -218,8 +219,7 @@ void set_variable(ShellState *state, char *name, char *value) {
 	if (get_table_variable(state->env_vars, name)) {
 		// Update it externally so that when we copy environ in execve, it will
 		// be reflected. The point of state->env_vars is for quick reading.
-		int overwrite = 1;
-		assert(setenv(name, value, overwrite) != -1);
+		assert(setenv(name, value, SETENV_OVERWRITE) != -1);
 
 		set_table_variable(state->env_vars, name, value);
 		return;
@@ -233,4 +233,20 @@ void unset_variable(ShellState *state, char *name) {
 		assert(unsetenv(name) != -1);
 	else
 		unset_table_variable(state->shell_vars, name);
+}
+
+void export_variable(ShellState *state, char *name) {
+	char *val = get_table_variable(state->shell_vars, name);
+
+	// Either it doesn't exist at all, or it's already exported and thus not in
+	// shell_vars
+	if (val == NULL)
+		return;
+
+	// Set before unsetting to avoid having val cleared
+	set_table_variable(state->env_vars, name, val);
+	assert(setenv(name, val, SETENV_OVERWRITE) != -1);
+
+	// Clears val too
+	unset_table_variable(state->shell_vars, name);
 }

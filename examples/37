@@ -1,0 +1,24 @@
+echo $HISSHI_VAR
+date |= HISSHI_VAR
+echo $HISSHI_VAR
+
+# Should initially be empty
+env | rg hisshi
+
+export HISSHI_VAR
+
+# Should be the same
+echo $HISSHI_VAR
+
+# Should exist now
+env | rg hisshi
+
+export HISSHI_OTHER_VAR
+
+# Still shouldn't exist
+env | rg other
+
+# Both should fail. Both are supported in POSIX but not us. See builtin.c or
+# other docs for design decision explanations
+export
+export foo bar
