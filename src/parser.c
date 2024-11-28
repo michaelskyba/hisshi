@@ -149,6 +149,11 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 		if (tk_type == TOKEN_FUNC_NAME) {
 			char *func_name = parse_state->tk->str;
 			printf("Ack intention to define function with name |%s|\n", func_name);
+
+			char *func_body = get_function_line(script_file);
+			printf("Intended body |%s|\n", func_body);
+			free(func_body);
+
 			continue;
 		}
 

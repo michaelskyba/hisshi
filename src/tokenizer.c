@@ -205,3 +205,42 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 		return true;
 	}
 }
+
+// Reads until the end of the line into a returned char buffer. Used to get
+// the body of a single-line functions.
+char *get_function_line(FILE *script_file) {
+	int buf_size = 128;
+
+	// Avoid tk->str because a multi-line function body may be significantly
+	// larger than any individual regular token. Single-line functions might be
+	// fine but let's be consistent with multi-line parsing
+	char *buf = malloc(buf_size+1);
+	char *p = buf;
+	char c = getc(script_file);
+
+	// It wouldn't make a functional difference but remove leading spaces
+	// Usually we write functions like "myfunc: echo foo" and not "myfunc:echo foo"
+	while (c != '\n' && isspace(c))
+		c = getc(script_file);
+
+	// c may include comments too, but we can just store them in the function
+	// body and ignore them when evaling later
+	while (c != '\n') {
+		assert(c != EOF);
+		*p++ = c;
+
+		int offset = p - buf;
+		if (offset == buf_size) {
+			buf_size *= 2;
+			buf = realloc(buf, buf_size+1);
+			p = buf + offset;
+		}
+
+		c = getc(script_file);
+	}
+
+	*p = '\0';
+	ungetc(c, script_file);
+
+	return buf;
+}
