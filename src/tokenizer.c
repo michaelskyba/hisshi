@@ -54,14 +54,22 @@ TokenizerState *create_tokenizer_state() {
 	return state;
 }
 
-// Returns the same p but relative to the new str pointer
-char *resize_tk_str(Token *tk, char *p) {
-	int offset = p - tk->str;
-	tk->str_len *= 2;
+// Returns new value of p
+char *append_tk_p(Token *tk, char *p, char c) {
+	*p++ = c;
 
-	// str_len doesn't include \0
-	tk->str = realloc(tk->str, tk->str_len + 1);
-	return tk->str + offset;
+	if (p - tk->str == tk->str_len) {
+		int offset = p - tk->str;
+		tk->str_len *= 2;
+
+		printf("Reallocating tk->str to size %d\n", tk->str_len);
+
+		// str_len doesn't include \0
+		tk->str = realloc(tk->str, tk->str_len + 1);
+		p = tk->str + offset;
+	}
+
+	return p;
 }
 
 // rt: whether to keep reading (type != EOF)
@@ -163,13 +171,11 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 
 		while ((c = getcb(script_file)) != match) {
 			assert(c != EOF);
-			*p++ = c;
 
 			if (c == '\n')
 				tk->ln++;
 
-			if (p - tk->str == tk->str_len)
-				p = resize_tk_str(tk, p);
+			p = append_tk_p(tk, p, c);
 		}
 
 		*p = '\0';
@@ -179,13 +185,11 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	// Unquoted regular or function name
 	else {
 		char *p = tk->str;
+
 		while (!isspace(c) && c != '#') {
 			assert(c != EOF);
-			*p++ = c;
 
-			if (p - tk->str == tk->str_len)
-				p = resize_tk_str(tk, p);
-
+			p = append_tk_p(tk, p, c);
 			c = getcb(script_file);
 		}
 
@@ -222,11 +226,8 @@ void get_function_body_single(Token *tk, FILE *script_file) {
 	// body and ignore them when evaling later
 	while (c != '\n') {
 		assert(c != EOF);
-		*p++ = c;
 
-		if (p - tk->str == tk->str_len)
-			p = resize_tk_str(tk, p);
-
+		p = append_tk_p(tk, p, c);
 		c = getcb(script_file);
 	}
 
@@ -272,18 +273,12 @@ void get_function_body_multi(Token *tk, int func_indent, FILE *script_file) {
 
 		// If the line is blank, we consider it part of the function either way
 		if (c == '\n') {
-			for (int i = 0; i < line_indent - func_indent; i++) {
-				*p++ = '\t';
+			for (int i = 0; i < line_indent - func_indent; i++)
+				p = append_tk_p(tk, p, '\t');
 
-				if (p - tk->str == tk->str_len)
-					p = resize_tk_str(tk, p);
-			}
-
-			*p++ = '\n';
-			if (p - tk->str == tk->str_len)
-				p = resize_tk_str(tk, p);
-
+			p = append_tk_p(tk, p, '\n');
 			tk->ln++;
+
 			continue;
 		}
 
@@ -299,28 +294,18 @@ void get_function_body_multi(Token *tk, int func_indent, FILE *script_file) {
 		}
 
 		// Add the relative indent of the current line to the token buffer
-		for (int i = 0; i < line_indent - func_indent; i++) {
-			*p++ = '\t';
-
-			if (p - tk->str == tk->str_len)
-				p = resize_tk_str(tk, p);
-		}
+		for (int i = 0; i < line_indent - func_indent; i++)
+			p = append_tk_p(tk, p, '\t');
 
 		// Add the rest of this line to the token buffer
-		while (true) {
+		while (c != '\n') {
 			assert(c != EOF);
-			*p++ = c;
 
-			if (p - tk->str == tk->str_len)
-				p = resize_tk_str(tk, p);
-
-			// if \n, still add it to the buffer before breaking
-			if (c == '\n')
-				break;
-
+			p = append_tk_p(tk, p, c);
 			c = getcb(script_file);
 		}
 
+		p = append_tk_p(tk, p, '\n');
 		tk->ln++;
 	}
 }
