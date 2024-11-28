@@ -1,6 +1,18 @@
 // Assuming -fsanitize=address
 #define STACKTRACE	char *stacktrace_tmp = malloc(1); *(stacktrace_tmp + 5) = 1
 
+// TODO Make dynamic
+char getc_buffer[128];
+char *getc_buffer_p = getc_buffer;
+
+// Assumes you will only ever read from the same file
+char getcb(FILE *f) {
+	return (getc_buffer_p > getc_buffer) ? *(--getc_buffer_p) : getc(f);
+}
+void ungetcb(char c) {
+	*(getc_buffer_p++) = c;
+}
+
 char *get_str_copy(char *base) {
 	char *dest = malloc(strlen(base) + 1);
 	strcpy(dest, base);

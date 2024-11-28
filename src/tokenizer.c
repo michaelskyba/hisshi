@@ -68,7 +68,7 @@ char *resize_tk_str(Token *tk, char *p) {
 // tk->str will be overwritten, so copy it if you need it
 bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	char c;
-	while ((c = getc(script_file)) == ' ') ;
+	while ((c = getcb(script_file)) == ' ') ;
 
 	if (c == EOF) {
 		tk->type = TOKEN_EOF;
@@ -81,13 +81,13 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '>') {
-		c = getc(script_file);
+		c = getcb(script_file);
 
 		if (c == '>')
 			tk->type = TOKEN_REDIRECT_APPEND;
 		else {
 			tk->type = TOKEN_REDIRECT_WRITE;
-			ungetc(c, script_file);
+			ungetcb(c);
 		}
 
 		return true;
@@ -99,7 +99,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '#') {
-		while (getc(script_file) != '\n') ;
+		while (getcb(script_file) != '\n') ;
 		tk->type = TOKEN_NEWLINE;
 		tk->ln++;
 
@@ -114,21 +114,21 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '|') {
-		c = getc(script_file);
+		c = getcb(script_file);
 
 		if (c == '=')
 			tk->type = TOKEN_PIPE_VARIABLE;
 		else {
 			tk->type = TOKEN_PIPE;
-			ungetc(c, script_file);
+			ungetcb(c);
 		}
 
 		return true;
 	}
 
 	if (c == '-') {
-		c = getc(script_file);
-		ungetc(c, script_file);
+		c = getcb(script_file);
+		ungetcb(c);
 
 		if (isspace(c) || c == '#') {
 			tk->type = TOKEN_DASH;
@@ -140,9 +140,9 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '$') {
-		c = getc(script_file);
+		c = getcb(script_file);
 		assert(isalnum(c));
-		ungetc(c, script_file);
+		ungetcb(c);
 
 		// For now rely on regular name parsing for the variable name,
 		// but overwrite the type
@@ -161,7 +161,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 		// Don't insert the initial "/'
 		char *p = tk->str;
 
-		while ((c = getc(script_file)) != match) {
+		while ((c = getcb(script_file)) != match) {
 			assert(c != EOF);
 			*p++ = c;
 
@@ -186,7 +186,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 			if (p - tk->str == tk->str_len)
 				p = resize_tk_str(tk, p);
 
-			c = getc(script_file);
+			c = getcb(script_file);
 		}
 
 		// Defined as ^myfunc:
@@ -202,7 +202,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 			*p = '\0';
 		}
 
-		ungetc(c, script_file);
+		ungetcb(c);
 		return true;
 	}
 }
@@ -211,12 +211,12 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 // the body of a single-line functions.
 void get_function_body_single(Token *tk, FILE *script_file) {
 	char *p = tk->str;
-	char c = getc(script_file);
+	char c = getcb(script_file);
 
 	// It wouldn't make a functional difference but remove leading spaces
 	// Usually we write functions like "myfunc: echo foo" and not "myfunc:echo foo"
 	while (c != '\n' && isspace(c))
-		c = getc(script_file);
+		c = getcb(script_file);
 
 	// c may include comments too, but we can just store them in the function
 	// body and ignore them when evaling later
@@ -227,9 +227,9 @@ void get_function_body_single(Token *tk, FILE *script_file) {
 		if (p - tk->str == tk->str_len)
 			p = resize_tk_str(tk, p);
 
-		c = getc(script_file);
+		c = getcb(script_file);
 	}
 
 	*p = '\0';
-	ungetc(c, script_file);
+	ungetcb(c);
 }
