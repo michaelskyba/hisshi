@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int main(void) {
+int main() {
 	// if stdin is connected to a terminal, assume no input is provided
 	if (isatty(fileno(stdin)))
 		return 1;

@@ -46,6 +46,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 		}
 
 		int exit_code = execute_pipeline(parse_state->cmd_pipeline, shell_state);
+		shell_state->exit_code = exit_code;
 
 		// 0: success exit code, so this if branch is now active
 		if (exit_code == 0)

@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 	ParseState *parse_state = create_parse_state();
 	ShellState *shell_state = create_shell_state();
 
-	// 1 offset: We want the name of the script to be $0, not the hsh binary
+	// 1 offset: We want the filename of the script to be $0, not the hsh binary
 	// This is how regular shells do it
 	set_cli_args(shell_state->shell_vars, argc-1, argv+1);
 
@@ -56,6 +56,10 @@ int main(int argc, char **argv) {
 	assert(script_file);
 	parse_script(script_file, parse_state, shell_state);
 
+	int exit_code = shell_state->exit_code;
+
 	free_parse_state(parse_state);
 	free_shell_state(shell_state);
+
+	return exit_code;
 }

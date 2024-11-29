@@ -16,6 +16,9 @@ typedef struct {
 	Binding **env_vars;
 
 	Binding **functions;
+
+	// Exit code of most recent command
+	int exit_code;
 } ShellState;
 
 void load_env_vars(Binding **table) {

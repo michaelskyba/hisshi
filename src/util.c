@@ -1,11 +1,12 @@
 // Assuming -fsanitize=address
 #define STACKTRACE	char *stacktrace_tmp = malloc(1); *(stacktrace_tmp + 5) = 1
 
-// TODO Make dynamic
+// TODO Used linked list
 char getc_buffer[128];
 char *getc_buffer_p = getc_buffer;
 
-// Assumes you will only ever read from the same file
+// Using this without issues requires that you will only ever read from the same
+// file, or that you will leave the state clean whenever you switch
 char getcb(FILE *f) {
 	return (getc_buffer_p > getc_buffer) ? *(--getc_buffer_p) : getc(f);
 }
