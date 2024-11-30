@@ -12,7 +12,7 @@ typedef struct InputSource {
 	void *state;
 } InputSource;
 
-typedef struct {
+typedef struct FileInputSourceState {
 	FILE *file;
 
 	// Pushback
@@ -60,7 +60,7 @@ InputSource *create_file_input_source(FILE *file) {
 	return source;
 }
 
-typedef struct {
+typedef struct StringInputSourceState {
 	// Stores the main, original string given as input. We shouldn't need a
 	// dedicated pushback buffer; pushback is only used for lookahead
 	char *buf;

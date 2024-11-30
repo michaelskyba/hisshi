@@ -15,7 +15,7 @@ enum {
 	TOKEN_EOF,
 };
 
-typedef struct {
+typedef struct Token {
 	int type;
 
 	// Dynamic char array: text content. Not used for all types
@@ -43,7 +43,7 @@ void free_token(Token *tk) {
 	free(tk);
 }
 
-typedef struct {
+typedef struct TokenizerState {
 	// Used to distinguish colons from defining functions or being regular chars
 	bool at_line_start;
 } TokenizerState;

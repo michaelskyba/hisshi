@@ -1,6 +1,6 @@
 #define SETENV_OVERWRITE 1
 
-typedef struct {
+typedef struct ShellState {
 	/*
 	We populate our own representation of env_vars at startup and then they're
 	automatically synced. The only way for them to change is for a hisshi script

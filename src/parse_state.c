@@ -20,7 +20,7 @@ enum {
 	READING_ARG,
 };
 
-typedef struct {
+typedef struct ParseState {
 	// The head of a linked list of commands we're constructing
 	// "foo | bar | baz" would be three
 	Command *cmd_pipeline;
