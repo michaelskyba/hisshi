@@ -1,32 +1,11 @@
-typedef enum TokenType {
-	TOKEN_INDENT,
-	TOKEN_DASH,
-	TOKEN_NAME,
-	TOKEN_FUNC_NAME_SINGLE, // body defined on the same line as the name
-	TOKEN_FUNC_NAME_MULTI, // body defined across indented lines
-	TOKEN_VARIABLE,
-	TOKEN_REDIRECT_READ,
-	TOKEN_PIPE,
-	TOKEN_PIPE_VARIABLE,
-	TOKEN_REDIRECT_WRITE,
-	TOKEN_REDIRECT_APPEND,
-	TOKEN_NEWLINE,
-	TOKEN_EOF,
-} TokenType;
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <ctype.h>
 
-typedef struct Token {
-	TokenType type;
-
-	// Dynamic char array: text content. Not used for all types
-	char *str;
-
-	// Length not including the \0; str's real size is +1
-	int str_len;
-
-	// Line number. Stored in the token because it needs to be read while
-	// tokenizing, and lets us separate the token from the rest of the state
-	int ln;
-} Token;
+#include "tokenizer.h"
+#include "input_source.h"
 
 Token *create_token() {
 	Token *tk = malloc(sizeof(Token));
@@ -41,11 +20,6 @@ void free_token(Token *tk) {
 	free(tk->str);
 	free(tk);
 }
-
-typedef struct TokenizerState {
-	// Used to distinguish colons from defining functions or being regular chars
-	bool at_line_start;
-} TokenizerState;
 
 TokenizerState *create_tokenizer_state() {
 	TokenizerState *state = malloc(sizeof(TokenizerState));

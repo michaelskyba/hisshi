@@ -1,4 +1,6 @@
 #!/bin/sh -e
+exit # just wait one commit
+
 
 # TODO Makefile
 

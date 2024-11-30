@@ -1,3 +1,12 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <ctype.h>
+
+#include "function.h"
+#include "tokenizer.h"
+#include "input_source.h"
+
 // Reads until the end of the line into the given token. Used to get the body of
 // a single-line functions.
 void get_function_body_single(Token *tk, InputSource *source) {

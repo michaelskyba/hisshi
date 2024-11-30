@@ -1,3 +1,17 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <stdlib.h>
+
+#include "parser.h"
+#include "shell_state.h"
+#include "parse_state.h"
+#include "exec.h"
+#include "command.h"
+#include "tokenizer.h"
+#include "function.h"
+#include "util.h"
+
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
 void parse_command(ParseState *parse_state, ShellState *shell_state) {

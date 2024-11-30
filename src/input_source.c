@@ -1,24 +1,12 @@
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+
+#include "input_source.h"
+
 // Looking ahead is generally only required in misc one-char situations, or for
 // looking at leading indents to check for the end of a function body
 #define INPUT_PUSHBACK_BUFSIZ 32
-
-// Used as a generic so that the tokenizer can read from a file (for a script)
-// or from a string (eval, functions, aliases) with a common interface
-typedef struct InputSource {
-	int (*getc)(struct InputSource *self);
-	void (*ungetc)(struct InputSource *self, int c);
-
-	// Internal state specific to the InputSource implementation
-	void *state;
-} InputSource;
-
-typedef struct FileInputSourceState {
-	FILE *file;
-
-	// Pushback
-	char *buf;
-	char *buf_p;
-} FileInputSourceState;
 
 int file_get_char(InputSource *self) {
 	FileInputSourceState *state = (FileInputSourceState *) self->state;
@@ -59,13 +47,6 @@ InputSource *create_file_input_source(FILE *file) {
 	source->state = state;
 	return source;
 }
-
-typedef struct StringInputSourceState {
-	// Stores the main, original string given as input. We shouldn't need a
-	// dedicated pushback buffer; pushback is only used for lookahead
-	char *buf;
-	char *buf_p;
-} StringInputSourceState;
 
 int str_get_char(InputSource *self) {
 	StringInputSourceState *state = (StringInputSourceState *) self->state;

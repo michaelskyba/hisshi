@@ -1,3 +1,13 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdbool.h>
+
+#include "builtin.h"
+#include "shell_state.h"
+#include "command.h"
+
 /*
 TODO: Implement a wrapper cd function to be included in the default config with
 additional logic. Then make all builtins actually called "hisshi_cd" etc. to

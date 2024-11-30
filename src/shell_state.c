@@ -1,25 +1,12 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <string.h>
+
+#include "hash_table.h"
+#include "shell_state.h"
+
 #define SETENV_OVERWRITE 1
-
-typedef struct ShellState {
-	/*
-	We populate our own representation of env_vars at startup and then they're
-	automatically synced. The only way for them to change is for a hisshi script
-	to modify them or export a local variable, both of which we catch and
-	setenv() accordingly. There's no way to source a C program etc. to run in
-	the parent process.
-	*/
-
-	// TODO scope system
-
-	// Hash tables, size HASH_BUCKETS
-	Binding **shell_vars;
-	Binding **env_vars;
-
-	Binding **functions;
-
-	// Exit code of most recent command
-	int exit_code;
-} ShellState;
 
 void load_env_vars(Binding **table) {
 	// Automatically set by C

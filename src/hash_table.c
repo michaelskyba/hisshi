@@ -1,17 +1,10 @@
-#define HASH_BUCKETS 1024
-#define HASH_ROLL_CONSTANT 37
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
-// Used to represent
-// - Internal shell variables
-// - Environment variables
-// - Functions
-typedef struct Binding {
-	char *name;
-	char *value;
-
-	// This is part of a hash table, so we use LL to handle collision
-	struct Binding *next;
-} Binding;
+#include "util.h"
+#include "hash_table.h"
 
 int hash_str(char *str) {
 	long hash_val = 0;

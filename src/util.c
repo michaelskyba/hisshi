@@ -1,3 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <dirent.h>
+
+#include "util.h"
+
 // Assuming -fsanitize=address
 #define STACKTRACE	char *stacktrace_tmp = malloc(1); *(stacktrace_tmp + 5) = 1
 

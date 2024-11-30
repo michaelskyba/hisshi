@@ -1,3 +1,21 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <assert.h>
+
+#include <sys/wait.h>
+
+#include "exec.h"
+#include "command.h"
+#include "shell_state.h"
+#include "builtin.h"
+
+// We don't need these constants anywhere else so it's fine to have them in
+// exec.c. Then we avoid having to include unistd.h in exec.h.
+
 // How many bytes to read at a time, from a pipe into a char buffer
 #define READ_PIPE_BYTES 4096
 
