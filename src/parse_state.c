@@ -32,6 +32,8 @@ typedef struct {
 	// enum: Which part of the line we're parsing
 	int phase;
 
+	// TODO For now this would probably be better to store externally, created
+	// and freed in parse_script, but we probably want to track the line number
 	Token *tk;
 
 	/*

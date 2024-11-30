@@ -63,9 +63,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	else printf("L%d: CF skip\n", ln);
 }
 
-void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *script_file) {
-	InputSource *source = create_file_input_source(script_file);
-
+void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource *source) {
 	// Start with at_line_start == true
 	TokenizerState *tokenizer_state = create_tokenizer_state();
 
@@ -229,6 +227,5 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *script
 		assert(false);
 	}
 
-	free_file_input_source(source);
 	free(tokenizer_state);
 }

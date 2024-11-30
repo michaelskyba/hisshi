@@ -55,7 +55,10 @@ int main(int argc, char **argv) {
 
 	FILE *script_file = fopen(argv[1], "r");
 	assert(script_file);
-	parse_script(parse_state, shell_state, script_file);
+
+	InputSource *source = create_file_input_source(script_file);
+	parse_script(parse_state, shell_state, source);
+	free_file_input_source(source);
 
 	int exit_code = shell_state->exit_code;
 
