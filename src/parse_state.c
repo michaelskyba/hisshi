@@ -1,5 +1,4 @@
-// For ParseState.indent_controls
-enum {
+typedef enum ControlStatus {
 	// Default: no branch of this control flow structure has matched. elifs and
 	// elses can still activate.
 	CONTROL_WAITING,
@@ -11,14 +10,13 @@ enum {
 	// The current branch is inactive, since we've matched a previous branch
 	// within the same control structure. Any new bodies should not execute.
 	CONTROL_COMPLETE,
-};
+} ControlStatus;
 
-// For ParseState.phase
-enum {
+typedef enum ParsePhase {
 	READING_INDENTS,
 	READING_NAME,
 	READING_ARG,
-};
+} ParsePhase;
 
 typedef struct ParseState {
 	// The head of a linked list of commands we're constructing
@@ -29,8 +27,8 @@ typedef struct ParseState {
 	// ParseState.pipeline
 	Command *cmd;
 
-	// enum: Which part of the line we're parsing
-	int phase;
+	// Which part of the line we're parsing
+	ParsePhase phase;
 
 	// TODO For now this would probably be better to store externally, created
 	// and freed in parse_script, but we probably want to track the line number
@@ -43,7 +41,7 @@ typedef struct ParseState {
 	indent_controls[n]: status at n levels of indentation
 	[0]: base level
 	*/
-	int *indent_controls;
+	ControlStatus *indent_controls;
 	int indents_tracked; // total allocated room. starts at 1
 } ParseState;
 

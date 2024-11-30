@@ -23,8 +23,8 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	// resized indent_controls
 	assert(parse_state->indents_tracked > indent);
 
-	int parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : parse_state->indent_controls[indent-1];
-	int control = parse_state->indent_controls[indent];
+	ControlStatus parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : parse_state->indent_controls[indent-1];
+	ControlStatus control = parse_state->indent_controls[indent];
 	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
 
 	bool parent_permits = parent_control == CONTROL_BRANCH_ACTIVE;

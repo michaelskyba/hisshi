@@ -1,5 +1,4 @@
-// For Token.type
-enum {
+typedef enum TokenType {
 	TOKEN_INDENT,
 	TOKEN_DASH,
 	TOKEN_NAME,
@@ -13,10 +12,10 @@ enum {
 	TOKEN_REDIRECT_APPEND,
 	TOKEN_NEWLINE,
 	TOKEN_EOF,
-};
+} TokenType;
 
 typedef struct Token {
-	int type;
+	TokenType type;
 
 	// Dynamic char array: text content. Not used for all types
 	char *str;
