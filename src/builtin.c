@@ -5,11 +5,17 @@
 #include <unistd.h>
 
 #include "command.h"
+#include "input_source.h"
+#include "parser.h"
+#include "parse_state.h"
 #include "shell_state.h"
+#include "util.h"
 
 #include "builtin.h"
 
 typedef struct Command Command;
+typedef struct InputSource InputSource;
+typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
 
 /*
@@ -102,29 +108,31 @@ int builtin_unset(Command *cmd, ShellState *state) {
 	return 0;
 }
 
-// int builtin_eval(Command *cmd, ShellState *shell_state) {
-// 	if (cmd->argc < 2) {
-// 		printf("builtin eval: no input specified\n");
-// 		return 1;
-// 	}
+int builtin_eval(Command *cmd, ShellState *shell_state) {
+	if (cmd->argc < 2) {
+		printf("builtin eval: no input specified\n");
+		return 1;
+	}
 
-// 	if (cmd->argc > 2) {
-// 		printf("builtin eval: multiple inputs specified\n");
-// 		return 1;
-// 	}
+	if (cmd->argc > 2) {
+		printf("builtin eval: multiple inputs specified\n");
+		return 1;
+	}
 
-// 	char *eval_body = cmd->arg_head->next->name;
-// 	InputSource *source = create_str_input_source(eval_body);
+	char *eval_body = copy_with_newline(cmd->arg_head->next->name);
+	InputSource *source = create_str_input_source(eval_body);
 
-// 	ParseState *parse_state = create_parse_state();
-// 	parse_script(parse_state, shell_state, source);
+	printf("Running parse script for body |%s|\n", eval_body);
 
-// 	int exit_code = shell_state->exit_code;
-// 	free_parse_state(parse_state);
-// 	free_str_input_source(source);
+	ParseState *parse_state = create_parse_state();
+	parse_script(parse_state, shell_state, source);
 
-// 	return exit_code;
-// }
+	int exit_code = shell_state->exit_code;
+	free_parse_state(parse_state);
+	free_str_input_source(source);
+
+	return exit_code;
+}
 
 int (*get_builtin(char *name)) (Command *, ShellState *) {
 	if (strcmp(name, "cd") == 0)
@@ -139,8 +147,8 @@ int (*get_builtin(char *name)) (Command *, ShellState *) {
 	if (strcmp(name, "unset") == 0)
 		return builtin_unset;
 
-	// if (strcmp(name, "eval") == 0)
-	// 	return builtin_eval;
+	if (strcmp(name, "eval") == 0)
+		return builtin_eval;
 
 	return NULL;
 }

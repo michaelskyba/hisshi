@@ -15,6 +15,21 @@ char *get_str_copy(char *base) {
 	return dest;
 }
 
+// Returns "\n" if given an empty string
+char *copy_with_newline(char *base) {
+	int len = strlen(base);
+	if (len == 0 || base[len-1] != '\n')
+		len++;
+
+	char *dest = malloc(len+1);
+	strcpy(dest, base);
+
+	dest[len-1] = '\n';
+	dest[len] = '\0';
+
+	return dest;
+}
+
 // Given name is not modified
 char *get_bin_path(char *target) {
 	// Absolute or relative paths

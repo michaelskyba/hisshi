@@ -1,2 +1,17 @@
-echo foo
-eval pwd
+test $var
+- echo "Empty initially"
+
+# Runs in the parent process so var should be visible
+eval "pwd |= var"
+test $var
+	echo OK
+-
+	echo FAIL
+
+# Pipelines run each command in child processes so the inner eval will have a
+# dangling copy of the parent shell_state
+eval "pwd |= var2" | cat
+test $var2
+	echo FAIL
+-
+	echo OK
