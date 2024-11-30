@@ -1,12 +1,12 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-#include "util.h"
 #include "command.h"
+#include "util.h"
 
-typedef struct Command Command;
 typedef struct ArgNode ArgNode;
+typedef struct Command Command;
 
 void clear_command(Command *cmd) {
 	cmd->indent_level = 0;

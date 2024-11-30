@@ -1,15 +1,15 @@
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#include "tokenizer.h"
 #include "input_source.h"
+#include "tokenizer.h"
 
-typedef struct Token Token;
-typedef struct TokenizerState TokenizerState;
 typedef struct InputSource InputSource;
+typedef struct TokenizerState TokenizerState;
+typedef struct Token Token;
 
 Token *create_token() {
 	Token *tk = malloc(sizeof(Token));

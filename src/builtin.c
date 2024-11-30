@@ -1,11 +1,11 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-#include "shell_state.h"
 #include "command.h"
+#include "shell_state.h"
 
 #include "builtin.h"
 

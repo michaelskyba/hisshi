@@ -1,14 +1,14 @@
-#include <stdio.h>
-#include <stdbool.h>
 #include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include "function.h"
-#include "tokenizer.h"
 #include "input_source.h"
+#include "tokenizer.h"
 
-typedef struct Token Token;
 typedef struct InputSource InputSource;
+typedef struct Token Token;
 
 // Reads until the end of the line into the given token. Used to get the body of
 // a single-line functions.

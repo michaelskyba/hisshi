@@ -1,21 +1,21 @@
-#include <stdio.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
-#include "parser.h"
-#include "shell_state.h"
-#include "parse_state.h"
-#include "exec.h"
 #include "command.h"
-#include "tokenizer.h"
+#include "exec.h"
 #include "function.h"
+#include "parser.h"
+#include "parse_state.h"
+#include "shell_state.h"
+#include "tokenizer.h"
 #include "util.h"
 
+typedef struct Command Command;
+typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
-typedef struct InputSource InputSource;
-typedef struct Command Command;
 typedef struct TokenizerState TokenizerState;
 
 // The command is finished being read, so we examine its context within the

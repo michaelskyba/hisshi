@@ -1,11 +1,11 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
+#include "command.h"
 #include "parse_state.h"
 #include "tokenizer.h"
-#include "command.h"
 
 typedef struct ParseState ParseState;
 

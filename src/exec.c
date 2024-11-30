@@ -1,17 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include <sys/wait.h>
 
-#include "exec.h"
-#include "command.h"
-#include "shell_state.h"
 #include "builtin.h"
+#include "command.h"
+#include "exec.h"
+#include "shell_state.h"
 
 // We don't need these constants anywhere else so it's fine to have them in
 // exec.c. Then we avoid having to include unistd.h in exec.h.

@@ -1,11 +1,11 @@
-#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "input_source.h"
 
-typedef struct InputSource InputSource;
 typedef struct FileInputSourceState FileInputSourceState;
+typedef struct InputSource InputSource;
 typedef struct StringInputSourceState StringInputSourceState;
 
 // Looking ahead is generally only required in misc one-char situations, or for

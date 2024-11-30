@@ -1,10 +1,10 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-#include "util.h"
 #include "hash_table.h"
+#include "util.h"
 
 typedef struct Binding Binding;
 

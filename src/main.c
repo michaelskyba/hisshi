@@ -1,18 +1,18 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include "hash_table.h"
-#include "parse_state.h"
-#include "shell_state.h"
 #include "input_source.h"
 #include "parser.h"
+#include "parse_state.h"
+#include "shell_state.h"
 
 typedef struct Binding Binding;
+typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
-typedef struct InputSource InputSource;
 
 void set_cli_args(Binding **table, char argc, char **argv) {
 	// 15: Assume we will have low digit counts of argc
