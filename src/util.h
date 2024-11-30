@@ -1,7 +1,4 @@
-#ifndef util_h_INCLUDED
-#define util_h_INCLUDED
+#pragma once
 
 char *get_str_copy(char *base);
 char *get_bin_path(char *target);
-
-#endif // util_h_INCLUDED

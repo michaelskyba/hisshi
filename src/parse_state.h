@@ -1,8 +1,4 @@
-#ifndef parse_state_h_INCLUDED
-#define parse_state_h_INCLUDED
-
-struct Command; // command.h
-struct Token; // tokenizer.h
+#pragma once
 
 typedef enum ControlStatus {
 	// Default: no branch of this control flow structure has matched. elifs and
@@ -55,5 +51,3 @@ struct ParseState *create_parse_state();
 void free_parse_state(struct ParseState *state);
 char *control_name(int control);
 void update_control(struct ParseState *state, int status);
-
-#endif // parse_state_h_INCLUDED

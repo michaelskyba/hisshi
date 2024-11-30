@@ -1,5 +1,4 @@
-#ifndef input_source_h_INCLUDED
-#define input_source_h_INCLUDED
+#pragma once
 
 // Used as a generic so that the tokenizer can read from a file (for a script)
 // or from a string (eval, functions, aliases) with a common interface
@@ -35,5 +34,3 @@ int str_get_char(struct InputSource *self);
 void str_unget_char(struct InputSource *self, int c);
 void free_str_input_source(struct InputSource *source);
 struct InputSource *create_str_input_source(char *str);
-
-#endif // input_source_h_INCLUDED

@@ -1,5 +1,4 @@
-#ifndef tokenizer_h_INCLUDED
-#define tokenizer_h_INCLUDED
+#pragma once
 
 struct InputSource; // input_source.h
 
@@ -44,5 +43,3 @@ struct TokenizerState {
 struct TokenizerState *create_tokenizer_state();
 char *append_tk_p(struct Token *tk, char *p, char c);
 bool read_token(struct Token *tk, struct TokenizerState *state, struct InputSource *source);
-
-#endif // tokenizer_h_INCLUDED

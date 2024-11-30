@@ -1,5 +1,4 @@
-#ifndef command_h_INCLUDED
-#define command_h_INCLUDED
+#pragma once
 
 struct ArgNode {
 	char *name;
@@ -44,5 +43,3 @@ void free_command(struct Command *cmd);
 char **get_argv_array(struct Command *cmd);
 void add_arg(struct Command *cmd, char *given_arg_name);
 void dump_command(struct Command *cmd);
-
-#endif // command_h_INCLUDED

@@ -1,5 +1,4 @@
-#ifndef hash_table_h_INCLUDED
-#define hash_table_h_INCLUDED
+#pragma once
 
 #define HASH_BUCKETS 1024
 #define HASH_ROLL_CONSTANT 37
@@ -26,5 +25,3 @@ void dump_table(struct Binding **table);
 void set_table_binding(struct Binding **table, char *name, char *value);
 char *get_table_binding(struct Binding **table, char *name);
 int unset_table_binding(struct Binding **table, char *name);
-
-#endif // hash_table_h_INCLUDED

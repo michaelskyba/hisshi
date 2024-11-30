@@ -1,5 +1,4 @@
-#ifndef shell_state_h_INCLUDED
-#define shell_state_h_INCLUDED
+#pragma once
 
 struct Binding; // hash_table.h
 
@@ -38,5 +37,3 @@ void export_variable(struct ShellState *state, char *name);
 
 void set_function(struct ShellState *state, char *name, char *body);
 char *get_function(struct ShellState *state, char *name);
-
-#endif // shell_state_h_INCLUDED
