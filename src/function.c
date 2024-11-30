@@ -7,6 +7,9 @@
 #include "tokenizer.h"
 #include "input_source.h"
 
+typedef struct Token Token;
+typedef struct InputSource InputSource;
+
 // Reads until the end of the line into the given token. Used to get the body of
 // a single-line functions.
 void get_function_body_single(Token *tk, InputSource *source) {

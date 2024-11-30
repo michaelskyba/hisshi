@@ -1,11 +1,11 @@
 #ifndef parser_h_INCLUDED
 #define parser_h_INCLUDED
 
-typedef struct ParseState ParseState; // parse_state.h
-typedef struct ShellState ShellState; // shell_state.h
-typedef struct InputSource InputSource; // input_source.h
+struct ParseState; // parse_state.h
+struct ShellState; // shell_state.h
+struct InputSource; // input_source.h
 
-void parse_command(ParseState *parse_state, ShellState *shell_state);
-void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource *source);
+void parse_command(struct ParseState *parse_state, struct ShellState *shell_state);
+void parse_script(struct ParseState *parse_state, struct ShellState *shell_state, struct InputSource *source);
 
 #endif // parser_h_INCLUDED

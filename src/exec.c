@@ -22,6 +22,9 @@
 // -rw-r--r--
 #define REDIR_CREATE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
+typedef struct Command Command;
+typedef struct ShellState ShellState;
+
 // Forks and returns child PID
 // pipes: full list of pipes created for the whole pipeline, most of which each
 // child should close

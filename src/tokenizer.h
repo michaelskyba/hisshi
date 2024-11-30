@@ -1,7 +1,7 @@
 #ifndef tokenizer_h_INCLUDED
 #define tokenizer_h_INCLUDED
 
-typedef struct InputSource InputSource; // input_source.h
+struct InputSource; // input_source.h
 
 typedef enum TokenType {
 	TOKEN_INDENT,
@@ -19,7 +19,7 @@ typedef enum TokenType {
 	TOKEN_EOF,
 } TokenType;
 
-typedef struct Token {
+struct Token {
 	TokenType type;
 
 	// Dynamic char array: text content. Not used for all types
@@ -31,18 +31,18 @@ typedef struct Token {
 	// Line number. Stored in the token because it needs to be read while
 	// tokenizing, and lets us separate the token from the rest of the state
 	int ln;
-} Token;
+};
 
-Token *create_token();
-void free_token(Token *tk);
+struct Token *create_token();
+void free_token(struct Token *tk);
 
-typedef struct TokenizerState {
+struct TokenizerState {
 	// Used to distinguish colons from defining functions or being regular chars
 	bool at_line_start;
-} TokenizerState;
+};
 
-TokenizerState *create_tokenizer_state();
-char *append_tk_p(Token *tk, char *p, char c);
-bool read_token(Token *tk, TokenizerState *state, InputSource *source);
+struct TokenizerState *create_tokenizer_state();
+char *append_tk_p(struct Token *tk, char *p, char c);
+bool read_token(struct Token *tk, struct TokenizerState *state, struct InputSource *source);
 
 #endif // tokenizer_h_INCLUDED

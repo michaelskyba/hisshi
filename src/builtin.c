@@ -4,9 +4,13 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include "builtin.h"
 #include "shell_state.h"
 #include "command.h"
+
+#include "builtin.h"
+
+typedef struct Command Command;
+typedef struct ShellState ShellState;
 
 /*
 TODO: Implement a wrapper cd function to be included in the default config with

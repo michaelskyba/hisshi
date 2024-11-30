@@ -4,6 +4,10 @@
 
 #include "input_source.h"
 
+typedef struct InputSource InputSource;
+typedef struct FileInputSourceState FileInputSourceState;
+typedef struct StringInputSourceState StringInputSourceState;
+
 // Looking ahead is generally only required in misc one-char situations, or for
 // looking at leading indents to check for the end of a function body
 #define INPUT_PUSHBACK_BUFSIZ 32

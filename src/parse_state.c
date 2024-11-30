@@ -7,6 +7,8 @@
 #include "tokenizer.h"
 #include "command.h"
 
+typedef struct ParseState ParseState;
+
 ParseState *create_parse_state() {
 	ParseState *state = malloc(sizeof(ParseState));
 	state->cmd = create_command();

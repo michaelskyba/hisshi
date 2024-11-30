@@ -5,6 +5,9 @@
 #include "util.h"
 #include "command.h"
 
+typedef struct Command Command;
+typedef struct ArgNode ArgNode;
+
 void clear_command(Command *cmd) {
 	cmd->indent_level = 0;
 	cmd->else_flag = false;

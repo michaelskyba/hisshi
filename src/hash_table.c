@@ -6,6 +6,8 @@
 #include "util.h"
 #include "hash_table.h"
 
+typedef struct Binding Binding;
+
 int hash_str(char *str) {
 	long hash_val = 0;
 	int len = strlen(str);

@@ -1,14 +1,14 @@
 #ifndef builtin_h_INCLUDED
 #define builtin_h_INCLUDED
 
-typedef struct Command Command; // command.h
-typedef struct ShellState ShellState; // shell_state.h
+struct Command; // command.h
+struct ShellState; // shell_state.h
 
-int builtin_cd(Command *cmd, ShellState *state);
-int builtin_exit(Command *cmd, ShellState *state);
-int builtin_export(Command *cmd, ShellState *state);
-int builtin_unset(Command *cmd, ShellState *state);
+int builtin_cd(struct Command *cmd, struct ShellState *state);
+int builtin_exit(struct Command *cmd, struct ShellState *state);
+int builtin_export(struct Command *cmd, struct ShellState *state);
+int builtin_unset(struct Command *cmd, struct ShellState *state);
 
-int (*get_builtin(char *name)) (Command *, ShellState *);
+int (*get_builtin(char *name)) (struct Command *, struct ShellState *);
 
 #endif // builtin_h_INCLUDED

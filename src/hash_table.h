@@ -8,23 +8,23 @@
 // - Internal shell variables
 // - Environment variables
 // - Functions
-typedef struct Binding {
+struct Binding {
 	char *name;
 	char *value;
 
 	// This is part of a hash table, so we use LL to handle collision
 	struct Binding *next;
-} Binding;
+};
 
 int hash_str(char *str);
 
-Binding *create_binding_struct(char *name, char *value);
+struct Binding *create_binding_struct(char *name, char *value);
 
-void free_table(Binding **table);
-void dump_table(Binding **table);
+void free_table(struct Binding **table);
+void dump_table(struct Binding **table);
 
-void set_table_binding(Binding **table, char *name, char *value);
-char *get_table_binding(Binding **table, char *name);
-int unset_table_binding(Binding **table, char *name);
+void set_table_binding(struct Binding **table, char *name, char *value);
+char *get_table_binding(struct Binding **table, char *name);
+int unset_table_binding(struct Binding **table, char *name);
 
 #endif // hash_table_h_INCLUDED

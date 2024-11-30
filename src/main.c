@@ -9,6 +9,11 @@
 #include "input_source.h"
 #include "parser.h"
 
+typedef struct Binding Binding;
+typedef struct ParseState ParseState;
+typedef struct ShellState ShellState;
+typedef struct InputSource InputSource;
+
 void set_cli_args(Binding **table, char argc, char **argv) {
 	// 15: Assume we will have low digit counts of argc
 	char *name = malloc(15);

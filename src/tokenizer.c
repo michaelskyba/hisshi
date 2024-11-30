@@ -7,6 +7,10 @@
 #include "tokenizer.h"
 #include "input_source.h"
 
+typedef struct Token Token;
+typedef struct TokenizerState TokenizerState;
+typedef struct InputSource InputSource;
+
 Token *create_token() {
 	Token *tk = malloc(sizeof(Token));
 	tk->type = TOKEN_EOF; // Will be replaced when initially read

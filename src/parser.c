@@ -12,6 +12,12 @@
 #include "function.h"
 #include "util.h"
 
+typedef struct ParseState ParseState;
+typedef struct ShellState ShellState;
+typedef struct InputSource InputSource;
+typedef struct Command Command;
+typedef struct TokenizerState TokenizerState;
+
 // The command is finished being read, so we examine its context within the
 // control flow structure and potentially execute it
 void parse_command(ParseState *parse_state, ShellState *shell_state) {

@@ -1,18 +1,18 @@
 #ifndef command_h_INCLUDED
 #define command_h_INCLUDED
 
-typedef struct ArgNode {
+struct ArgNode {
 	char *name;
 	struct ArgNode *next;
-} ArgNode;
+};
 
-typedef struct Command {
+struct Command {
 	char *path;
 
 	// The arg list and argc include the $0 name
 	int argc;
-	ArgNode *arg_head;
-	ArgNode *arg_tail;
+	struct ArgNode *arg_head;
+	struct ArgNode *arg_tail;
 
 	// Used for determining control flow
 	// Base: 0
@@ -35,14 +35,14 @@ typedef struct Command {
 	char *redirect_read;
 	char *redirect_write;
 	char *redirect_append;
-} Command;
+};
 
-void clear_command(Command *cmd);
-Command *create_command();
-void free_command(Command *cmd);
+void clear_command(struct Command *cmd);
+struct Command *create_command();
+void free_command(struct Command *cmd);
 
-char **get_argv_array(Command *cmd);
-void add_arg(Command *cmd, char *given_arg_name);
-void dump_command(Command *cmd);
+char **get_argv_array(struct Command *cmd);
+void add_arg(struct Command *cmd, char *given_arg_name);
+void dump_command(struct Command *cmd);
 
 #endif // command_h_INCLUDED

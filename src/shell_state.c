@@ -8,6 +8,9 @@
 
 #define SETENV_OVERWRITE 1
 
+typedef struct Binding Binding;
+typedef struct ShellState ShellState;
+
 void load_env_vars(Binding **table) {
 	// Automatically set by C
 	extern char **environ;
