@@ -54,7 +54,9 @@ InputSource *create_file_input_source(FILE *file) {
 
 int str_get_char(InputSource *self) {
 	StringInputSourceState *state = (StringInputSourceState *) self->state;
-	return *(state->buf_p++);
+
+	char c = *(state->buf_p++);
+	return c == '\0' ? EOF : c;
 }
 
 void str_unget_char(InputSource *self, int c) {

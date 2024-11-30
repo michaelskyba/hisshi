@@ -170,7 +170,7 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 			c = source->getc(source);
 		}
 
-		// Defined as ^myfunc:
+		// Defined as ^\t*myfunc:
 		if (state->at_line_start && *(p-1) == ':') {
 			char delim = c;
 			tk->type = delim == '\n' ? TOKEN_FUNC_NAME_MULTI : TOKEN_FUNC_NAME_SINGLE;
