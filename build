@@ -1,17 +1,3 @@
 #!/bin/sh -e
-exit # just wait one commit
-
-
-# TODO Makefile
-
-cd src
-
-# -D_DEFAULT_SOURCE: Enable glibc dirent.h dir_type
-# Used for ensuring you don't e.g. execute a directory, when reading PATH.
-# Avoiding it is annoying and requires other syscalls
-
-gcc -g -O0 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -std=c99 -pedantic -fsanitize=address main.c -o hsh
-# gcc -g -O0 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -std=c99 -pedantic main.c -o hsh
-# gcc -O2 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -std=c99 -pedantic main.c -o hsh
-
-sudo cp hsh /usr/local/bin/
+make -C src
+sudo cp src/hsh /usr/local/bin/
