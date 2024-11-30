@@ -59,3 +59,45 @@ InputSource *create_file_input_source(FILE *file) {
 	source->state = state;
 	return source;
 }
+
+typedef struct {
+	// Stores the main, original string given as input. We shouldn't need a
+	// dedicated pushback buffer; pushback is only used for lookahead
+	char *buf;
+	char *buf_p;
+} StringInputSourceState;
+
+int str_get_char(InputSource *self) {
+	StringInputSourceState *state = (StringInputSourceState *) self->state;
+	return *(state->buf_p++);
+}
+
+void str_unget_char(InputSource *self, int c) {
+	StringInputSourceState *state = (StringInputSourceState *)self->state;
+
+	// Not really necessary to take any char at all because our input is
+	// supposed to be determined at InputSource create-time, but let's stay
+	// consistent
+	assert(*(--state->buf_p) == c);
+}
+
+void free_str_input_source(InputSource *source) {
+	StringInputSourceState *state = (StringInputSourceState *)source->state;
+
+	free(state->buf);
+	free(state);
+	free(source);
+}
+
+InputSource *create_str_input_source(char *str) {
+	InputSource *source = malloc(sizeof(InputSource));
+	source->getc = str_get_char;
+	source->ungetc = str_unget_char;
+
+	StringInputSourceState *state = malloc(sizeof(StringInputSourceState));
+	state->buf = str;
+	state->buf_p = state->buf;
+
+	source->state = state;
+	return source;
+}
