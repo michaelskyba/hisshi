@@ -88,6 +88,30 @@ int builtin_unset(Command *cmd, ShellState *state) {
 	return 0;
 }
 
+// int builtin_eval(Command *cmd, ShellState *shell_state) {
+// 	if (cmd->argc < 2) {
+// 		printf("builtin eval: no input specified\n");
+// 		return 1;
+// 	}
+
+// 	if (cmd->argc > 2) {
+// 		printf("builtin eval: multiple inputs specified\n");
+// 		return 1;
+// 	}
+
+// 	char *eval_body = cmd->arg_head->next->name;
+// 	InputSource *source = create_str_input_source(eval_body);
+
+// 	ParseState *parse_state = create_parse_state();
+// 	parse_script(parse_state, shell_state, source);
+
+// 	int exit_code = shell_state->exit_code;
+// 	free_parse_state(parse_state);
+// 	free_str_input_source(source);
+
+// 	return exit_code;
+// }
+
 int (*get_builtin(char *name)) (Command *, ShellState *) {
 	if (strcmp(name, "cd") == 0)
 		return builtin_cd;
@@ -100,6 +124,9 @@ int (*get_builtin(char *name)) (Command *, ShellState *) {
 
 	if (strcmp(name, "unset") == 0)
 		return builtin_unset;
+
+	// if (strcmp(name, "eval") == 0)
+	// 	return builtin_eval;
 
 	return NULL;
 }
