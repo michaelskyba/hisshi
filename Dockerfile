@@ -2,8 +2,8 @@ FROM gcc AS hisshi-build
 WORKDIR /usr/local/src
 COPY src ./
 
-# TODO Makefile
-RUN gcc -g -O0 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -std=c99 -pedantic main.c -o hsh
+// TODO Add a separate recipe with CFLAGS for avoiding -fsanitize
+RUN make
 
 FROM debian AS hisshi-run
 WORKDIR /usr/local/src
