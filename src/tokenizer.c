@@ -72,11 +72,11 @@ char *append_tk_p(Token *tk, char *p, char c) {
 	return p;
 }
 
-// rt: whether to keep reading (type != EOF)
 // tk->str will be overwritten, so copy it if you need it
-bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
+// rt: whether to keep reading (type != EOF)
+bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 	char c;
-	while ((c = getcb(script_file)) == ' ') ;
+	while ((c = source->getc(source)) == ' ') ;
 
 	if (c == EOF) {
 		tk->type = TOKEN_EOF;
@@ -89,13 +89,13 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '>') {
-		c = getcb(script_file);
+		c = source->getc(source);
 
 		if (c == '>')
 			tk->type = TOKEN_REDIRECT_APPEND;
 		else {
 			tk->type = TOKEN_REDIRECT_WRITE;
-			ungetcb(c);
+			source->ungetc(source, c);
 		}
 
 		return true;
@@ -107,7 +107,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '#') {
-		while (getcb(script_file) != '\n') ;
+		while (source->getc(source) != '\n') ;
 		tk->type = TOKEN_NEWLINE;
 		tk->ln++;
 
@@ -122,23 +122,23 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '|') {
-		c = getcb(script_file);
+		c = source->getc(source);
 
 		if (c == '=')
 			tk->type = TOKEN_PIPE_VARIABLE;
 		else {
 			tk->type = TOKEN_PIPE;
-			ungetcb(c);
+			source->ungetc(source, c);
 		}
 
 		return true;
 	}
 
 	if (c == '-') {
-		c = getcb(script_file);
-		ungetcb(c);
+		char peek = source->getc(source);
+		source->ungetc(source, peek);
 
-		if (isspace(c) || c == '#') {
+		if (isspace(peek) || peek == '#') {
 			tk->type = TOKEN_DASH;
 			return true;
 		}
@@ -148,14 +148,14 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 	}
 
 	if (c == '$') {
-		c = getcb(script_file);
+		c = source->getc(source);
 		assert(isalnum(c));
-		ungetcb(c);
+		source->ungetc(source, c);
 
 		// For now rely on regular name parsing for the variable name,
 		// but overwrite the type
 
-		if (!read_token(tk, state, script_file))
+		if (!read_token(tk, state, source))
 			return false;
 
 		tk->type = TOKEN_VARIABLE;
@@ -169,7 +169,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 		// Don't insert the initial "/'
 		char *p = tk->str;
 
-		while ((c = getcb(script_file)) != match) {
+		while ((c = source->getc(source)) != match) {
 			assert(c != EOF);
 
 			if (c == '\n')
@@ -190,7 +190,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 			assert(c != EOF);
 
 			p = append_tk_p(tk, p, c);
-			c = getcb(script_file);
+			c = source->getc(source);
 		}
 
 		// Defined as ^myfunc:
@@ -206,7 +206,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *script_file) {
 			*p = '\0';
 		}
 
-		ungetcb(c);
+		source->ungetc(source, c);
 		return true;
 	}
 }

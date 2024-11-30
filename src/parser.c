@@ -63,11 +63,13 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	else printf("L%d: CF skip\n", ln);
 }
 
-void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_state) {
+void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *script_file) {
+	InputSource *source = create_file_input_source(script_file);
+
 	// Start with at_line_start == true
 	TokenizerState *tokenizer_state = create_tokenizer_state();
 
-	while (read_token(parse_state->tk, tokenizer_state, script_file)) {
+	while (read_token(parse_state->tk, tokenizer_state, source)) {
 		int tk_type = parse_state->tk->type;
 
 		if (tk_type == TOKEN_INDENT) {
@@ -110,7 +112,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			int redirect_type = tk_type;
 
 			// TODO variable etc. support
-			read_token(parse_state->tk, tokenizer_state, script_file);
+			read_token(parse_state->tk, tokenizer_state, source);
 			assert(parse_state->tk->type == TOKEN_NAME);
 			char *filename = get_str_copy(parse_state->tk->str);
 
@@ -128,7 +130,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 
 		if (tk_type == TOKEN_PIPE_VARIABLE) {
 			// TODO variable (date |= $foo) etc. support
-			read_token(parse_state->tk, tokenizer_state, script_file);
+			read_token(parse_state->tk, tokenizer_state, source);
 			assert(parse_state->tk->type == TOKEN_NAME);
 
 			char *var_name = get_str_copy(parse_state->tk->str);
@@ -154,7 +156,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			// get_function_body
 			char *func_name = get_str_copy(parse_state->tk->str);
 
-			get_function_body_single(parse_state->tk, script_file);
+			get_function_body_single(parse_state->tk, source);
 			char *func_body = parse_state->tk->str;
 
 			set_function(shell_state, func_name, func_body);
@@ -166,7 +168,7 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 			char *func_name = get_str_copy(parse_state->tk->str);
 
 			int body_indent_level = parse_state->cmd->indent_level + 1;
-			get_function_body_multi(parse_state->tk, body_indent_level, script_file);
+			get_function_body_multi(parse_state->tk, body_indent_level, source);
 			char *func_body = parse_state->tk->str;
 
 			set_function(shell_state, func_name, func_body);
@@ -227,5 +229,6 @@ void parse_script(FILE *script_file, ParseState *parse_state, ShellState *shell_
 		assert(false);
 	}
 
+	free_file_input_source(source);
 	free(tokenizer_state);
 }

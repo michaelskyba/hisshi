@@ -18,6 +18,7 @@
 #include "shell_state.c"
 #include "builtin.c"
 #include "exec.c"
+#include "input_source.c"
 #include "tokenizer.c"
 #include "function.c"
 #include "parse_state.c"
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
 
 	FILE *script_file = fopen(argv[1], "r");
 	assert(script_file);
-	parse_script(script_file, parse_state, shell_state);
+	parse_script(parse_state, shell_state, script_file);
 
 	int exit_code = shell_state->exit_code;
 

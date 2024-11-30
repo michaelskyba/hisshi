@@ -1,13 +1,13 @@
 // Reads until the end of the line into the given token. Used to get the body of
 // a single-line functions.
-void get_function_body_single(Token *tk, FILE *script_file) {
+void get_function_body_single(Token *tk, InputSource *source) {
 	char *p = tk->str;
-	char c = getcb(script_file);
+	char c = source->getc(source);
 
 	// It wouldn't make a functional difference but remove leading spaces
 	// Usually we write functions like "myfunc: echo foo" and not "myfunc:echo foo"
 	while (c != '\n' && isspace(c))
-		c = getcb(script_file);
+		c = source->getc(source);
 
 	// c may include comments too, but we can just store them in the function
 	// body and ignore them when evaling later
@@ -15,13 +15,13 @@ void get_function_body_single(Token *tk, FILE *script_file) {
 		assert(c != EOF);
 
 		p = append_tk_p(tk, p, c);
-		c = getcb(script_file);
+		c = source->getc(source);
 	}
 
 	p = append_tk_p(tk, p, '\n');
 	*p = '\0';
 
-	ungetcb(c);
+	source->ungetc(source, c);
 }
 
 /*
@@ -42,20 +42,20 @@ true
 This will be returned with 0 tabs before date or false, and 1 tab before echo.
 It will exit consuming the final echo newline but not consuming pwd's indent.
 */
-void get_function_body_multi(Token *tk, int func_indent, FILE *script_file) {
+void get_function_body_multi(Token *tk, int func_indent, InputSource *source) {
 	char *p = tk->str;
 
 	// The newline after the function name
-	assert(getcb(script_file) == '\n');
+	assert(source->getc(source) == '\n');
 
 	while (true) {
-		char c = getcb(script_file);
+		char c = source->getc(source);
 
 		// Lookahead for indent of the current line
 		int line_indent = 0;
 		while (c == '\t') {
 			line_indent++;
-			c = getcb(script_file);
+			c = source->getc(source);
 		}
 
 		printf("Inside function body, read >%d, c=%c\n", line_indent, c);
@@ -73,10 +73,9 @@ void get_function_body_multi(Token *tk, int func_indent, FILE *script_file) {
 
 		// If the function body is finished, give back the lookahead and exit
 		if (line_indent < func_indent) {
-
-			ungetcb(c);
+			source->ungetc(source, c);
 			for (int i = 0; i < line_indent; i++)
-				ungetcb('\t');
+				source->ungetc(source, '\t');
 
 			*p = '\0';
 			return;
@@ -91,7 +90,7 @@ void get_function_body_multi(Token *tk, int func_indent, FILE *script_file) {
 			assert(c != EOF);
 
 			p = append_tk_p(tk, p, c);
-			c = getcb(script_file);
+			c = source->getc(source);
 		}
 
 		p = append_tk_p(tk, p, '\n');
