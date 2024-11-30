@@ -21,7 +21,7 @@ typedef struct {
 } FileInputSourceState;
 
 int file_get_char(InputSource *self) {
-	FileInputSourceState *state = (FileInputSourceState *)self->state;
+	FileInputSourceState *state = (FileInputSourceState *) self->state;
 
 	if (state->buf_p > state->buf)
 		return *(--state->buf_p);
@@ -30,8 +30,20 @@ int file_get_char(InputSource *self) {
 }
 
 void file_unget_char(InputSource *self, int c) {
-	FileInputSourceState *state = (FileInputSourceState *)self->state;
+	FileInputSourceState *state = (FileInputSourceState *) self->state;
 	*(state->buf_p++) = c;
+}
+
+// Function to destroy the FileInputSource.
+void free_file_input_source(InputSource *self) {
+	FileInputSourceState *state = (FileInputSourceState *) self->state;
+
+	if (state->file)
+		fclose(state->file);
+
+	free(state->buf);
+	free(state);
+	free(self);
 }
 
 InputSource *create_file_input_source(FILE *file) {
@@ -46,16 +58,4 @@ InputSource *create_file_input_source(FILE *file) {
 
 	source->state = state;
 	return source;
-}
-
-// Function to destroy the FileInputSource.
-void free_file_input_source(InputSource *source) {
-	FileInputSourceState *state = (FileInputSourceState *)source->state;
-
-	if (state->file)
-		fclose(state->file);
-
-	free(state->buf);
-	free(state);
-	free(source);
 }

@@ -5,14 +5,13 @@
 // - Internal shell variables
 // - Environment variables
 // - Functions
-struct binding_struct {
+typedef struct Binding {
 	char *name;
 	char *value;
 
 	// This is part of a hash table, so we use LL to handle collision
-	struct binding_struct *next;
-};
-typedef struct binding_struct Binding;
+	struct Binding *next;
+} Binding;
 
 int hash_str(char *str) {
 	long hash_val = 0;

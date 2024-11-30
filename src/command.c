@@ -1,10 +1,9 @@
-struct ArgNode_struct {
+typedef struct ArgNode {
 	char *name;
-	struct ArgNode_struct *next;
-};
-typedef struct ArgNode_struct ArgNode;
+	struct ArgNode *next;
+} ArgNode;
 
-struct Command_struct {
+typedef struct Command {
 	char *path;
 
 	// The arg list and argc include the $0 name
@@ -23,7 +22,7 @@ struct Command_struct {
 
 	// The next command within the current pipeline
 	// NULL if this is the last
-	struct Command_struct *next_pipeline;
+	struct Command *next_pipeline;
 
 	// Points to a variable name, that should be piped to and set, or NULL if
 	// unused. Only the last Command in a pipeline will set this
@@ -33,8 +32,7 @@ struct Command_struct {
 	char *redirect_read;
 	char *redirect_write;
 	char *redirect_append;
-};
-typedef struct Command_struct Command;
+} Command;
 
 void clear_command(Command *cmd) {
 	cmd->indent_level = 0;
