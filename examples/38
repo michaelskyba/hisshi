@@ -1,6 +1,6 @@
 date
 
-myfunc: false 1 2 3 # this is a comment
+myfunc: pwd 1 2 3 # this is a comment
 
 myfunc2:
 	true
@@ -10,3 +10,4 @@ myfunc2:
 pwd
 
 myfunc
+myfunc2
