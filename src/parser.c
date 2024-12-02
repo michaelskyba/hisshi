@@ -210,7 +210,11 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 			printf("Parsing str token |%s|\n", str);
 
 			if (parse_state->phase == READING_NAME) {
-				parse_state->cmd->path = get_bin_path(str);
+				if (get_function(shell_state, str))
+					parse_state->cmd->path = get_str_copy(str);
+				else
+					parse_state->cmd->path = get_bin_path(str);
+
 				parse_state->phase = READING_ARG;
 			}
 

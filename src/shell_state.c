@@ -126,5 +126,10 @@ void set_function(ShellState *state, char *name, char *body) {
 }
 
 char *get_function(ShellState *state, char *name) {
+	// We don't need slashes in function names. This saves a search if the given
+	// name param was already constructed with get_bin_path
+	if (name[0] == '/')
+		return NULL;
+
 	return get_table_binding(state->functions, name);
 }
