@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -75,6 +76,21 @@ void free_shell_state(ShellState *state) {
 	free(state);
 }
 
+// If local, we shouldn't traverse up to parents in the function call stack when
+// searching for values
+bool is_local_binding(char *name) {
+	if (strcmp(name, "0") == 0)
+		return true;
+
+	// <0: Not supported as a parameter
+	// 0: Used as a default if name isn't an int. It can't be "0" because we
+	// just checked for that
+	if (atoi(name) > 0)
+		return true;
+
+	return name[0] == '_';
+}
+
 // Returns NULL rather than "" if not found
 char *get_variable(ShellState *state, char *name) {
 	char *val;
@@ -82,9 +98,12 @@ char *get_variable(ShellState *state, char *name) {
 	val = get_table_binding(state->env_vars, name);
 	if (val) return val;
 
+	bool local = is_local_binding(name);
+
 	while (state != NULL) {
 		val = get_table_binding(state->shell_vars, name);
 		if (val) return val;
+		else if (local) break;
 
 		state = state->parent;
 		printf("shell var |%s| not found, so checking call stack parent %p\n", name, (void *) state);
@@ -142,10 +161,12 @@ char *get_function(ShellState *state, char *name) {
 		return NULL;
 
 	char *body;
+	bool local = is_local_binding(name);
 
 	while (state != NULL) {
 		body = get_table_binding(state->functions, name);
 		if (body) return body;
+		else if (local) break;
 
 		state = state->parent;
 		printf("func |%s| not found, so checking call stack parent %p\n", name, (void *) state);

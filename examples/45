@@ -1,0 +1,18 @@
+echo _date |= _date
+echo date2 |= date2
+
+echo === global1 $_date $date2
+
+123: echo === func123 $_date
+
+myfunc:
+	echo === func1 $_date $date2
+	echo func _date |= _date
+	echo === func2 $_date $date2
+
+	# $123 counts as local so a 123 function counts as local
+	# Permissible for now 1733182504
+	123
+
+myfunc
+echo === global1 $_date $date2

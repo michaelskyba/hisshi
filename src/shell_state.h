@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdbool.h" // for is_local_binding
+
 struct Binding; // hash_table.h
 
 // ShellState does not refer to itself recursively but we want it to be named so
@@ -37,6 +39,8 @@ void load_env_vars(struct Binding **table);
 
 struct ShellState *create_shell_state(struct ShellState *parent);
 void free_shell_state(struct ShellState *state);
+
+bool is_local_binding(char *name);
 
 char *get_variable(struct ShellState *state, char *name);
 void set_variable(struct ShellState *state, char *name, char *value);

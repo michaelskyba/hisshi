@@ -126,7 +126,7 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 
 	if (c == '$') {
 		c = source->getc(source);
-		assert(isalnum(c));
+		assert(isalnum(c) || c == '_');
 		source->ungetc(source, c);
 
 		// For now rely on regular name parsing for the variable name,
