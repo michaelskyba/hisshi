@@ -39,19 +39,38 @@ void load_env_vars(Binding **table) {
 	}
 }
 
-ShellState *create_shell_state() {
+// parent is in the context of the ShellState function call stack. Pass NULL if
+// this is the main.c root
+// env_vars are either copied or created depending on NULL
+ShellState *create_shell_state(ShellState *parent) {
 	ShellState *state = malloc(sizeof(ShellState));
+
+	if (parent) {
+		state->parent = parent;
+		state->env_vars = parent->env_vars;
+	}
+	else {
+		state->parent = NULL;
+		state->env_vars = calloc(HASH_BUCKETS, sizeof(Binding*));
+		load_env_vars(state->env_vars);
+	}
+
 	state->shell_vars = calloc(HASH_BUCKETS, sizeof(Binding*));
-	state->env_vars   = calloc(HASH_BUCKETS, sizeof(Binding*));
 	state->functions  = calloc(HASH_BUCKETS, sizeof(Binding*));
-	load_env_vars(state->env_vars);
+
+	// $? starts at 0 in shells by convention
+	state->exit_code = 0;
 
 	return state;
 }
 
 void free_shell_state(ShellState *state) {
+	// If there's a parent, it's going to use the same env_vars and thus should
+	// be left alone
+	if (!state->parent)
+		free_table(state->env_vars);
+
 	free_table(state->shell_vars);
-	free_table(state->env_vars);
 	free_table(state->functions);
 	free(state);
 }

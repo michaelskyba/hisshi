@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	printf("%s: received file %s\n", argv[0], argv[1]);
 
 	ParseState *parse_state = create_parse_state();
-	ShellState *shell_state = create_shell_state();
+	ShellState *shell_state = create_shell_state(NULL);
 
 	// 1 offset: We want the filename of the script to be $0, not the hsh binary
 	// This is how regular shells do it

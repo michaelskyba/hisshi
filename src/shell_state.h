@@ -13,21 +13,29 @@ struct ShellState {
 	the parent process.
 	*/
 
-	// TODO scope system
+	// Binding ** are hash tables, of size HASH_BUCKETS
 
-	// Hash tables, size HASH_BUCKETS
-	struct Binding **shell_vars;
+	// This same pointer is passed to every constructed ShellState,
+	// since env vars are all shared
 	struct Binding **env_vars;
 
+	// Local to each ShellState in the function call stack
+	struct Binding **shell_vars;
 	struct Binding **functions;
 
 	// Exit code of most recent command
 	int exit_code;
+
+	// Used to implement a ShellState stack for function calls. The root root
+	// global scope has parent == NULL.
+	// For now we have no use case for traversing to children given a parent, so
+	// we don't need it doubly linked
+	struct ShellState *parent;
 };
 
 void load_env_vars(struct Binding **table);
 
-struct ShellState *create_shell_state();
+struct ShellState *create_shell_state(struct ShellState *parent);
 void free_shell_state(struct ShellState *state);
 
 char *get_variable(struct ShellState *state, char *name);
