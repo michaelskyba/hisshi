@@ -1,0 +1,9 @@
+myfunc: echo "myfunc: var is" $var
+
+myfunc
+
+echo "global: var is" $var
+echo 1733109513 |= var
+echo "global: var is" $var
+
+myfunc

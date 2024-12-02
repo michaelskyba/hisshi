@@ -77,11 +77,21 @@ void free_shell_state(ShellState *state) {
 
 // Returns NULL rather than "" if not found
 char *get_variable(ShellState *state, char *name) {
-	char *val = get_table_binding(state->env_vars, name);
-	if (!val)
-		val = get_table_binding(state->shell_vars, name);
+	char *val;
 
-	return val;
+	val = get_table_binding(state->env_vars, name);
+	if (val) return val;
+
+	while (state != NULL) {
+		val = get_table_binding(state->shell_vars, name);
+		if (val) return val;
+
+		state = state->parent;
+		printf("shell var |%s| not found, so checking call stack parent %p\n", name, (void *) state);
+	}
+
+	printf("shell var |%s| not found in anywhere in the call stack\n", name);
+	return NULL;
 }
 
 void set_variable(ShellState *state, char *name, char *value) {
@@ -131,5 +141,16 @@ char *get_function(ShellState *state, char *name) {
 	if (name[0] == '/')
 		return NULL;
 
-	return get_table_binding(state->functions, name);
+	char *body;
+
+	while (state != NULL) {
+		body = get_table_binding(state->functions, name);
+		if (body) return body;
+
+		state = state->parent;
+		printf("func |%s| not found, so checking call stack parent %p\n", name, (void *) state);
+	}
+
+	printf("func |%s| not found anywhere in call stack\n", name);
+	return NULL;
 }

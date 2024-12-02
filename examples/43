@@ -1,0 +1,14 @@
+b: echo func b
+c: echo func c
+
+b
+
+a:
+	echo func a
+
+	b: echo func b2
+	b
+	c
+
+a
+b
