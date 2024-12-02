@@ -1,3 +1,4 @@
 #!/bin/sh -e
+make -C src clean
 make -C src
 sudo cp src/hsh /usr/local/bin/
