@@ -1,0 +1,6 @@
+cd /tmp/tmp.95SQiVZinp
+cd / | cat
+pwd
+date |= foo
+seq 10 | rw 3 |= bar
+env | rg src

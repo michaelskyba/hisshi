@@ -182,80 +182,56 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 		debug("|= pipe: %d --> %d\n", pipe_variable_fds[1], pipe_variable_fds[0]);
 	}
 
-	if (pipeline_length == 1) {
-		char *func_body = get_function(shell_state, cmd->path);
-		if (func_body) {
-			int status = eval_function(cmd, shell_state, func_body);
-			return status;
-		}
-
-		int (*builtin)(Command *, ShellState *) = get_builtin(cmd->path);
-		if (builtin) {
-			int status = builtin(cmd, shell_state);
-			return status;
-		}
-
-		int *pipes = NULL;
-		if (last_cmd->pipe_variable) {
-			pipes = malloc(sizeof(int) * 3);
-
-			// Include read end so the child closes it
-			pipes[0] = pipe_variable_fds[0];
-
-			pipes[1] = pipe_variable_fds[1];
-			pipes[2] = -1;
-		}
-
-		last_pid = execute_child(cmd, STDIN_FILENO, last_write_fd, pipes, shell_state);
-
-		// Don't close read because we will actually use it later. Only children
-		// close it
-		if (last_cmd->pipe_variable)
-			close(pipe_variable_fds[1]);
-
-		free(pipes);
+	char *func_body = get_function(shell_state, cmd->path);
+	if (pipeline_length == 1 && func_body) {
+		int status = eval_function(cmd, shell_state, func_body);
+		return status;
 	}
 
-	else {
-		int num_fds = (pipeline_length-1) * 2;
-
-		// Stores (r0, w0, r1, w1, ..., -1)
-		// -1 to mark end, and not have to track length
-		int *pipes = malloc(sizeof(int) * (num_fds + 1));
-		pipes[num_fds] = -1;
-
-		for (int i = 0; i < pipeline_length-1; i++) {
-			if (pipe(pipes + i*2) == -1) {
-				perror("pipe() failed");
-				assert(false);
-			}
-
-			debug("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
-		}
-
-		// Not read/written to directly from this pipes array, but still
-		// included so that each execute_child closes them
-		if (last_cmd->pipe_variable) {
-			pipes = realloc(pipes, sizeof(int) * (num_fds + 1 + 2));
-			pipes[num_fds] = pipe_variable_fds[0];
-			pipes[num_fds+1] = pipe_variable_fds[1];
-			pipes[num_fds+2] = -1;
-		}
-
-		for (int i = 0; i < pipeline_length; i++) {
-			int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
-			int w = i == pipeline_length - 1 ? last_write_fd : pipes[i*2 + 1];
-
-			last_pid = execute_child(cmd, r, w, pipes, shell_state);
-
-			if (r != STDIN_FILENO) close(r);
-			if (w != STDOUT_FILENO) close(w);
-
-			cmd = cmd->next_pipeline;
-		}
-
-		free(pipes);
+	int (*builtin)(Command *, ShellState *) = get_builtin(cmd->path);
+	if (pipeline_length == 1 && builtin) {
+		int status = builtin(cmd, shell_state);
+		return status;
 	}
+
+	int num_fds = (pipeline_length-1) * 2;
+
+	// Stores (r0, w0, r1, w1, ..., -1)
+	// -1 to mark end, and not have to track length
+	int *pipes = malloc(sizeof(int) * (num_fds + 1));
+	pipes[num_fds] = -1;
+
+	for (int i = 0; i < pipeline_length-1; i++) {
+		if (pipe(pipes + i*2) == -1) {
+			perror("pipe() failed");
+			assert(false);
+		}
+
+		debug("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
+	}
+
+	// Not read/written to directly from this pipes array, but still
+	// included so that each execute_child closes them
+	if (last_cmd->pipe_variable) {
+		pipes = realloc(pipes, sizeof(int) * (num_fds + 1 + 2));
+		pipes[num_fds] = pipe_variable_fds[0];
+		pipes[num_fds+1] = pipe_variable_fds[1];
+		pipes[num_fds+2] = -1;
+	}
+
+	for (int i = 0; i < pipeline_length; i++) {
+		int r = i == 0 ? STDIN_FILENO : pipes[(i-1)*2];
+		int w = i == pipeline_length - 1 ? last_write_fd : pipes[i*2 + 1];
+
+		last_pid = execute_child(cmd, r, w, pipes, shell_state);
+
+		if (r != STDIN_FILENO) close(r);
+		if (w != STDOUT_FILENO) close(w);
+
+		cmd = cmd->next_pipeline;
+	}
+
+	free(pipes);
 
 	int wait_pid;
 	int status;
