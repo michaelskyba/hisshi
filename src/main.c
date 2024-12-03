@@ -18,6 +18,7 @@ void set_cli_args(Binding **table, char argc, char **argv) {
 	// 15: Assume we will have low digit counts of argc
 	char *name = malloc(15);
 
+	// POSIX only supports $1 to $9, but we provide freedom
 	for (int i = 0; i < argc; i++) {
 		sprintf(name, "%d", i);
 		set_table_binding(table, name, argv[i]);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h> // TokenizerState, read_token
+
 struct InputSource; // input_source.h
 
 typedef enum TokenType {
