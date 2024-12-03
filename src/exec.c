@@ -162,8 +162,8 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 	Command *cmd = pipeline;
 	int pipeline_length = get_pipeline_length(pipeline);
 
-	int last_pid;
-	int *pipe_variable_fds;
+	int last_pid = -1;
+	int *pipe_variable_fds = NULL;
 	int last_write_fd = STDOUT_FILENO;
 
 	Command *last_cmd = pipeline;
