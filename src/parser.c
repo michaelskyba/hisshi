@@ -257,7 +257,7 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 
 // Returns exit code
 // Makes a copy of func_body
-int eval_function(ShellState *parent, char *func_body_raw) {
+int eval_function(Command *cmd, ShellState *parent, char *func_body_raw) {
 	// We include the \n in the body when tokenizing, so we don't need to add a
 	// trailing one here
 	char *func_body = get_str_copy(func_body_raw);
@@ -265,6 +265,18 @@ int eval_function(ShellState *parent, char *func_body_raw) {
 
 	ParseState *parse_state = create_parse_state();
 	ShellState *shell_state = create_shell_state(parent);
+
+	// 15: Assume we will have low digit counts of argc
+	char *arg_name = malloc(15);
+	char **argv = get_argv_array(cmd);
+
+	for (int i = 0; i < cmd->argc; i++) {
+		sprintf(arg_name, "%d", i);
+		set_variable(shell_state, arg_name, argv[i]);
+	}
+
+	free(arg_name);
+	free(argv);
 
 	parse_script(parse_state, shell_state, source);
 

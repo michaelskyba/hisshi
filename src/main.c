@@ -9,19 +9,18 @@
 #include "parse_state.h"
 #include "shell_state.h"
 
-typedef struct Binding Binding;
 typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
 
-void set_cli_args(Binding **table, char argc, char **argv) {
+void set_cli_args(ShellState *state, char argc, char **argv) {
 	// 15: Assume we will have low digit counts of argc
 	char *name = malloc(15);
 
 	// POSIX only supports $1 to $9, but we provide freedom
 	for (int i = 0; i < argc; i++) {
 		sprintf(name, "%d", i);
-		set_table_binding(table, name, argv[i]);
+		set_variable(state, name, argv[i]);
 	}
 
 	free(name);
@@ -42,7 +41,7 @@ int main(int argc, char **argv) {
 
 	// 1 offset: We want the filename of the script to be $0, not the hsh binary
 	// This is how regular shells do it
-	set_cli_args(shell_state->shell_vars, argc-1, argv+1);
+	set_cli_args(shell_state, argc-1, argv+1);
 
 	FILE *script_file = fopen(argv[1], "r");
 	assert(script_file);
