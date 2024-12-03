@@ -109,15 +109,15 @@ void add_arg(Command *cmd, char *given_arg_name) {
 
 void dump_command(Command *cmd) {
 	if (!cmd->path) {
-		printf("cmd %p (%d): %p\n", cmd->path, cmd->argc, (void *) cmd->arg_head);
+		debug_raw("cmd %p (%d): %p\n", cmd->path, cmd->argc, (void *) cmd->arg_head);
 		return;
 	}
 
-	printf("cmd %s (%d) at >%d: ", cmd->path, cmd->argc, cmd->indent_level);
+	debug_raw("cmd %s (%d) at >%d: ", cmd->path, cmd->argc, cmd->indent_level);
 
 	ArgNode *arg;
 	for (arg = cmd->arg_head; arg != NULL; arg = arg->next)
-		printf("%s,", arg->name);
+		debug_raw("%s,", arg->name);
 
-	printf("\n");
+	debug_raw("%s", "\n");
 }

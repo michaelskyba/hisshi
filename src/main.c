@@ -8,6 +8,7 @@
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
+#include "util.h"
 
 typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
@@ -33,8 +34,8 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
-	printf("Starting on PID %d\n", getpid());
-	printf("%s: received file %s\n", argv[0], argv[1]);
+	debug("Starting on PID %d\n", getpid());
+	debug("%s: received file %s\n", argv[0], argv[1]);
 
 	ParseState *parse_state = create_parse_state();
 	ShellState *shell_state = create_shell_state(NULL);

@@ -5,6 +5,7 @@
 #include "input_source.h"
 #include "tokenize_func.h"
 #include "tokenizer.h"
+#include "util.h"
 
 typedef struct InputSource InputSource;
 typedef struct Token Token;
@@ -69,7 +70,7 @@ void get_function_body_multi(Token *tk, int func_indent, InputSource *source) {
 			c = source->getc(source);
 		}
 
-		printf("Inside function body, read >%d, c=%c\n", line_indent, c);
+		debug("Inside function body, read >%d, c=%c\n", line_indent, c);
 
 		// If the line is blank, we consider it part of the function either way
 		if (c == '\n') {

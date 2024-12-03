@@ -13,6 +13,7 @@
 #include "exec.h"
 #include "parser.h"
 #include "shell_state.h"
+#include "util.h"
 
 // We don't need these constants anywhere else so it's fine to have them in
 // exec.c. Then we avoid having to include unistd.h in exec.h.
@@ -44,24 +45,24 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes, ShellStat
 
 	if (cmd->redirect_read) {
 		read_fd = open(cmd->redirect_read, O_RDONLY);
-		printf("read_fd override: file |%s| (%d)\n", cmd->redirect_read, read_fd);
+		debug("read_fd override: file |%s| (%d)\n", cmd->redirect_read, read_fd);
 		assert(read_fd != -1);
 	}
 
 	if (cmd->redirect_write) {
 		int flags = O_WRONLY | O_CREAT | O_TRUNC;
 		write_fd = open(cmd->redirect_write, flags, REDIR_CREATE_MODE);
-		printf("write_fd write override: file |%s| (%d)\n", cmd->redirect_write, write_fd);
+		debug("write_fd write override: file |%s| (%d)\n", cmd->redirect_write, write_fd);
 		assert(write_fd != -1);
 	}
 	else if (cmd->redirect_append) {
 		int flags = O_WRONLY | O_CREAT | O_APPEND;
 		write_fd = open(cmd->redirect_append, flags, REDIR_CREATE_MODE);
-		printf("write_fd append override: file |%s| (%d)\n", cmd->redirect_append, write_fd);
+		debug("write_fd append override: file |%s| (%d)\n", cmd->redirect_append, write_fd);
 		assert(write_fd != -1);
 	}
 
-	printf("execute_child (r%d --> w%d) start: ", read_fd, write_fd);
+	debug("(r%d --> w%d) start: ", read_fd, write_fd);
 	dump_command(cmd);
 
 	for (int *fd = pipes; fd != NULL && *fd != -1; fd++)
@@ -95,7 +96,7 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes, ShellStat
 	// Current system env variables
 	extern char **environ;
 
-	// printf("%d: execve(%s)\n", getpid(), cmd->path);
+	// debug("%d: execve(%s)\n", getpid(), cmd->path);
 	execve(cmd->path, get_argv_array(cmd), environ);
 
 	// execve only returns control to us if it fails
@@ -178,7 +179,7 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 		}
 
 		last_write_fd = pipe_variable_fds[1];
-		printf("|= pipe: %d --> %d\n", pipe_variable_fds[1], pipe_variable_fds[0]);
+		debug("|= pipe: %d --> %d\n", pipe_variable_fds[1], pipe_variable_fds[0]);
 	}
 
 	if (pipeline_length == 1) {
@@ -229,7 +230,7 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 				assert(false);
 			}
 
-			printf("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
+			debug("Opened pipe %d --> %d\n", pipes[i*2 + 1], pipes[i*2]);
 		}
 
 		// Not read/written to directly from this pipes array, but still
@@ -269,7 +270,7 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 		int read_fd = pipe_variable_fds[0];
 
 		char *value = read_pipe_var(read_fd);
-		printf("Received value |%s| from fd %d. Placing into var |%s|\n", value, read_fd, name);
+		debug("Received value |%s| from fd %d. Placing into var |%s|\n", value, read_fd, name);
 
 		// Clones value
 		set_variable(shell_state, name, value);

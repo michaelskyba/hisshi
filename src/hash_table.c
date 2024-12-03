@@ -74,13 +74,13 @@ void dump_table(Binding **table) {
 // Copies args
 void set_table_binding(Binding **table, char *name, char *value) {
 	int hash = hash_str(name);
-	printf("Setting %s (%d) to %s\n", name, hash, value);
+	debug("Setting %s (%d) to %s\n", name, hash, value);
 
 	for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next) {
-		printf("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
+		debug("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
 
 		if (strcmp(bnd->name, name) == 0) {
-			printf("%s=%s, so overwriting %s --> %s\n", bnd->name, name, bnd->value, value);
+			debug("%s=%s, so overwriting %s --> %s\n", bnd->name, name, bnd->value, value);
 
 			free(bnd->value);
 			bnd->value = get_str_copy(value);
@@ -99,13 +99,13 @@ void set_table_binding(Binding **table, char *name, char *value) {
 // Returns original, not copy
 char *get_table_binding(Binding **table, char *name) {
 	int hash = hash_str(name);
-	printf("Searching for value of %s (%d)\n", name, hash);
+	debug("Searching for value of %s (%d)\n", name, hash);
 
 	for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next) {
-		printf("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
+		debug("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
 
 		if (strcmp(bnd->name, name) == 0) {
-			printf("%s=%s, so returning %s\n", bnd->name, name, bnd->value);
+			debug("%s=%s, so returning %s\n", bnd->name, name, bnd->value);
 			return bnd->value;
 		}
 	}
@@ -117,15 +117,15 @@ char *get_table_binding(Binding **table, char *name) {
 // 0: The binding didn't exist in the first place
 int unset_table_binding(Binding **table, char *name) {
 	int hash = hash_str(name);
-	printf("Planning to unset %s (%d)\n", name, hash);
+	debug("Planning to unset %s (%d)\n", name, hash);
 
 	Binding *prev = NULL;
 
 	for (Binding *bnd = table[hash]; bnd != NULL; bnd = bnd->next) {
-		printf("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
+		debug("Found existing %s=%s on %d\n", bnd->name, bnd->value, hash);
 
 		if (strcmp(bnd->name, name) == 0) {
-			printf("%s=%s, so unsetting\n", bnd->name, name);
+			debug("%s=%s, so unsetting\n", bnd->name, name);
 
 			if (prev == NULL)
 				table[hash] = bnd->next;

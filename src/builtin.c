@@ -122,7 +122,7 @@ int builtin_eval(Command *cmd, ShellState *shell_state) {
 	char *eval_body = copy_with_newline(cmd->arg_head->next->name);
 	InputSource *source = create_str_input_source(eval_body);
 
-	printf("Running parse script for body |%s|\n", eval_body);
+	debug("Running parse script for body |%s|\n", eval_body);
 
 	ParseState *parse_state = create_parse_state();
 	parse_script(parse_state, shell_state, source);

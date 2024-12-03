@@ -6,6 +6,7 @@
 
 #include "hash_table.h"
 #include "shell_state.h"
+#include "util.h"
 
 #define SETENV_OVERWRITE 1
 
@@ -106,10 +107,10 @@ char *get_variable(ShellState *state, char *name) {
 		else if (local) break;
 
 		state = state->parent;
-		printf("shell var |%s| not found, so checking call stack parent %p\n", name, (void *) state);
+		debug("shell var |%s| not found, so checking call stack parent %p\n", name, (void *) state);
 	}
 
-	printf("shell var |%s| not found in anywhere in the call stack\n", name);
+	debug("shell var |%s| not found in anywhere in the call stack\n", name);
 	return NULL;
 }
 
@@ -150,7 +151,7 @@ void export_variable(ShellState *state, char *name) {
 }
 
 void set_function(ShellState *state, char *name, char *body) {
-	printf("Defining function |%s| --> |%s|\n", name, body);
+	debug("Defining function |%s| --> |%s|\n", name, body);
 	set_table_binding(state->functions, name, body);
 }
 
@@ -169,9 +170,9 @@ char *get_function(ShellState *state, char *name) {
 		else if (local) break;
 
 		state = state->parent;
-		printf("func |%s| not found, so checking call stack parent %p\n", name, (void *) state);
+		debug("func |%s| not found, so checking call stack parent %p\n", name, (void *) state);
 	}
 
-	printf("func |%s| not found anywhere in call stack\n", name);
+	debug("func |%s| not found anywhere in call stack\n", name);
 	return NULL;
 }

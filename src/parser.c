@@ -5,13 +5,13 @@
 
 #include "command.h"
 #include "exec.h"
+#include "input_source.h"
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
-#include "tokenizer.h"
 #include "tokenize_func.h"
+#include "tokenizer.h"
 #include "util.h"
-#include "input_source.h"
 
 typedef struct Command Command;
 typedef struct InputSource InputSource;
@@ -30,7 +30,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	// The last token read was the \n, tk->ln is one above cmd
 	int ln = parse_state->tk->ln - 1;
 
-	printf("parse_command: P%d, path |%s|\n", parse_state->phase, cmd->path);
+	debug("P%d, path |%s|\n", parse_state->phase, cmd->path);
 
 	// TODO: If a branch shouldn't be executed, all parsing of it should be
 	// skipped. Both for performance and because we don't want to evaluate
@@ -46,7 +46,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 
 	ControlStatus parent_control = indent == 0 ? CONTROL_BRANCH_ACTIVE : parse_state->indent_controls[indent-1];
 	ControlStatus control = parse_state->indent_controls[indent];
-	printf(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
+	debug(">%d:%s, >%d:%s\n", indent-1, control_name(parent_control), indent, control_name(control));
 
 	bool parent_permits = parent_control == CONTROL_BRANCH_ACTIVE;
 
@@ -81,7 +81,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 
 	}
 
-	else printf("L%d: CF skip\n", ln);
+	else debug("L%d: CF skip\n", ln);
 }
 
 void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource *source) {
@@ -135,7 +135,7 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 			assert(parse_state->tk->type == TOKEN_NAME);
 			char *filename = get_str_copy(parse_state->tk->str);
 
-			printf("Read redirection (%d) filename |%s|\n", redirect_type, filename);
+			debug("Read redirection (%d) filename |%s|\n", redirect_type, filename);
 
 			if (redirect_type == TOKEN_REDIRECT_READ)
 				parse_state->cmd->redirect_read = filename;
@@ -158,7 +158,7 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 			// Don't worry about cmd because we assume this will be the last
 			// token before TOKEN_NEWLINE
 
-			printf("Ack intention to pipe to var |%s|\n", var_name);
+			debug("Ack intention to pipe to var |%s|\n", var_name);
 			continue;
 		}
 
@@ -199,16 +199,16 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 			char *str = parse_state->tk->str;
 
 			if (tk_type == TOKEN_VARIABLE) {
-				printf("Script asks for var |%s|\n", str);
+				debug("Script asks for var |%s|\n", str);
 				str = get_variable(shell_state, str);
 
 				if (str == NULL)
 					str = "";
 
-				printf("We queried and received value |%s|\n", str);
+				debug("We queried and received value |%s|\n", str);
 			}
 
-			printf("Parsing str token |%s|\n", str);
+			debug("Parsing str token |%s|\n", str);
 
 			if (parse_state->phase == READING_NAME) {
 				if (get_function(shell_state, str))
@@ -248,7 +248,7 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 		}
 
 		// Invalid token type returned if nothing has triggered
-		printf("Received invalid token type %d\n", tk_type);
+		debug("Received invalid token type %d\n", tk_type);
 		assert(false);
 	}
 

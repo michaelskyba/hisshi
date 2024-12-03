@@ -6,6 +6,7 @@
 #include "command.h"
 #include "parse_state.h"
 #include "tokenizer.h"
+#include "util.h"
 
 typedef struct ParseState ParseState;
 
@@ -49,7 +50,7 @@ void update_control(ParseState *state, int status) {
 	int indent = state->cmd_pipeline->indent_level;
 	state->indent_controls[indent] = status;
 
-	printf("Received >%d:%s\n", indent, control_name(status));
+	debug("Received >%d:%s\n", indent, control_name(status));
 
 	if (indent+1 == state->indents_tracked) {
 		state->indents_tracked *= 2;
@@ -57,7 +58,7 @@ void update_control(ParseState *state, int status) {
 		int size = sizeof(int) * state->indents_tracked;
 		state->indent_controls = realloc(state->indent_controls, size);
 
-		printf("reallocating indent tracker to size %d\n", state->indents_tracked);
+		debug("reallocating indent tracker to size %d\n", state->indents_tracked);
 	}
 
 	/*

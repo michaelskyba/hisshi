@@ -6,6 +6,7 @@
 
 #include "input_source.h"
 #include "tokenizer.h"
+#include "util.h"
 
 typedef struct InputSource InputSource;
 typedef struct TokenizerState TokenizerState;
@@ -39,7 +40,7 @@ char *append_tk_p(Token *tk, char *p, char c) {
 		int offset = p - tk->str;
 		tk->str_len *= 2;
 
-		printf("Reallocating tk->str to size %d\n", tk->str_len);
+		debug("Reallocating tk->str to size %d\n", tk->str_len);
 
 		// str_len doesn't include \0
 		tk->str = realloc(tk->str, tk->str_len + 1);
