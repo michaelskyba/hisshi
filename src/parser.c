@@ -5,12 +5,13 @@
 
 #include "command.h"
 #include "exec.h"
-#include "function.h"
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
 #include "tokenizer.h"
+#include "tokenize_func.h"
 #include "util.h"
+#include "input_source.h"
 
 typedef struct Command Command;
 typedef struct InputSource InputSource;
@@ -252,4 +253,26 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource 
 	}
 
 	free(tokenizer_state);
+}
+
+// Returns exit code
+// Makes a copy of func_body
+int eval_function(ShellState *parent, char *func_body_raw) {
+	// We include the \n in the body when tokenizing, so we don't need to add a
+	// trailing one here
+	char *func_body = get_str_copy(func_body_raw);
+	InputSource *source = create_str_input_source(func_body);
+
+	ParseState *parse_state = create_parse_state();
+	ShellState *shell_state = create_shell_state(parent);
+
+	parse_script(parse_state, shell_state, source);
+
+	int exit_code = shell_state->exit_code;
+
+	free_parse_state(parse_state);
+	free_shell_state(shell_state);
+	free_str_input_source(source);
+
+	return exit_code;
 }

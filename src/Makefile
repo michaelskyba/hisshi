@@ -8,7 +8,7 @@ CFLAGS = -g -O0 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -std=c99 -pedantic -fsan
 # CFLAGS = -O2 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -std=c99 -pedantic
 # CFLAGS = -g -fsanitize=address
 
-OBJ = builtin.o command.o exec.o function.o hash_table.o input_source.o main.o parser.o parse_state.o shell_state.o tokenizer.o util.o
+OBJ = builtin.o command.o exec.o hash_table.o input_source.o main.o parser.o parse_state.o shell_state.o tokenizer.o tokenize_func.o util.o
 
 
 hsh: $(OBJ)

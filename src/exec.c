@@ -11,7 +11,7 @@
 #include "builtin.h"
 #include "command.h"
 #include "exec.h"
-#include "function.h"
+#include "parser.h"
 #include "shell_state.h"
 
 // We don't need these constants anywhere else so it's fine to have them in
@@ -82,7 +82,7 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes, ShellStat
 
 	char *func_body = get_function(shell_state, cmd->path);
 	if (func_body) {
-		int status = execute_function(shell_state, func_body);
+		int status = eval_function(shell_state, func_body);
 		_exit(status);
 	}
 
@@ -184,7 +184,7 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 	if (pipeline_length == 1) {
 		char *func_body = get_function(shell_state, cmd->path);
 		if (func_body) {
-			int status = execute_function(shell_state, func_body);
+			int status = eval_function(shell_state, func_body);
 			return status;
 		}
 

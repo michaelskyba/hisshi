@@ -1,19 +1,12 @@
 #include <assert.h>
 #include <ctype.h>
-#include <stdbool.h>
 #include <stdio.h>
 
-#include "function.h"
 #include "input_source.h"
-#include "parse_state.h"
-#include "parser.h"
-#include "shell_state.h"
+#include "tokenize_func.h"
 #include "tokenizer.h"
-#include "util.h"
 
 typedef struct InputSource InputSource;
-typedef struct ParseState ParseState;
-typedef struct ShellState ShellState;
 typedef struct Token Token;
 
 // Reads until the end of the line into the given token. Used to get the body of
@@ -114,26 +107,4 @@ void get_function_body_multi(Token *tk, int func_indent, InputSource *source) {
 		p = append_tk_p(tk, p, '\n');
 		tk->ln++;
 	}
-}
-
-// Returns exit code
-// Makes a copy of func_body
-int execute_function(ShellState *parent, char *func_body_raw) {
-	// We include the \n in the body when tokenizing, so we don't need to add a
-	// trailing one here
-	char *func_body = get_str_copy(func_body_raw);
-	InputSource *source = create_str_input_source(func_body);
-
-	ParseState *parse_state = create_parse_state();
-	ShellState *shell_state = create_shell_state(parent);
-
-	parse_script(parse_state, shell_state, source);
-
-	int exit_code = shell_state->exit_code;
-
-	free_parse_state(parse_state);
-	free_shell_state(shell_state);
-	free_str_input_source(source);
-
-	return exit_code;
 }
