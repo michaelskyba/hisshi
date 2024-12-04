@@ -114,6 +114,9 @@ char *get_variable(ShellState *state, char *name) {
 	return NULL;
 }
 
+// If env var exists, overwrites it
+// If name is local, always sets local
+// If name isn't local and var exists in parent, overwrites parent
 void set_variable(ShellState *state, char *name, char *value) {
 	if (get_table_binding(state->env_vars, name)) {
 		// Update it externally so that when we copy environ in execve, it will
@@ -122,6 +125,22 @@ void set_variable(ShellState *state, char *name, char *value) {
 
 		set_table_binding(state->env_vars, name, value);
 		return;
+	}
+
+	ShellState *test_state = state;
+	char *found_value = NULL;
+	bool local = is_local_binding(name);
+
+	while (!local && test_state != NULL) {
+		found_value = get_table_binding(test_state->shell_vars, name);
+		if (found_value) break;
+
+		test_state = test_state->parent;
+	}
+
+	if (found_value) {
+		debug("Found |%s| in parent, so overwriting there\n", name);
+		state = test_state;
 	}
 
 	set_table_binding(state->shell_vars, name, value);
@@ -150,6 +169,7 @@ void export_variable(ShellState *state, char *name) {
 	unset_table_binding(state->shell_vars, name);
 }
 
+// Never overwrites parent
 void set_function(ShellState *state, char *name, char *body) {
 	debug("Defining function |%s| --> |%s|\n", name, body);
 	set_table_binding(state->functions, name, body);

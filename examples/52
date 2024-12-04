@@ -1,0 +1,10 @@
+date |= foo
+echo === global $foo
+
+myfunc:
+	echo === myfunc $foo
+	pwd |= foo
+	echo === myfunc $foo
+
+myfunc
+echo === global $foo
