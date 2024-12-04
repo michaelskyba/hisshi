@@ -1,0 +1,2 @@
+cd /home/oboro/src/exp
+eval "pwd" > /tmp/0

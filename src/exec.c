@@ -24,8 +24,81 @@
 // -rw-r--r--
 #define REDIR_CREATE_MODE (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
+#define OPEN_READ_MODE O_RDONLY
+#define OPEN_WRITE_MODE O_WRONLY | O_CREAT | O_TRUNC
+#define OPEN_APPEND_MODE O_WRONLY | O_CREAT | O_APPEND
+
 typedef struct Command Command;
 typedef struct ShellState ShellState;
+
+// Only used if it's a builtin or a function. It may have redirection but won't
+// be part of a pipe
+int execute_parent(Command *cmd, ShellState *state) {
+	char *func_body = get_function(state, cmd->path);
+	int (*builtin)(Command *, ShellState *) = get_builtin(cmd->path);
+
+	assert(func_body || builtin);
+
+	int read_fd = STDIN_FILENO;
+	int write_fd = STDOUT_FILENO;
+
+	// These redirect flags aren't that much repetition over execute_child.
+	// Abstracting them would just introduce unnecessary complexity; DRY isn't
+	// absolute
+	if (cmd->redirect_read) {
+		read_fd = open(cmd->redirect_read, O_RDONLY);
+		debug("read_fd override: file |%s| (%d)\n", cmd->redirect_read, read_fd);
+		assert(read_fd != -1);
+	}
+
+	if (cmd->redirect_write) {
+		int flags = OPEN_WRITE_MODE;
+		write_fd = open(cmd->redirect_write, flags, REDIR_CREATE_MODE);
+		debug("write_fd write override: file |%s| (%d)\n", cmd->redirect_write, write_fd);
+		assert(write_fd != -1);
+	}
+	else if (cmd->redirect_append) {
+		int flags = OPEN_APPEND_MODE;
+		write_fd = open(cmd->redirect_append, flags, REDIR_CREATE_MODE);
+		debug("write_fd append override: file |%s| (%d)\n", cmd->redirect_append, write_fd);
+		assert(write_fd != -1);
+	}
+
+	// Duplicate original stream fds if we'll replace them
+	int org_stdin = read_fd == STDIN_FILENO ? -1 : dup(STDIN_FILENO);
+	int org_stdout = write_fd == STDOUT_FILENO ? -1 : dup(STDOUT_FILENO);
+
+	if (read_fd != STDIN_FILENO) {
+		dup2(read_fd, STDIN_FILENO);
+		close(read_fd);
+	}
+	if (write_fd != STDOUT_FILENO) {
+		dup2(write_fd, STDOUT_FILENO);
+		close(write_fd);
+	}
+
+	debug("(r%d --> w%d) start: ", read_fd, write_fd);
+	dump_command(cmd);
+
+	int status;
+	if (func_body)
+		status = eval_function(cmd, state, func_body);
+	else
+		status = builtin(cmd, state);
+
+	// The dup2 will close whatever file overwrite there may have been, and then
+	// we close to the other fd we reserved as a backup
+	if (read_fd != STDIN_FILENO) {
+		dup2(org_stdin, STDIN_FILENO);
+		close(org_stdin);
+	}
+	if (write_fd != STDOUT_FILENO) {
+		dup2(org_stdout, STDOUT_FILENO);
+		close(org_stdout);
+	}
+
+	return status;
+}
 
 // Forks and returns child PID
 // pipes: full list of pipes created for the whole pipeline, most of which each
@@ -70,13 +143,11 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes, ShellStat
 			close(*fd);
 
 	if (read_fd != STDIN_FILENO) {
-		close(STDIN_FILENO);
 		dup2(read_fd, STDIN_FILENO);
 		close(read_fd);
 	}
 
 	if (write_fd != STDOUT_FILENO) {
-		close(STDOUT_FILENO);
 		dup2(write_fd, STDOUT_FILENO);
 		close(write_fd);
 	}
@@ -183,16 +254,10 @@ int execute_pipeline(Command *pipeline, ShellState *shell_state) {
 	}
 
 	char *func_body = get_function(shell_state, cmd->path);
-	if (pipeline_length == 1 && func_body) {
-		int status = eval_function(cmd, shell_state, func_body);
-		return status;
-	}
-
 	int (*builtin)(Command *, ShellState *) = get_builtin(cmd->path);
-	if (pipeline_length == 1 && builtin) {
-		int status = builtin(cmd, shell_state);
-		return status;
-	}
+
+	if (!last_cmd->pipe_variable && pipeline_length == 1 && (func_body || builtin))
+		return execute_parent(cmd, shell_state);
 
 	int num_fds = (pipeline_length-1) * 2;
 

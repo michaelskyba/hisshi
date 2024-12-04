@@ -1,0 +1,5 @@
+myfunc: date
+myfunc |= HISSHI_VAR
+echo $HISSHI_VAR
+export HISSHI_VAR
+env | rg hisshi

@@ -1,0 +1,3 @@
+echo 40 > /tmp/0
+myfunc: rg 40
+myfunc < /tmp/0

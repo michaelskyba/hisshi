@@ -1,5 +1,28 @@
-cd /tmp/tmp.95SQiVZinp
+echo /tmp/tmp.95SQiVZinp |= dir
+mkdir $dir
+
+pwd | eq $dir
+	echo FAIL
+	exit 1
+-
+	echo "OK: dir not matching initially"
+
+cd $dir
+
+pwd | eq $dir
+	echo "OK: regular cd worked"
+-
+	echo FAIL
+	exit 1
+
 cd / | cat
+
+pwd | eq $dir
+	echo "OK: child cd did nothing"
+-
+	echo FAIL
+	exit 1
+
 pwd
 date |= foo
 seq 10 | rw 3 |= bar
