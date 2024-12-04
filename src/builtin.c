@@ -31,12 +31,12 @@ int builtin_cd(Command *cmd, ShellState *state) {
 	(void) state;
 
 	if (cmd->argc < 2) {
-		printf("builtin cd: no directory specified\n");
+		fprintf(stderr, "builtin cd: no directory specified\n");
 		return 1;
 	}
 
 	if (cmd->argc > 2) {
-		printf("builtin cd: multiple directories specified\n");
+		fprintf(stderr, "builtin cd: multiple directories specified\n");
 		return 1;
 	}
 
@@ -54,12 +54,12 @@ int builtin_exit(Command *cmd, ShellState *state) {
 	(void) state;
 
 	if (cmd->argc < 2) {
-		printf("builtin exit: no status specified\n");
+		fprintf(stderr, "builtin exit: no status specified\n");
 		return 1;
 	}
 
 	if (cmd->argc > 2) {
-		printf("builtin exit: multiple codes given\n");
+		fprintf(stderr, "builtin exit: multiple codes given\n");
 		return 1;
 	}
 
@@ -76,12 +76,12 @@ int builtin_export(Command *cmd, ShellState *state) {
 	// as well as no `export foo=bar`
 
 	if (cmd->argc < 2) {
-		printf("builtin export: no variable specified\n");
+		fprintf(stderr, "builtin export: no variable specified\n");
 		return 1;
 	}
 
 	if (cmd->argc > 2) {
-		printf("builtin export: multiple variables specified\n");
+		fprintf(stderr, "builtin export: multiple variables specified\n");
 		return 1;
 	}
 
@@ -93,12 +93,12 @@ int builtin_export(Command *cmd, ShellState *state) {
 
 int builtin_unset(Command *cmd, ShellState *state) {
 	if (cmd->argc < 2) {
-		printf("builtin unset: no variable specified\n");
+		fprintf(stderr, "builtin unset: no variable specified\n");
 		return 1;
 	}
 
 	if (cmd->argc > 2) {
-		printf("builtin unset: multiple variables specified\n");
+		fprintf(stderr, "builtin unset: multiple variables specified\n");
 		return 1;
 	}
 
@@ -110,12 +110,12 @@ int builtin_unset(Command *cmd, ShellState *state) {
 
 int builtin_eval(Command *cmd, ShellState *shell_state) {
 	if (cmd->argc < 2) {
-		printf("builtin eval: no input specified\n");
+		fprintf(stderr, "builtin eval: no input specified\n");
 		return 1;
 	}
 
 	if (cmd->argc > 2) {
-		printf("builtin eval: multiple inputs specified\n");
+		fprintf(stderr, "builtin eval: multiple inputs specified\n");
 		return 1;
 	}
 
