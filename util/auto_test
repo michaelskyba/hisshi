@@ -11,13 +11,9 @@ def panic(message):
 
 def parse_expected(text):
     """
-    Given the expected output string from the config file,
+    Given an expected output string from the config file,
     convert literal "\t" and "\n" into actual tab and newline characters.
-    Note that literal tabs might also be present.
     """
-    # Replace literal "\t" with a tab, and "\n" with newline.
-    # We assume that any occurrence of the two-character string backslash+t should
-    # be replaced, and similarly for "\n". Use .replace().
     return text.replace("\\t", "\t").replace("\\n", "\n")
 
 
@@ -37,26 +33,36 @@ def main():
     except Exception as e:
         panic(f"Failed to read {config_path}: {e}")
 
-    # Process non-comment lines. We'll collect tests as a list of tuples (filename, expected_output)
+    # Process non-comment lines.
+    # Each valid line is expected to have either 2 or 3 columns separated by tabs:
+    #   column 1: filename (for hsh command)
+    #   column 2: expected stdout (escape sequences processed)
+    #   column 3 (optional): expected stderr (escape sequences processed); if omitted, we expect stderr to be blank.
     tests = []
     for line in lines:
-        line = line.rstrip("\n")  # remove the trailing newline character from the file
+        line = line.rstrip("\n")
         if not line.strip():
             continue  # skip blank lines
         if line.lstrip().startswith("#"):
             continue  # skip comments
-        # Split line into two parts by the first tab.
-        parts = line.split("\t", 1)
-        if len(parts) != 2:
+
+        # Split by tabs (literal tabs are not allowed in the content).
+        parts = line.split("\t")
+        if len(parts) < 2:
             print(
-                f"Warning: skipping invalid line (no tab found): {line}",
+                f"Warning: skipping invalid line (not enough columns): {line}",
                 file=sys.stderr,
             )
             continue
-        filename, expected_spec = parts
-        # The expected_spec might include literal tab characters as well as escape sequences.
-        expected = parse_expected(expected_spec)
-        tests.append((filename.strip(), expected))
+
+        filename = parts[0].strip()
+        expected_stdout = parse_expected(parts[1])
+        if len(parts) >= 3:
+            expected_stderr = parse_expected(parts[2])
+        else:
+            expected_stderr = ""  # expect nothing on stderr
+
+        tests.append((filename, expected_stdout, expected_stderr))
 
     total_tests = len(tests)
     if total_tests == 0:
@@ -66,9 +72,7 @@ def main():
     passed = 0
     failed = 0
 
-    for idx, (test_name, expected_output) in enumerate(tests, start=1):
-        # Prepare the command to run: "hsh <filename>"
-        # We run this in the tests directory.
+    for idx, (test_name, expected_stdout, expected_stderr) in enumerate(tests, start=1):
         command = ["hsh", test_name]
         try:
             result = subprocess.run(
@@ -77,7 +81,7 @@ def main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=10,  # seconds before failing
+                timeout=10,  # seconds
             )
         except Exception as e:
             print(f"({idx}/{total_tests}) {test_name}: FAIL")
@@ -85,19 +89,29 @@ def main():
             failed += 1
             continue
 
-        actual_output = result.stdout
+        actual_stdout = result.stdout
+        actual_stderr = result.stderr
 
-        # Compare the actual output with expected. We do an exact comparison.
-        if actual_output == expected_output:
+        stdout_match = actual_stdout == expected_stdout
+        stderr_match = actual_stderr == expected_stderr
+
+        if stdout_match and stderr_match:
             print(f"({idx}/{total_tests}) {test_name}: OK")
             passed += 1
         else:
             print(f"({idx}/{total_tests}) {test_name}: FAIL")
-            print("Expected:")
-            # Show repr() for clarity if there are whitespace differences.
-            print(repr(expected_output))
-            print("Got:")
-            print(repr(actual_output))
+            if not stdout_match:
+                print("Stdout mismatch:")
+                print("Expected:")
+                print(repr(expected_stdout))
+                print("Got:")
+                print(repr(actual_stdout))
+            if not stderr_match:
+                print("Stderr mismatch:")
+                print("Expected:")
+                print(repr(expected_stderr))
+                print("Got:")
+                print(repr(actual_stderr))
             failed += 1
 
     print(f"\n{passed} PASSED, {failed} FAILED")

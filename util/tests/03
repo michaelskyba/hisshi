@@ -1,4 +1,4 @@
 #!/usr/local/bin/hsh
 foo
 bar
-/usr/bin/ls
+/usr/bin/echo baz

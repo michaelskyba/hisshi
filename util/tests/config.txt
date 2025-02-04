@@ -1,5 +1,14 @@
-# Format: <local filename to run><tab><expected output>
+# Format: <local filename to run><tab><expected stdout><tab><expected stderr>
+# If you omit the second tab and stderr, it will be taken to mean there is no
+# expected stderr.
+
 # The actual 0a newline in these files are ignored. Use "test\n" to match "echo test"
+# To insert a literal tab rather than a delimiter, use \t
+
+# Blank lines and ^# are ignored
+
+02	echo\nprintf
+03	foo\nbar\nbaz\n
 16	test\n
 34	CORRECT1\nCORRECT2\n
 35	1
