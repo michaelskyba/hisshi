@@ -7,11 +7,48 @@
 
 # Blank lines and ^# are ignored
 
+# TODO switch to testing inside Docker so you can easily control which binaries
+# are available with which flags
+
 02	echo\nprintf
 03	baz\n	foo: No such file or directory\nbar: No such file or directory\n
+05	OK1\nOK2\n
 13	system shell\nhisshi\n	./13-3: No such file or directory\n
 14	0\n1\n126\n127\n70\n	/etc/shadow: Permission denied\nfoobarbaz1738691483: No such file or directory\n
 17	f test\n1\n1\nfoo: cannot open `foo' (No such file or directory)\n
 18	1\n2\n3\n4\n5\n6\n7\n
 19	1\n2\n4\n5\n9\n
 20	1\n2\n4\n5\n9\n10\n11\n14\n
+21	0: |./dump2_args|\n0: |./dump2_args|\n1: |foo|\n0: |./dump2_args|\n1: |foo|\n2: |bar|\n0: |./dump2_args|\n1: |foo bar|\n0: |./dump2_args|\n1: |foo ' bar|\n0: |./dump2_args|\n1: |foo |\n2: |bar|\n3: |baz|\n0: |./dump2_args|\n1: ||\n2: |foo|\n0: |./dump2_args|\n1: |foo\nbar|\n0: |./dump2_args|\n1: |foo"bar"|\n0: |./dump2_args|\n1: |foo|\n2: |bar|\n1\n	[25-28]: unclosed string\n
+22	OK1\n/\n/etc\nfinal 69\n	builtin exit: no status specified\n/foo1738698204: No such file or directory\nbuiltin cd: no directory specified\nbuiltin cd: multiple directories specified\nbuiltin exit: multiple codes given\n
+23	didnt 1\ntests\nworked 2\n/\n	/foo1738698425: No such file or directory\n
+24	foo\n2x\n| grep 20 | cat\n
+25	foo\nfoo\n1\n2\n3\n4\n5\n10\n9\n8\n7\n6\n5\n4\n3\n2\n1\ntest\ntest\nfail\n	foo1738698744: No such file or directory\n
+26	5\ngrep worked1\ngrep didnt2\nfalse --> true 0\ntrue --> false 1\n
+27	It's not 2024, and it's not September. Instead, it is over.\nFeel the AGI\n
+29	\n0: |../dump2_args|\n1: ||\ntest  bar $baz\nbin found\n
+30	OK\n	No such file or directory\n
+31	flag1\nhisshi has read the flag\nhisshi has read the second flag2\n5 /tmp/hisshi-1738699355\n
+32	32 \n./32-1 1 2  four\n
+33	\nHISTFILE=1738699710\nThere's no tmp. hisshi wins again\n
+34	CORRECT1\nCORRECT2\n
+35	Nothing\n
+36	foo\n\nHISTFILE=1738699954\nremoved\n	builtin unset: no variable specified\nbuiltin unset: multiple variables specified\n
+37	\n2\nHISSHI_VAR not found\n2\nHISSHI_VAR=2\ndoesnt\n	builtin export: no variable specified\nbuiltin export: multiple variables specified\n
+38	/\n/\n1\n2\nbar\n	pwd: ignoring non-option arguments\n
+
+# TODO better error handling for 39
+
+40	Empty initially\nOK\nOK\n
+41	myfunc: var is \nglobal: var is \nglobal: var is 1733109513\nmyfunc: var is 1733109513\n
+42	not date\n/\n
+43	func b\nfunc a\nfunc b2\nfunc c\nfunc b\n
+44	=== global \n=== func f a b\n=== func f  \n=== func f d \n=== global2 \n
+45	=== global1 _date date2\n=== func1  date2\n=== func2 func _date date2\n=== global1 _date date2\n	123: No such file or directory\n
+46	1\n2\n3\n4\n5\n
+47	\n1=1738701026\n
+48	/\n
+49	1738701077\nHISSHI_VAR=1738701077\n
+50	OK: dir not matching initially\nOK: regular cd worked\nOK: child cd did nothing\n/tmp/hisshi-tmp.95SQiVZinp\n3\n
+51	40\n
+52	=== global foo\n=== myfunc foo\n=== myfunc /\n=== global /\n

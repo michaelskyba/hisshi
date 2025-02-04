@@ -1,7 +1,6 @@
-date | arg 1 | eq Tue
-	echo "It is Tuesday"
-date | arg 1 | eq Wed
-	echo "It is Wednesday"
+mkdir -p /tmp/hisshi-tmp
 
-ls /tmp/tmp.ahfBEfHGaJ | hasin
+ls /tmp/hisshi-tmp | hasin
 - echo Nothing
+
+rmdir /tmp/hisshi-tmp

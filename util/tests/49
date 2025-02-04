@@ -1,5 +1,5 @@
-myfunc: date
+myfunc: echo 1738701077
 myfunc |= HISSHI_VAR
 echo $HISSHI_VAR
 export HISSHI_VAR
-env | rg hisshi
+env | grep 1738701077

@@ -1,19 +1,22 @@
 echo	foo
 
 echo foo
-date +%s | cat
+seq 5 | cat
 # rg 20 |
 
 date | rg -o 20 |
+	uniq |
 	xargs seq |
 	head |
 	tac
 
-echo test | tee /tmp/0
+echo test | tee /tmp/1738698716
+cat /tmp/1738698716
+rm -f /tmp/1738698716
 
-foo echo hi
+foo1738698744 echo hi
 	echo success
 -
 	echo fail
 
-cat
+# cat

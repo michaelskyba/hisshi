@@ -1,2 +1,4 @@
-cd /home/oboro/src/exp
-eval "pwd" > /tmp/0
+cd /
+eval "pwd" > /tmp/hisshi-1738701058
+cat /tmp/hisshi-1738701058
+rm -f /tmp/hisshi-1738701058

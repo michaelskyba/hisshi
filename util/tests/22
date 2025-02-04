@@ -1,14 +1,2 @@
-pwd
-cd /
-pwd
-cd /home/oboro/src/hisshi
-pwd
-
-exit
-cd /foo
-cd
-cd foo bar
-
-exit 1 1
-exit 69
-echo foo
+./22-1
+echo final $HISSHI_EXIT_STATUS

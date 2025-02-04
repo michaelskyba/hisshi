@@ -1,4 +1,4 @@
-echo /tmp/tmp.95SQiVZinp |= dir
+echo /tmp/hisshi-tmp.95SQiVZinp |= dir
 mkdir $dir
 
 pwd | eq $dir
@@ -24,6 +24,8 @@ pwd | eq $dir
 	exit 1
 
 pwd
-date |= foo
 seq 10 | rw 3 |= bar
-env | rg src
+echo $bar
+
+cd /
+rmdir $dir

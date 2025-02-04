@@ -1,3 +1,4 @@
-echo 40 > /tmp/0
-myfunc: rg 40
-myfunc < /tmp/0
+echo 40 > /tmp/hisshi-1738701359
+myfunc: grep 4
+myfunc < /tmp/hisshi-1738701359
+rm -f /tmp/hisshi-1738701359

@@ -147,7 +147,14 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 		// Don't insert the initial "/'
 		char *p = tk->str;
 
+		int ln_start = tk->ln;
+
 		while ((c = source->getc(source)) != match) {
+			if (c == EOF) {
+				fprintf(stderr, "[%d-%d]: unclosed string\n", ln_start, tk->ln);
+				exit(1);
+			}
+
 			assert(c != EOF);
 
 			if (c == '\n')

@@ -1,8 +1,11 @@
-rg $search
+# Taken as "", not null
+printf $search
+
 echo $foo
-/home/oboro/src/hisshi/util/dump2_args $foo2
+../dump2_args $foo2
 
 # Currently literal \$baz if in quotes
 echo "test" $foo bar "$baz"
 
-echo "Your home is" $HOME
+echo $PATH | grep -q bin
+	echo bin found

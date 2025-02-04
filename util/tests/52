@@ -1,4 +1,6 @@
-date |= foo
+cd /
+
+echo foo |= foo
 echo === global $foo
 
 myfunc:
@@ -7,4 +9,7 @@ myfunc:
 	echo === myfunc $foo
 
 myfunc
+
+# "/" overwrites global since it already existed, and wasn't named
+# to force a local
 echo === global $foo

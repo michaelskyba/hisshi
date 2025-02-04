@@ -1,9 +1,9 @@
-cd foo
+cd /foo1738698425
 	echo worked 1
 	date
 -
 	echo didnt 1
-	pwd
+	pwd | grep -o tests
 
 cd /
 	echo worked 2

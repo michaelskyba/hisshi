@@ -1,9 +1,10 @@
 echo $HISSHI_VAR
-date |= HISSHI_VAR
+date +%Y | head -c 1 |= HISSHI_VAR
 echo $HISSHI_VAR
 
 # Should initially be empty
-env | rg hisshi
+env | grep HISSHI_VAR
+- echo HISSHI_VAR not found
 
 export HISSHI_VAR
 
@@ -11,12 +12,13 @@ export HISSHI_VAR
 echo $HISSHI_VAR
 
 # Should exist now
-env | rg hisshi
+env | grep "^HISSHI_VAR="
 
 export HISSHI_OTHER_VAR
 
 # Still shouldn't exist
-env | rg other
+env | grep "^HISSHI_OTHER_VAR="
+- echo doesnt
 
 # Both should fail. Both are supported in POSIX but not us. See builtin.c or
 # other docs for design decision explanations

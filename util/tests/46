@@ -1,2 +1,4 @@
-123: date
-123 > /tmp/0
+123: seq 5
+123 > /tmp/hisshi-1738700979
+cat /tmp/hisshi-1738700979
+rm -f /tmp/hisshi-1738700979

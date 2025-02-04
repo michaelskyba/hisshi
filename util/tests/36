@@ -7,6 +7,8 @@ echo $bar
 unset
 unset a b c
 
-env | rg MSK
-unset MSK_MUSIC_REFRESH
-env | rg MSK
+echo 1738699954 |= HISTFILE
+env | grep "^HISTFILE="
+unset HISTFILE
+env | grep "^HISTFILE="
+- echo removed

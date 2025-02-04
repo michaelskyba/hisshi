@@ -13,15 +13,15 @@ bar"
 # As of 1729700024 this will be taken as literal. Normal shells still parse it
 # but it looks so jank that we can consider it unsupported. As long it's not a
 # complete crash, we don't care what the behaviour is
-/home/oboro/src/hisshi/util/dump2_args foo"bar"
-# But this will be two arguments. That's not exactly consistent from the user
-# POV but it's probably fine.
-/home/oboro/src/hisshi/util/dump2_args "foo"bar
+./dump2_args foo"bar"
+
+# This will be two arguments. Inconsistent but again, it's fine
+./dump2_args "foo"bar
 
 # Normal shells work fine with this too
-"ls"
+"seq" 1
 
-# Syntax error --> failed assert
+# Syntax error
 foo "
 bar
 baz

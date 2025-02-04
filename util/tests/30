@@ -2,3 +2,4 @@
 # cd $empty enforces a switch by default, then, while cd $$empty would not
 # submit an argumnet
 cd ""
+- echo OK

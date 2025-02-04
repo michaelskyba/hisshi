@@ -1,10 +1,10 @@
-echo 5 | xargs seq | rg 5
-	echo rg worked1
+echo 5 | xargs seq | grep 5
+	echo grep worked1
 
-echo 5 | xargs seq | rg 6
-	echo rg worked2
+echo 5 | xargs seq | grep 6
+	echo grep worked2
 -
-	echo rg didnt2
+	echo grep didnt2
 
 false | true
 	echo "false --> true 0"

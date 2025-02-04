@@ -1,7 +1,7 @@
 echo $1
 
-123: date
+123: echo 1738701026
 123 |= 1
 
 export 1
-env | rg "Wed Dec"
+env | grep "1738701026"

@@ -1,12 +1,12 @@
 # Shouldn't initially exist
 echo $tmp
 
-mktemp -u |= tmp
+echo 1738699710 |= tmp
 
 # Overwrites env var because it probably already exists
 echo $tmp |= HISTFILE
 
 # Should see the updated HISTFILE but not tmp
-env | rg HISTFILE
-env | rg "^tmp="
+env | grep "^HISTFILE="
+env | grep "^tmp="
 - echo "There's no tmp. hisshi wins again"

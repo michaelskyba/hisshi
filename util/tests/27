@@ -1,6 +1,11 @@
-date | rg 2024
+date | grep 2024
 	echo "It is 2024."
-- date | rg Sep
+- date | grep Sep
 	echo "It's not 2024, but it is September."
 -
 	echo "It's not 2024, and it's not September. Instead, it is over."
+
+# If it's 2030 and I'm not dead and I'm still manually updating this, then
+# something has really gone wrong
+date | grep -q "202[0-9]$"
+	echo Feel the AGI

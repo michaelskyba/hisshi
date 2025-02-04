@@ -1,10 +1,9 @@
-date
-
+cd /
 myfunc: pwd 1 2 3 # this is a comment
 
 myfunc2:
 	true
-		date
+		seq 2
 
 	echo bar
 pwd

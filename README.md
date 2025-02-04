@@ -19,3 +19,17 @@ issue](https://github.com/michaelskyba/hisshi/issues/1) is being used as a
 makeshift tracker.
 
 The short, now-outdated specification can be found [here](./specification.md).
+
+### Automated tests
+Unit tests are mostly a waste of time in the context of a shell like this. If it
+performs your desired operations under the edge cases you give it, then
+everything is working correctly. Modifying them for every internal refactor is
+low ROI.
+
+Instead, we use automated integration tests with a simple Python script:
+```
+cd util
+./auto_test
+```
+This reads from `./tests/config.txt` to find a list of test hisshi scripts to
+run, and then the correct stdout/stderr we expect them to have.

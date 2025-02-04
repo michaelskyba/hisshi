@@ -1,5 +1,11 @@
-echo hi > overwrite
-cat < /home/oboro/src/hisshi/examples/31-read.txt | rg "flag$"
-date >> append
+# Redirection tests
+
+echo flag1 > /tmp/hisshi-1738699355
+grep 1 /tmp/hisshi-1738699355
+cat < 31-read.txt | grep "flag$"
+seq 3 >> /tmp/hisshi-1738699355
+date >> /tmp/hisshi-1738699355
 true
-	rg flag2 < /home/oboro/src/hisshi/examples/31-read.txt
+	grep flag2 < 31-read.txt
+wc -l /tmp/hisshi-1738699355
+rm -f /tmp/hisshi-1738699355

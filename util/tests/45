@@ -6,11 +6,14 @@ echo === global1 $_date $date2
 123: echo === func123 $_date
 
 myfunc:
+	# _date will be inaccessible because _ forces local
 	echo === func1 $_date $date2
+
 	echo func _date |= _date
 	echo === func2 $_date $date2
 
 	# $123 counts as local so a 123 function counts as local
+	# So this won't match the global 123 and instead hit a file not found
 	# Permissible for now 1733182504
 	123
 
