@@ -1,16 +1,9 @@
 #!/usr/local/bin/hsh
 
-date +%s
-echo hi
+# Testing local execution and the working shebang
 
-# Only exists in /home/oboro/src/hisshi/examples; not in PATH
-dump foo bar
+./13-1
+./13-2
 
-/usr/bin/date
-# /usr/bin/date
-
-/usr/bin/echo test
-
-# /home/oboro/src/hisshi/util/dump
-
-./01
+# Should be not found
+./13-3

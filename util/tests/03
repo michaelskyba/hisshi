@@ -1,4 +1,7 @@
 #!/usr/local/bin/hsh
+
+# Testing a not found error
+
 foo
 bar
 /usr/bin/echo baz

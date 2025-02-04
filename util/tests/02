@@ -4,7 +4,7 @@
 # This is a second comment
 
 # This should trigger a path lookup
-echo echo
+echo echo # this is another comment
 
 # This should use an absolute path
 /usr/bin/printf printf

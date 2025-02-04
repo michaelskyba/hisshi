@@ -2,12 +2,20 @@
 
 # succes: 0
 true
+echo $HISSHI_EXIT_STATUS
 
 # generic failure: 1
 false
+echo $HISSHI_EXIT_STATUS
 
 # not executable: 126
 /etc/shadow
+echo $HISSHI_EXIT_STATUS
 
 # not found: 127
-foo
+foobarbaz1738691483
+echo $HISSHI_EXIT_STATUS
+
+# custom: 70
+./14-1
+echo $HISSHI_EXIT_STATUS

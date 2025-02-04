@@ -8,7 +8,10 @@
 # Blank lines and ^# are ignored
 
 02	echo\nprintf
-03	foo\nbar\nbaz\n
-16	test\n
-34	CORRECT1\nCORRECT2\n
-35	1
+03	baz\n	foo: No such file or directory\nbar: No such file or directory\n
+13	system shell\nhisshi\n	./13-3: No such file or directory\n
+14	0\n1\n126\n127\n70\n	/etc/shadow: Permission denied\nfoobarbaz1738691483: No such file or directory\n
+17	f test\n1\n1\nfoo: cannot open `foo' (No such file or directory)\n
+18	1\n2\n3\n4\n5\n6\n7\n
+19	1\n2\n4\n5\n9\n
+20	1\n2\n4\n5\n9\n10\n11\n14\n

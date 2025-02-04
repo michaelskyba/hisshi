@@ -1,0 +1,15 @@
+# As of 1729648836, misc whitespace is mostly ignored. None of 17 should be
+# taken as blank "" arguments
+ true
+    echo      f    test    # bar
+seq 1    
+seq 1 
+
+# Based GNU file writes to stdout with exit 0 in this case
+file foo 
+
+true
+	
+
+test -f /etc/passwd
+test -f /etc/anthy-conf.foo1738694674
