@@ -1,0 +1,5 @@
+# Format: <local filename to run><tab><expected output>
+# The actual 0a newline in these files are ignored. Use "test\n" to match "echo test"
+16	test\n
+34	CORRECT1\nCORRECT2\n
+35	1

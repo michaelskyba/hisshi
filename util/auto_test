@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+
+
+def panic(message):
+    print(f"ERROR: {message}", file=sys.stderr)
+    sys.exit(1)
+
+
+def parse_expected(text):
+    """
+    Given the expected output string from the config file,
+    convert literal "\t" and "\n" into actual tab and newline characters.
+    Note that literal tabs might also be present.
+    """
+    # Replace literal "\t" with a tab, and "\n" with newline.
+    # We assume that any occurrence of the two-character string backslash+t should
+    # be replaced, and similarly for "\n". Use .replace().
+    return text.replace("\\t", "\t").replace("\\n", "\n")
+
+
+def main():
+    tests_dir = "./tests"
+    config_path = os.path.join(tests_dir, "config.txt")
+
+    if not os.path.isdir(tests_dir):
+        panic(f"Directory {tests_dir} does not exist.")
+
+    if not os.path.isfile(config_path):
+        panic(f"Config file {config_path} does not exist.")
+
+    try:
+        with open(config_path, "r") as f:
+            lines = f.readlines()
+    except Exception as e:
+        panic(f"Failed to read {config_path}: {e}")
+
+    # Process non-comment lines. We'll collect tests as a list of tuples (filename, expected_output)
+    tests = []
+    for line in lines:
+        line = line.rstrip("\n")  # remove the trailing newline character from the file
+        if not line.strip():
+            continue  # skip blank lines
+        if line.lstrip().startswith("#"):
+            continue  # skip comments
+        # Split line into two parts by the first tab.
+        parts = line.split("\t", 1)
+        if len(parts) != 2:
+            print(
+                f"Warning: skipping invalid line (no tab found): {line}",
+                file=sys.stderr,
+            )
+            continue
+        filename, expected_spec = parts
+        # The expected_spec might include literal tab characters as well as escape sequences.
+        expected = parse_expected(expected_spec)
+        tests.append((filename.strip(), expected))
+
+    total_tests = len(tests)
+    if total_tests == 0:
+        print("No tests to run.")
+        sys.exit(0)
+
+    passed = 0
+    failed = 0
+
+    for idx, (test_name, expected_output) in enumerate(tests, start=1):
+        # Prepare the command to run: "hsh <filename>"
+        # We run this in the tests directory.
+        command = ["hsh", test_name]
+        try:
+            result = subprocess.run(
+                command,
+                cwd=tests_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=10,  # seconds before failing
+            )
+        except Exception as e:
+            print(f"({idx}/{total_tests}) {test_name}: FAIL")
+            print(f"Error running command: {e}")
+            failed += 1
+            continue
+
+        actual_output = result.stdout
+
+        # Compare the actual output with expected. We do an exact comparison.
+        if actual_output == expected_output:
+            print(f"({idx}/{total_tests}) {test_name}: OK")
+            passed += 1
+        else:
+            print(f"({idx}/{total_tests}) {test_name}: FAIL")
+            print("Expected:")
+            # Show repr() for clarity if there are whitespace differences.
+            print(repr(expected_output))
+            print("Got:")
+            print(repr(actual_output))
+            failed += 1
+
+    print(f"\n{passed} PASSED, {failed} FAILED")
+
+
+if __name__ == "__main__":
+    main()

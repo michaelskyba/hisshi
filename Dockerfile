@@ -8,5 +8,5 @@ RUN make
 FROM debian AS hisshi-run
 WORKDIR /usr/local/src
 COPY --from=hisshi-build /usr/local/src/hsh ./
-COPY examples .
+COPY util/tests .
 CMD ["./hsh", "./20"]
