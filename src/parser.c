@@ -54,34 +54,38 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 	if (cmd->else_flag && control == CONTROL_BRANCH_ACTIVE)
 		update_control(parse_state, CONTROL_COMPLETE);
 
-	if (parent_permits && (!cmd->else_flag || control == CONTROL_WAITING)) {
-		if (cmd->path == NULL) {
-			// cmd->path should only be blank if we submitted a blank "-\n". If
-			// you submit a completely blank line, parse_command shouldn't be
-			// called.
-			assert(cmd->else_flag);
-
-			// If so, it's equivalent to "- true\n"
-			update_control(parse_state, CONTROL_BRANCH_ACTIVE);
-			return;
-		}
-
-		int exit_code = execute_pipeline(parse_state->cmd_pipeline, shell_state);
-		shell_state->exit_code = exit_code;
-
-		// 0: success exit code, so this if branch is now active
-		if (exit_code == 0)
-			update_control(parse_state, CONTROL_BRANCH_ACTIVE);
-
-		// The command failed, but this is a new start of a control structure,
-		// since it's a base (if). We don't execute this body but we allow
-		// further branches to check their conditions
-		else if (!cmd->else_flag)
-			update_control(parse_state, CONTROL_WAITING);
-
+	if (!parent_permits || (cmd->else_flag && control != CONTROL_WAITING)) {
+		debug("L%d: CF skip\n", ln);
+		return;
 	}
 
-	else debug("L%d: CF skip\n", ln);
+	if (cmd->path == NULL) {
+		// cmd->path should only be blank if we submitted a blank "-\n". If
+		// you submit a completely blank line, parse_command shouldn't be
+		// called.
+		assert(cmd->else_flag);
+
+		// If so, it's equivalent to "- true\n"
+		update_control(parse_state, CONTROL_BRANCH_ACTIVE);
+		return;
+	}
+
+	int exit_code = execute_pipeline(parse_state->cmd_pipeline, shell_state);
+	shell_state->exit_code = exit_code;
+
+	char exit_code_str[16];
+	snprintf(exit_code_str, sizeof(exit_code_str), "%d", exit_code);
+	set_variable(shell_state, "HISSHI_EXIT_STATUS", exit_code_str);
+
+	// 0: success exit code, so this if branch is now active
+	if (exit_code == 0)
+		update_control(parse_state, CONTROL_BRANCH_ACTIVE);
+
+	// The command failed, but this is a new start of a control structure,
+	// since it's a base (if). We don't execute this body but we allow
+	// further branches to check their conditions
+	else if (!cmd->else_flag)
+		update_control(parse_state, CONTROL_WAITING);
 }
 
 void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource *source) {
