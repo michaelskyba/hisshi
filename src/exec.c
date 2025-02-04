@@ -170,15 +170,18 @@ int execute_child(Command *cmd, int read_fd, int write_fd, int *pipes, ShellStat
 	// debug("%d: execve(%s)\n", getpid(), cmd->path);
 	execve(cmd->path, get_argv_array(cmd), environ);
 
-	// execve only returns control to us if it fails
+	// execve only returns control to us if it fails. We have to save errno
+	// before running perror or it sometimes gets changed to 22 (EINVAL) during
+	// perror(), inside util/auto_test
+	int saved_err = errno;
 	perror(cmd->path);
 
-	// Not found
-	if (errno == ENOENT)
+	// Not found (errno 2)
+	if (saved_err == ENOENT)
 		_exit(127);
 
-	// No access to executing it
-	else if (errno == EACCES)
+	// No access to executing it (errno 13)
+	else if (saved_err == EACCES)
 		_exit(126);
 
 	_exit(1);
