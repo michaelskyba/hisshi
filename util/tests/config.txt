@@ -52,3 +52,4 @@
 50	OK: dir not matching initially\nOK: regular cd worked\nOK: child cd did nothing\n/tmp/hisshi-tmp.95SQiVZinp\n3\n
 51	40\n
 52	=== global foo\n=== myfunc foo\n=== myfunc /\n=== global /\n
+53	0: |../dump2_args|\n1: ||\n0: |../dump2_args|\n1: |1|\n0: |../dump2_args|\n0: |../dump2_args|\n1: |1|\n2: |2|\n3: |3|\n

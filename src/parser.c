@@ -88,6 +88,23 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 		update_control(parse_state, CONTROL_WAITING);
 }
 
+// Copies str
+void parse_name(ParseState *parse_state, ShellState *shell_state, char *str) {
+	debug("Parsing str token |%s|\n", str);
+
+	if (parse_state->phase == READING_NAME) {
+		if (get_function(shell_state, str))
+			parse_state->cmd->path = get_str_copy(str);
+		else
+			parse_state->cmd->path = get_bin_path(str);
+
+		parse_state->phase = READING_ARG;
+	}
+
+	// Even if READING_NAME, set $0 as convention
+	add_arg(parse_state->cmd, str);
+}
+
 void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *source) {
 	// Start with at_line_start == true
 	TokenizerState *tokenizer_state = create_tokenizer_state();
@@ -202,6 +219,27 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *source
 		if (tk_type == TOKEN_NAME || tk_type == TOKEN_VARIABLE) {
 			char *str = parse_state->tk->str;
 
+			// $@ expansion support. This mimics POSIX shells' "$@"; we don't
+			// expand one input "foo bar" arg into two
+			if (tk_type == TOKEN_VARIABLE && strcmp(str, "@") == 0) {
+				int i = 1;
+				char index[16];
+				char *param;
+
+				while (true) {
+					sprintf(index, "%d", i);
+					param = get_variable(shell_state, index);
+					if (param == NULL)
+						break;
+
+					parse_name(parse_state, shell_state, param);
+					i++;
+				}
+
+				// Continue to next token
+				continue;
+			}
+
 			if (tk_type == TOKEN_VARIABLE) {
 				debug("Script asks for var |%s|\n", str);
 				str = get_variable(shell_state, str);
@@ -212,19 +250,7 @@ void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *source
 				debug("We queried and received value |%s|\n", str);
 			}
 
-			debug("Parsing str token |%s|\n", str);
-
-			if (parse_state->phase == READING_NAME) {
-				if (get_function(shell_state, str))
-					parse_state->cmd->path = get_str_copy(str);
-				else
-					parse_state->cmd->path = get_bin_path(str);
-
-				parse_state->phase = READING_ARG;
-			}
-
-			// Even if READING_NAME, set $0 as convention
-			add_arg(parse_state->cmd, str);
+			parse_name(parse_state, shell_state, str);
 			continue;
 		}
 

@@ -1,0 +1,7 @@
+f: ../dump2_args $1
+f
+f 1 2 3
+
+f: ../dump2_args $@
+f
+f 1 2 3

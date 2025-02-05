@@ -125,7 +125,7 @@ bool read_token(Token *tk, TokenizerState *state, FILE *fp) {
 
 	if (c == '$') {
 		c = fgetc(fp);
-		assert(isalnum(c) || c == '_' || c == '?');
+		assert(isalnum(c) || c == '_' || c == '?' || c == '@');
 		ungetc(c, fp);
 
 		// For now rely on regular name parsing for the variable name,
