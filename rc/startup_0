@@ -1,0 +1,10 @@
+p: echo $1
+
+err:
+	test $1
+		p $1
+	-
+		printf "FAIL "
+		date +%s
+
+	exit 1
