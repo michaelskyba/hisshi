@@ -2,8 +2,8 @@ myfunc: echo "myfunc: var is" $var
 
 myfunc
 
-echo "global: var is" $var
-echo 1733109513 |= var
-echo "global: var is" $var
+p "global: var is" $var
+p 1733109513 |= var
+p "global: var is" $var
 
 myfunc

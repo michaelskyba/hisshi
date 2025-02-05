@@ -1,4 +1,4 @@
-echo === global $1
+p === global $1
 
 f: echo === func $0 $1 $2
 
@@ -6,4 +6,4 @@ f a b c
 f
 f d
 
-echo === global2 $1
+p === global2 $1

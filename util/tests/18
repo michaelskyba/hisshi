@@ -1,7 +1,7 @@
-echo 1
-	echo 2
-		echo 3
-	echo 4
-	echo 5
-echo 6
-echo 7
+p 1
+	p 2
+		p 3
+	p 4
+	p 5
+p 6
+p 7

@@ -1,15 +1,15 @@
 cd /
 
-echo foo |= foo
-echo === global $foo
+p foo |= foo
+p === global $foo
 
 myfunc:
-	echo === myfunc $foo
+	p === myfunc $foo
 	pwd |= foo
-	echo === myfunc $foo
+	p === myfunc $foo
 
 myfunc
 
 # "/" overwrites global since it already existed, and wasn't named
 # to force a local
-echo === global $foo
+p === global $foo

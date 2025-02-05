@@ -1,11 +1,11 @@
 # Taken as "", not null
-printf $search
+pf $search
 
-echo $foo
+p $foo
 ../dump2_args $foo2
 
 # Currently literal \$baz if in quotes
-echo "test" $foo bar "$baz"
+p "test" $foo bar "$baz"
 
-echo $PATH | grep -q bin
-	echo bin found
+p $PATH | grep -q bin
+	p bin found

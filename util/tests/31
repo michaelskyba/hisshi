@@ -1,6 +1,6 @@
 # Redirection tests
 
-echo flag1 > /tmp/hisshi-1738699355
+p flag1 > /tmp/hisshi-1738699355
 grep 1 /tmp/hisshi-1738699355
 cat < 31-read.txt | grep "flag$"
 seq 3 >> /tmp/hisshi-1738699355

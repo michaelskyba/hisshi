@@ -1,10 +1,10 @@
-echo 1
-	echo 2
+p 1
+	p 2
 	false
-		echo 3
-	echo 4
-	echo 5
+		p 3
+	p 4
+	p 5
 test -f /foo1738694852
-	echo 7
-	echo 8
-echo 9
+	p 7
+	p 8
+p 9

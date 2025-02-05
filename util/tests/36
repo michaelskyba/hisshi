@@ -1,13 +1,13 @@
-echo foo |= bar
-echo $bar
+p foo |= bar
+p $bar
 
 unset bar
-echo $bar
+p $bar
 
 unset
 unset a b c
 
-echo 1738699954 |= HISTFILE
+p 1738699954 |= HISTFILE
 env | grep "^HISTFILE="
 unset HISTFILE
 env | grep "^HISTFILE="

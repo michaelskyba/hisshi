@@ -1,20 +1,20 @@
-echo 1
-	echo 2
+p 1
+	p 2
 	false
-		echo 3
-	echo 4
-	echo 5
+		p 3
+	p 4
+	p 5
 test -f /foo
-	echo 7
-	echo 8
+	p 7
+	p 8
 - echo 9
-	echo 10
-	echo 11
+	p 10
+	p 11
 
 	true
 	- echo 12
-		echo 13
+		p 13
 	false
 	-
-		echo 14
+		p 14
 - echo 15

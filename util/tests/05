@@ -4,11 +4,11 @@
 # can read the environment
 
 env | grep -q PATH
-	echo OK1
+	p OK1
 -
-	echo FAIL1
+	p FAIL1
 
 env | grep -q 17386981031738698104
-	echo FAIL2
+	p FAIL2
 -
-	echo OK2
+	p OK2

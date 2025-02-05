@@ -1,31 +1,31 @@
-echo /tmp/hisshi-tmp.95SQiVZinp |= dir
+p /tmp/hisshi-tmp.95SQiVZinp |= dir
 mkdir $dir
 
 pwd | eq $dir
-	echo FAIL
+	p FAIL
 	exit 1
 -
-	echo "OK: dir not matching initially"
+	p "OK: dir not matching initially"
 
 cd $dir
 
 pwd | eq $dir
-	echo "OK: regular cd worked"
+	p "OK: regular cd worked"
 -
-	echo FAIL
+	p FAIL
 	exit 1
 
 cd / | cat
 
 pwd | eq $dir
-	echo "OK: child cd did nothing"
+	p "OK: child cd did nothing"
 -
-	echo FAIL
+	p FAIL
 	exit 1
 
 pwd
 seq 10 | rw 3 |= bar
-echo $bar
+p $bar
 
 cd /
 rmdir $dir

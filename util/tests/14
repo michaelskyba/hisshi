@@ -2,20 +2,20 @@
 
 # succes: 0
 true
-echo $?
+p $?
 
 # generic failure: 1
 false
-echo $?
+p $?
 
 # not executable: 126
 /etc/shadow
-echo $?
+p $?
 
 # not found: 127
 foobarbaz1738691483
-echo $?
+p $?
 
 # custom: 70
 ./14-1
-echo $?
+p $?

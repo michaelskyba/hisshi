@@ -4,14 +4,14 @@ test $var
 # Runs in the parent process so var should be visible
 eval "pwd |= var"
 test $var
-	echo OK
+	p OK
 -
-	echo FAIL
+	p FAIL
 
 # Pipelines run each command in child processes so the inner eval will have a
 # dangling copy of the parent shell_state
 eval "pwd |= var2" | cat
 test $var2
-	echo FAIL
+	p FAIL
 -
-	echo OK
+	p OK

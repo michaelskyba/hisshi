@@ -1,6 +1,6 @@
-echo	foo
+p	foo
 
-echo foo
+p foo
 seq 5 | cat
 # rg 20 |
 
@@ -10,13 +10,13 @@ date | rg -o 20 |
 	head |
 	tac
 
-echo test | tee /tmp/1738698716
+p test | tee /tmp/1738698716
 cat /tmp/1738698716
 rm -f /tmp/1738698716
 
 foo1738698744 echo hi
-	echo success
+	p success
 -
-	echo fail
+	p fail
 
 # cat

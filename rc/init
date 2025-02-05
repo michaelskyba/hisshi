@@ -1,11 +1,13 @@
 #!/usr/bin/env hsh
-p: echo $1
+
+p: echo $@
+pf: printf $@
 
 err:
 	test $1
 		p $1
 	-
-		printf "FAIL "
+		pf "FAIL "
 		date +%s
 
 	exit 1

@@ -1,5 +1,5 @@
-echo CORRECT1
-	echo CORRECT2
+p CORRECT1
+	p CORRECT2
 -
 	false
-		echo WRONG
+		p WRONG

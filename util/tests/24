@@ -1,3 +1,3 @@
-echo foo
+p foo
 date | grep -o 20 | uniq | tr 0 x
-echo "|" grep 20 "| cat"
+p "|" grep 20 "| cat"

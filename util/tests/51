@@ -1,4 +1,4 @@
-echo 40 > /tmp/hisshi-1738701359
+p 40 > /tmp/hisshi-1738701359
 myfunc: grep 4
 myfunc < /tmp/hisshi-1738701359
 rm -f /tmp/hisshi-1738701359

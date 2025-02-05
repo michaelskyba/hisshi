@@ -5,7 +5,7 @@ myfunc2:
 	true
 		seq 2
 
-	echo bar
+	p bar
 pwd
 
 myfunc

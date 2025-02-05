@@ -4,7 +4,7 @@ c: echo func c
 b
 
 a:
-	echo func a
+	p func a
 
 	b: echo func b2
 	b

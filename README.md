@@ -33,3 +33,6 @@ cd util
 ```
 This reads from `./tests/config.txt` to find a list of test hisshi scripts to
 run, and then the correct stdout/stderr we expect them to have.
+
+They assume your compiled `hsh` is in production mode and that you've installed
+the shipped rc/init. If you used `./build`, both of these are the default.

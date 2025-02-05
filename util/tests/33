@@ -1,10 +1,10 @@
 # Shouldn't initially exist
-echo $tmp
+p $tmp
 
-echo 1738699710 |= tmp
+p 1738699710 |= tmp
 
 # Overwrites env var because it probably already exists
-echo $tmp |= HISTFILE
+p $tmp |= HISTFILE
 
 # Should see the updated HISTFILE but not tmp
 env | grep "^HISTFILE="

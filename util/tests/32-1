@@ -1,2 +1,2 @@
 #!/usr/bin/env hsh
-echo $0 $1 $2 $3 four
+p $0 $1 $2 $3 four

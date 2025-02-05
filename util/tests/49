@@ -1,5 +1,5 @@
 myfunc: echo 1738701077
 myfunc |= HISSHI_VAR
-echo $HISSHI_VAR
+p $HISSHI_VAR
 export HISSHI_VAR
 env | grep 1738701077

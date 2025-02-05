@@ -1,6 +1,6 @@
-echo $HISSHI_VAR
+p $HISSHI_VAR
 date +%Y | head -c 1 |= HISSHI_VAR
-echo $HISSHI_VAR
+p $HISSHI_VAR
 
 # Should initially be empty
 env | grep HISSHI_VAR
@@ -9,7 +9,7 @@ env | grep HISSHI_VAR
 export HISSHI_VAR
 
 # Should be the same
-echo $HISSHI_VAR
+p $HISSHI_VAR
 
 # Should exist now
 env | grep "^HISSHI_VAR="

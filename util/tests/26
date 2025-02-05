@@ -1,16 +1,16 @@
-echo 5 | xargs seq | grep 5
-	echo grep worked1
+p 5 | xargs seq | grep 5
+	p grep worked1
 
-echo 5 | xargs seq | grep 6
-	echo grep worked2
+p 5 | xargs seq | grep 6
+	p grep worked2
 -
-	echo grep didnt2
+	p grep didnt2
 
 false | true
-	echo "false --> true 0"
+	p "false --> true 0"
 	true | false
-		echo "true --> false 0"
+		p "true --> false 0"
 	-
-		echo "true --> false 1"
+		p "true --> false 1"
 -
-	echo "false --> true 1"
+	p "false --> true 1"
