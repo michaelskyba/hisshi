@@ -4,11 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "input_source.h"
 #include "tokenizer.h"
 #include "util.h"
 
-typedef struct InputSource InputSource;
 typedef struct TokenizerState TokenizerState;
 typedef struct Token Token;
 
@@ -52,9 +50,9 @@ char *append_tk_p(Token *tk, char *p, char c) {
 
 // tk->str will be overwritten, so copy it if you need it
 // rt: whether to keep reading (type != EOF)
-bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
+bool read_token(Token *tk, TokenizerState *state, FILE *fp) {
 	char c;
-	while ((c = source->getc(source)) == ' ') ;
+	while ((c = fgetc(fp)) == ' ') ;
 
 	if (c == EOF) {
 		tk->type = TOKEN_EOF;
@@ -67,13 +65,13 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 	}
 
 	if (c == '>') {
-		c = source->getc(source);
+		c = fgetc(fp);
 
 		if (c == '>')
 			tk->type = TOKEN_REDIRECT_APPEND;
 		else {
 			tk->type = TOKEN_REDIRECT_WRITE;
-			source->ungetc(source, c);
+			ungetc(c, fp);
 		}
 
 		return true;
@@ -85,7 +83,7 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 	}
 
 	if (c == '#') {
-		while (source->getc(source) != '\n') ;
+		while (fgetc(fp) != '\n') ;
 		tk->type = TOKEN_NEWLINE;
 		tk->ln++;
 
@@ -100,21 +98,21 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 	}
 
 	if (c == '|') {
-		c = source->getc(source);
+		c = fgetc(fp);
 
 		if (c == '=')
 			tk->type = TOKEN_PIPE_VARIABLE;
 		else {
 			tk->type = TOKEN_PIPE;
-			source->ungetc(source, c);
+			ungetc(c, fp);
 		}
 
 		return true;
 	}
 
 	if (c == '-') {
-		char peek = source->getc(source);
-		source->ungetc(source, peek);
+		char peek = fgetc(fp);
+		ungetc(peek, fp);
 
 		if (isspace(peek) || peek == '#') {
 			tk->type = TOKEN_DASH;
@@ -126,14 +124,14 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 	}
 
 	if (c == '$') {
-		c = source->getc(source);
+		c = fgetc(fp);
 		assert(isalnum(c) || c == '_');
-		source->ungetc(source, c);
+		ungetc(c, fp);
 
 		// For now rely on regular name parsing for the variable name,
 		// but overwrite the type
 
-		if (!read_token(tk, state, source))
+		if (!read_token(tk, state, fp))
 			return false;
 
 		tk->type = TOKEN_VARIABLE;
@@ -149,7 +147,7 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 
 		int ln_start = tk->ln;
 
-		while ((c = source->getc(source)) != match) {
+		while ((c = fgetc(fp)) != match) {
 			if (c == EOF) {
 				fprintf(stderr, "[%d-%d]: unclosed string\n", ln_start, tk->ln);
 				exit(1);
@@ -175,7 +173,7 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 			assert(c != EOF);
 
 			p = append_tk_p(tk, p, c);
-			c = source->getc(source);
+			c = fgetc(fp);
 		}
 
 		// Defined as ^\t*myfunc:
@@ -191,7 +189,7 @@ bool read_token(Token *tk, TokenizerState *state, InputSource *source) {
 			*p = '\0';
 		}
 
-		source->ungetc(source, c);
+		ungetc(c, fp);
 		return true;
 	}
 }

@@ -2,10 +2,11 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "command.h"
 #include "exec.h"
-#include "input_source.h"
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
@@ -14,7 +15,6 @@
 #include "util.h"
 
 typedef struct Command Command;
-typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
 typedef struct TokenizerState TokenizerState;
@@ -88,7 +88,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 		update_control(parse_state, CONTROL_WAITING);
 }
 
-void parse_script(ParseState *parse_state, ShellState *shell_state, InputSource *source) {
+void parse_script(ParseState *parse_state, ShellState *shell_state, FILE *source) {
 	// Start with at_line_start == true
 	TokenizerState *tokenizer_state = create_tokenizer_state();
 
@@ -265,7 +265,29 @@ int eval_function(Command *cmd, ShellState *parent, char *func_body_raw) {
 	// We include the \n in the body when tokenizing, so we don't need to add a
 	// trailing one here
 	char *func_body = get_str_copy(func_body_raw);
-	InputSource *source = create_str_input_source(func_body);
+
+	/* Open a pipe and write the function body into it */
+	int pipe_fds[2];
+	if (pipe(pipe_fds) == -1) {
+		perror("pipe");
+		exit(1);
+	}
+
+	ssize_t written = write(pipe_fds[1], func_body, strlen(func_body));
+	if (written < 0) {
+		perror("write");
+		close(pipe_fds[0]);
+		close(pipe_fds[1]);
+		exit(1);
+	}
+	close(pipe_fds[1]);
+
+	FILE *source = fdopen(pipe_fds[0], "r");
+	if (!source) {
+		perror("fdopen");
+		close(pipe_fds[0]);
+		exit(1);
+	}
 
 	ParseState *parse_state = create_parse_state();
 	ShellState *shell_state = create_shell_state(parent);
@@ -288,7 +310,9 @@ int eval_function(Command *cmd, ShellState *parent, char *func_body_raw) {
 
 	free_parse_state(parse_state);
 	free_shell_state(shell_state);
-	free_str_input_source(source);
+
+	fclose(source);
+	free(func_body);
 
 	return exit_code;
 }

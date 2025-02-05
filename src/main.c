@@ -4,13 +4,11 @@
 #include <unistd.h>
 
 #include "hash_table.h"
-#include "input_source.h"
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
 #include "util.h"
 
-typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
 
@@ -47,9 +45,8 @@ int main(int argc, char **argv) {
 	FILE *script_file = fopen(argv[1], "r");
 	assert(script_file);
 
-	InputSource *source = create_file_input_source(script_file);
-	parse_script(parse_state, shell_state, source);
-	free_file_input_source(source);
+	parse_script(parse_state, shell_state, script_file);
+	fclose(script_file);
 
 	int exit_code = shell_state->exit_code;
 

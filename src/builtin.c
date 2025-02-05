@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "command.h"
-#include "input_source.h"
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
@@ -14,7 +13,6 @@
 #include "builtin.h"
 
 typedef struct Command Command;
-typedef struct InputSource InputSource;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
 
@@ -120,7 +118,31 @@ int builtin_eval(Command *cmd, ShellState *shell_state) {
 	}
 
 	char *eval_body = copy_with_newline(cmd->arg_head->next->name);
-	InputSource *source = create_str_input_source(eval_body);
+
+	int pipe_fds[2];
+	if (pipe(pipe_fds) == -1) {
+		perror("pipe");
+		free(eval_body);
+		return 1;
+	}
+
+	ssize_t written = write(pipe_fds[1], eval_body, strlen(eval_body));
+	if (written < 0) {
+		perror("write");
+		close(pipe_fds[0]);
+		close(pipe_fds[1]);
+		free(eval_body);
+		return 1;
+	}
+	close(pipe_fds[1]);
+
+	FILE *source = fdopen(pipe_fds[0], "r");
+	if (!source) {
+		perror("fdopen");
+		close(pipe_fds[0]);
+		free(eval_body);
+		return 1;
+	}
 
 	debug("Running parse script for body |%s|\n", eval_body);
 
@@ -129,7 +151,8 @@ int builtin_eval(Command *cmd, ShellState *shell_state) {
 
 	int exit_code = shell_state->exit_code;
 	free_parse_state(parse_state);
-	free_str_input_source(source);
+	fclose(source);
+	free(eval_body);
 
 	return exit_code;
 }

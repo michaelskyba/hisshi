@@ -2,8 +2,6 @@
 
 #include <stdbool.h> // TokenizerState, read_token
 
-struct InputSource; // input_source.h
-
 typedef enum TokenType {
 	TOKEN_INDENT,
 	TOKEN_DASH,
@@ -44,4 +42,4 @@ struct TokenizerState {
 
 struct TokenizerState *create_tokenizer_state();
 char *append_tk_p(struct Token *tk, char *p, char c);
-bool read_token(struct Token *tk, struct TokenizerState *state, struct InputSource *source);
+bool read_token(struct Token *tk, struct TokenizerState *state, FILE *fp);
