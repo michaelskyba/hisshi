@@ -60,9 +60,9 @@ ShellState *create_shell_state(ShellState *parent) {
 	state->shell_vars = calloc(HASH_BUCKETS, sizeof(Binding*));
 	state->functions  = calloc(HASH_BUCKETS, sizeof(Binding*));
 
-	// $? starts at 0 in shells by convention. We use a text name for simplicity
+	// $? starts at 0 in shells by convention
 	state->exit_code = 0;
-	set_variable(state, "HISSHI_EXIT_STATUS", "0");
+	set_variable(state, "?", "0");
 
 	return state;
 }

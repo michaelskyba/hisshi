@@ -75,7 +75,7 @@ void parse_command(ParseState *parse_state, ShellState *shell_state) {
 
 	char exit_code_str[16];
 	snprintf(exit_code_str, sizeof(exit_code_str), "%d", exit_code);
-	set_variable(shell_state, "HISSHI_EXIT_STATUS", exit_code_str);
+	set_variable(shell_state, "?", exit_code_str);
 
 	// 0: success exit code, so this if branch is now active
 	if (exit_code == 0)
