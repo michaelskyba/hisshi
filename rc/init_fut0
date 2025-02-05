@@ -1,4 +1,4 @@
-#!/usr/local/bin/hsh
+#!/usr/bin/env hsh
 
 hisshi_alias al hisshi_alias
 al p echo

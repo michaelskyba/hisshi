@@ -20,4 +20,6 @@ export CFLAGS
 
 make -C src clean
 make -C src
+
 sudo cp src/hsh /usr/local/bin/
+sudo cp rc/init /etc/hisshi_init

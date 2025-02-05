@@ -1,3 +1,4 @@
+#!/usr/bin/env hsh
 p: echo $1
 
 err:
