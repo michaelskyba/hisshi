@@ -8,10 +8,12 @@
 #include "parser.h"
 #include "parse_state.h"
 #include "shell_state.h"
+#include "tokenizer.h"
 #include "util.h"
 
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
+typedef struct Token Token;
 
 void set_cli_args(ShellState *state, char argc, char **argv) {
 	// 15: Assume we will have low digit counts of argc
@@ -67,6 +69,9 @@ int main(int argc, char **argv) {
 		debug("Running init script: %s\n", init_path);
 		parse_script(parse_state, shell_state, init_file);
 		fclose(init_file);
+
+		// It's unintuitive to track the init script as part of the line number
+		parse_state->tk->ln = 1;
 	}
 
 	// 1 offset: We want the filename of the script to be $0, not the hsh binary
