@@ -177,7 +177,14 @@ void unset_variable(ShellState *state, char *name) {
 }
 
 void export_variable(ShellState *state, char *name) {
-	char *val = get_table_binding(state->shell_vars, name);
+	char *val = NULL;
+
+	while (state != NULL) {
+		val = get_table_binding(state->shell_vars, name);
+		if (val) break;
+
+		state = state->parent;
+	}
 
 	// Either it doesn't exist at all, or it's already exported and thus not in
 	// shell_vars
