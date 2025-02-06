@@ -1,0 +1,82 @@
+f: echo 1 |= local_name
+f
+
+# Doesn't exist because variables are local scope unless found in the parent
+echo $local_name | eq 1
+- echo OK1
+
+f:
+	echo 2 |= global_name
+	global global_name
+f
+
+# Exists because it was promoted
+echo $global_name | eq 2
+	echo OK2
+
+f:
+	echo $global_name | eq 2
+		echo OK3
+	
+	# Nothing bad should happen if running global on an already global variable
+	global global_name
+	echo $global_name | eq 2
+		echo OK4
+f
+
+f: echo f0
+
+main:
+	# Functions in general still work
+	f | eq f0
+	- echo FAIL
+
+	f: echo f1
+	main1:
+		# Now sees the more local scope
+		f | eq f1
+			echo OK5
+
+		# Even more local, to main1
+		f: echo f2
+		f | eq f2
+			echo OK6
+
+		global f
+
+		# Now it's gone from this scope but we see the global version
+		f | eq f2
+			echo OK7
+	main1
+
+	# Still see the global
+	f | eq f2
+		echo OK8
+main
+
+# Still see the global
+f | eq f2
+	echo OK9
+
+main2:
+	f | eq f2
+		echo OK10
+	
+	# Finally changed because we just overwrote in our local main2 scope
+	f: echo main2-f1
+	f | eq main2-f1
+		echo OK11
+main2
+
+# Still see the global
+f | eq f2
+	echo OK12
+
+# Again, double global doesn't break it
+global f2
+f | eq f2
+	echo OK13
+
+# Shouldn't have any panics
+global a1738864385 b1738864386 c1738864387 f2
+global
