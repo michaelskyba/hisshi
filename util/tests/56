@@ -1,0 +1,9 @@
+# explicit alias test
+# (the built-in aliases are used throughout the other tests, so that's an
+# implicit test of the system)
+
+p f1738864995 |= name
+al $name "seq 10 | rw"
+
+$name 5 | eq 5
+	echo OK

@@ -1,7 +1,17 @@
 #!/usr/bin/env hsh
 
-p: echo $@
-pf: printf $@
+alias:
+	# $1: name
+	# $2: body
+	printf "%s: %s $@" $1 $2 |= cmd
+	eval $cmd
+	global $1
+
+alias al alias
+
+al p echo
+al pf printf
+al t test
 
 err:
 	test $1
