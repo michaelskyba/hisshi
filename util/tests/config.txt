@@ -33,8 +33,8 @@
 33	\nHISTFILE=1738699710\nThere's no tmp. hisshi wins again\n
 34	CORRECT1\nCORRECT2\n
 35	Nothing\n
-36	foo\n\nHISTFILE=1738699954\nremoved\n	builtin unset: no variable specified\nbuiltin unset: multiple variables specified\n
-37	\n2\nHISSHI_VAR not found\n2\nHISSHI_VAR=2\ndoesnt\n	builtin export: no variable specified\nbuiltin export: multiple variables specified\n
+36	foo\n\nHISTFILE=1738699954\nremoved\n
+37	\n2\nHISSHI_VAR not found\n2\nHISSHI_VAR=2\ndoesnt\nOK double\n
 38	/\n/\n1\n2\nbar\n	pwd: ignoring non-option arguments\n
 
 # TODO better error handling for 39

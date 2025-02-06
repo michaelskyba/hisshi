@@ -20,7 +20,10 @@ export HISSHI_OTHER_VAR
 env | grep "^HISSHI_OTHER_VAR="
 - echo doesnt
 
-# Both should fail. Both are supported in POSIX but not us. See builtin.c or
-# other docs for design decision explanations
+date |= foo1738861114
+
 export
-export foo bar
+export foo1738861114 bar
+
+env | grep -q foo1738861114
+	echo OK double

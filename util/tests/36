@@ -4,8 +4,13 @@ p $bar
 unset bar
 p $bar
 
+# Supported as of 1738860995
 unset
+
+date |= a
 unset a b c
+test $a
+	echo FAIL
 
 p 1738699954 |= HISTFILE
 env | grep "^HISTFILE="

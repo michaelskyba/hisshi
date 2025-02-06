@@ -12,6 +12,7 @@
 
 #include "builtin.h"
 
+typedef struct ArgNode ArgNode;
 typedef struct Command Command;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
@@ -73,35 +74,23 @@ int builtin_export(Command *cmd, ShellState *state) {
 	// this case we are choosing not to support no args and multiple args,
 	// as well as no `export foo=bar`
 
-	if (cmd->argc < 2) {
-		fprintf(stderr, "builtin export: no variable specified\n");
-		return 1;
-	}
+	// TODO Update those hypothetical docs. Right now 1738855839 I think that
+	// support no args and multiple args is not any more work/code than the
+	// current useless checks to enforce n=1.
 
-	if (cmd->argc > 2) {
-		fprintf(stderr, "builtin export: multiple variables specified\n");
-		return 1;
+	for (ArgNode *arg = cmd->arg_head->next; arg; arg = arg->next) {
+		char *var_name = arg->name;
+		export_variable(state, var_name);
 	}
-
-	char *var_name = cmd->arg_head->next->name;
-	export_variable(state, var_name);
 
 	return 0;
 }
 
 int builtin_unset(Command *cmd, ShellState *state) {
-	if (cmd->argc < 2) {
-		fprintf(stderr, "builtin unset: no variable specified\n");
-		return 1;
+	for (ArgNode *arg = cmd->arg_head->next; arg; arg = arg->next) {
+		char *var_name = arg->name;
+		unset_variable(state, var_name);
 	}
-
-	if (cmd->argc > 2) {
-		fprintf(stderr, "builtin unset: multiple variables specified\n");
-		return 1;
-	}
-
-	char *var_name = cmd->arg_head->next->name;
-	unset_variable(state, var_name);
 
 	return 0;
 }
