@@ -53,3 +53,5 @@
 51	40\n
 52	=== global foo\n=== myfunc foo\n=== myfunc /\n=== global /\n
 53	0: |../dump2_args|\n1: ||\n0: |../dump2_args|\n1: |1|\n0: |../dump2_args|\n0: |../dump2_args|\n1: |1|\n2: |2|\n3: |3|\n
+# TODO global
+55	OK1\nOK2\n

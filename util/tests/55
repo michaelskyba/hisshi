@@ -1,0 +1,21 @@
+# New unset logic, affecting parents
+
+p FAIL1 |= foo
+
+f1:
+	p OK1 |= _bar
+
+	# Shouldn't change anything because unset _bar thinks it has to be local
+	f2: unset _bar
+	f2
+
+	p $_bar
+
+	# foo doesn't exist in f3's state->shell_vars but finds parent
+	f3: unset foo
+	f3
+
+	test $foo
+	- p OK2
+
+f1

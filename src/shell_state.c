@@ -147,11 +147,33 @@ void set_variable(ShellState *state, char *name, char *value) {
 	set_table_binding(state->shell_vars, name, value);
 }
 
+// - If the variable exists in env_vars, unset it there and finish.
+// - If the binding is local, only unset it from the current state's shell_vars.
+// - For non-local bindings, search the call stack (including parents) and unset
+// the first occurrence found.
 void unset_variable(ShellState *state, char *name) {
-	if (unset_table_binding(state->env_vars, name))
+	if (get_table_binding(state->env_vars, name)) {
+		unset_table_binding(state->env_vars, name);
 		assert(unsetenv(name) != -1);
-	else
-		unset_table_binding(state->shell_vars, name);
+		return;
+	}
+
+	bool local = is_local_binding(name);
+
+	if (local) {
+		if (get_table_binding(state->shell_vars, name))
+			unset_table_binding(state->shell_vars, name);
+		return;
+	}
+
+	ShellState *target_state = state;
+	while (target_state != NULL) {
+		if (get_table_binding(target_state->shell_vars, name)) {
+			unset_table_binding(target_state->shell_vars, name);
+			return;
+		}
+		target_state = target_state->parent;
+	}
 }
 
 void export_variable(ShellState *state, char *name) {
