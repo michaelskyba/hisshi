@@ -219,3 +219,75 @@ char *get_function(ShellState *state, char *name) {
 	debug("func |%s| not found anywhere in call stack\n", name);
 	return NULL;
 }
+
+// Promote a function with the given name to global scope. Search the call stack
+// for the first occurrence of the function in the functions hash tables. If
+// found, remove every binding for that name in every scope and then set that
+// binding in the global (root) ShellState.
+void promote_function_to_global(ShellState *state, char *name) {
+	ShellState *cur = state;
+	char *body = NULL;
+
+	ShellState *global = NULL;
+
+	// Find first occurrence in the call stack.
+	while (cur != NULL) {
+		body = get_table_binding(cur->functions, name);
+		if (body) break;
+
+		global = cur;
+		cur = cur->parent;
+	}
+
+	if (!body) return;
+
+	// We will be keeping it to write again, so don't let unset_table_binding
+	// clear
+	body = get_str_copy(body);
+
+	// Remove all function bindings for this name in every scope.
+	while (cur != NULL) {
+		if (get_table_binding(cur->functions, name))
+			unset_table_binding(cur->functions, name);
+
+		global = cur;
+		cur = cur->parent;
+	}
+
+	set_table_binding(global->functions, name, body);
+	free(body);
+}
+
+// Promote a shell variable with the given name to global scope. Search the call
+// stack for the most local shell_vars binding with this name. If found, remove
+// it from that scope and set it in the global scope.
+void promote_variable_to_global(ShellState *state, char *name) {
+	ShellState *cur = state;
+	ShellState *global = state;
+	char *value = NULL;
+
+	while (cur != NULL) {
+		value = get_table_binding(cur->shell_vars, name);
+		if (value) break;
+
+		global = state;
+		cur = cur->parent;
+	}
+
+	if (!value) return;
+
+	value = get_str_copy(value);
+	ShellState *original = cur;
+
+	while (global->parent != NULL)
+		global = global->parent;
+
+	if (original == global)
+		return;
+
+	set_table_binding(global->shell_vars, name, value);
+
+	// Remove it from the original scope, also freeing value
+	unset_table_binding(original->shell_vars, name);
+
+}

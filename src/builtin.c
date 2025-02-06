@@ -146,6 +146,41 @@ int builtin_eval(Command *cmd, ShellState *shell_state) {
 	return exit_code;
 }
 
+/*
+Maybe make a more general "scope" builtin, for checking which scopes are
+available and moving them around? Not sure if any actual use cases, especially
+considering you can already store functions as script files and vars as text
+files.
+
+--
+
+For variables, we should never have the same name across multiple scopes, unless
+they're both forced local (^_ or [0-9]+). Making a forced local variable global
+is undefined behaviour. Trying to global an env variable is undefined, but will
+do nothing in our Implementation.
+
+All functions are defined in a local scope by default, so to be able to easily
+access your global function afterward, we clear the same name from any
+non-global parent scopes.
+
+For both variables and functions, if the given doesn't exist in the current
+state's scope, we try to find a parent to use instead.
+
+You're discouraged from using variables and function with the same name, but in
+this case, both will be made global.
+*/
+int builtin_global(Command *cmd, ShellState *shell_state) {
+	for (ArgNode *arg = cmd->arg_head->next; arg; arg = arg->next) {
+		if (get_function(shell_state, arg->name))
+			promote_function_to_global(shell_state, arg->name);
+
+		if (get_variable(shell_state, arg->name))
+			promote_variable_to_global(shell_state, arg->name);
+	}
+
+	return 0;
+}
+
 int (*get_builtin(char *name)) (Command *, ShellState *) {
 	if (strcmp(name, "cd") == 0)
 		return builtin_cd;
@@ -161,6 +196,9 @@ int (*get_builtin(char *name)) (Command *, ShellState *) {
 
 	if (strcmp(name, "eval") == 0)
 		return builtin_eval;
+
+	if (strcmp(name, "global") == 0)
+		return builtin_global;
 
 	return NULL;
 }

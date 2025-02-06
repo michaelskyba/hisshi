@@ -49,3 +49,6 @@ void export_variable(struct ShellState *state, char *name);
 
 void set_function(struct ShellState *state, char *name, char *body);
 char *get_function(struct ShellState *state, char *name);
+
+void promote_function_to_global(struct ShellState *state, char *name);
+void promote_variable_to_global(struct ShellState *state, char *name);
