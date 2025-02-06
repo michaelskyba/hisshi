@@ -1,20 +1,57 @@
 #!/usr/bin/env hsh
 
+# Implement function-based aliases. Since they always run through a function,
+# their scope interaction won't always match what would happen if you ran the
+# alias body manually
 alias:
 	# $1: name
 	# $2: body
 	printf "%s: %s $@" $1 $2 |= cmd
-	eval $cmd
-	global $1
-
+	hisshi_eval $cmd
+	hisshi_global $1
 alias al alias
 
+# Some default aliases
 al p echo
 al pf printf
 al t test
 
+# Default aliases to builtins
+f:
+	pf "hisshi_%s" $1 |= body
+	al $1 $body
+f global
+f export
+f unset
+f eval
+
+# Default cd wrapper with OLDPWD/PWD and default arg support
+cd:
+	pwd |= _OLDPWD
+
+	t $1 = -
+		echo $OLDPWD |= 1
+
+	t $1
+	- echo $HOME |= 1
+
+	# TODO implement `return` for early returns here
+	hisshi_cd $1
+		p $_OLDPWD |= OLDPWD
+		pwd |= PWD
+pwd |= OLDPWD
+
+# Default exit wapper with default arg support
+exit:
+	echo $? |= _?
+
+	t $1
+	- echo $_? |= 1
+	hisshi_exit $1
+
+# Default panic function
 err:
-	test $1
+	t $1
 		p $1
 	-
 		pf "FAIL "

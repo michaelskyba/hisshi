@@ -1,17 +1,20 @@
 test $var
 - echo "Empty initially"
 
-# Runs in the parent process so var should be visible
-eval "pwd |= var"
+# eval runs in the parent process so var should be visible. We have to use
+# the built-in to preserve the scope. Otherwise you'd need to echo a newline
+# into the eval to make var global
+
+hisshi_eval "pwd |= var"
 test $var
 	p OK
 -
-	p FAIL
+	p FAIL1
 
 # Pipelines run each command in child processes so the inner eval will have a
 # dangling copy of the parent shell_state
 eval "pwd |= var2" | cat
 test $var2
-	p FAIL
+	p FAIL2
 -
 	p OK

@@ -1,26 +1,26 @@
 #!/usr/bin/env hsh
 pwd | grep -q tests
 	p OK1
-cd /
+hisshi_cd /
 pwd
-cd /etc
+hisshi_cd /etc
 pwd
 
 # Should fail because it expects an arg
-exit
+hisshi_exit
 
 # Should fail because dir doesn't exist
-cd /foo1738698204
+hisshi_cd /foo1738698204
 
 # Should fail because it expects an arg
-cd
+hisshi_cd
 
 # Should fail because it doesn't expect multiple args
-cd foo bar
-exit 1 1
+hisshi_cd foo bar
+hisshi_exit 1 1
 
 # Should work, exiting
-exit 69
+hisshi_exit 69
 
 # Shouldn't hit
 p foo

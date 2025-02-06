@@ -17,14 +17,6 @@ typedef struct Command Command;
 typedef struct ParseState ParseState;
 typedef struct ShellState ShellState;
 
-/*
-TODO: Implement a wrapper cd function to be included in the default config with
-additional logic. Then make all builtins actually called "hisshi_cd" etc. to
-avoid needing a "builtin" keyword. Then have default aliases for
-exit=hisshi_exit etc. for those that are fine without a wrapper
-
-Draft in /home/oboro/src/hisshi/rc/startup
-*/
 int builtin_cd(Command *cmd, ShellState *state) {
 	// Technically mark as used
 	(void) state;
@@ -182,22 +174,22 @@ int builtin_global(Command *cmd, ShellState *shell_state) {
 }
 
 int (*get_builtin(char *name)) (Command *, ShellState *) {
-	if (strcmp(name, "cd") == 0)
+	if (strcmp(name, "hisshi_cd") == 0)
 		return builtin_cd;
 
-	if (strcmp(name, "exit") == 0)
+	if (strcmp(name, "hisshi_exit") == 0)
 		return builtin_exit;
 
-	if (strcmp(name, "export") == 0)
+	if (strcmp(name, "hisshi_export") == 0)
 		return builtin_export;
 
-	if (strcmp(name, "unset") == 0)
+	if (strcmp(name, "hisshi_unset") == 0)
 		return builtin_unset;
 
-	if (strcmp(name, "eval") == 0)
+	if (strcmp(name, "hisshi_eval") == 0)
 		return builtin_eval;
 
-	if (strcmp(name, "global") == 0)
+	if (strcmp(name, "hisshi_global") == 0)
 		return builtin_global;
 
 	return NULL;

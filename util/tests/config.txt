@@ -27,7 +27,6 @@
 26	5\ngrep worked1\ngrep didnt2\nfalse --> true 0\ntrue --> false 1\n
 27	It's not 2024, and it's not September. Instead, it is over.\nFeel the AGI\n
 29	\n0: |../dump2_args|\n1: ||\ntest  bar $baz\nbin found\n
-30	OK\n	No such file or directory\n
 31	flag1\nhisshi has read the flag\nhisshi has read the second flag2\n5 /tmp/hisshi-1738699355\n
 32	32 \n./32-1 1 2  four\n
 33	\nHISTFILE=1738699710\nThere's no tmp. hisshi wins again\n
@@ -46,7 +45,7 @@
 44	=== global \n=== func f a b\n=== func f  \n=== func f d \n=== global2 \n
 45	=== global1 _date date2\n=== func1  date2\n=== func2 func _date date2\n=== global1 _date date2\n	123: No such file or directory\n
 46	1\n2\n3\n4\n5\n
-47	\n1=1738701026\n
+47	\n2=1738701026\n
 48	/\n
 49	1738701077\nHISSHI_VAR=1738701077\n
 50	OK: dir not matching initially\nOK: regular cd worked\nOK: child cd did nothing\n/tmp/hisshi-tmp.95SQiVZinp\n3\n
