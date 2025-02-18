@@ -12,6 +12,10 @@ Interactive usage is technically possible to try, using
 ```
 $ hsh /dev/stdin
 ```
+, which can be made slightly more ergonomic with `rlwrap`:
+```
+$ rlwrap -m -c -S "hsh $ " hsh /dev/stdin
+```
 
 I plan to further implement the rest of my ideas as well as write more detailed
 documentation regarding the design. For now, [this
