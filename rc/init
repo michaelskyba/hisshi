@@ -41,6 +41,10 @@ cd:
 		pwd |= PWD
 pwd |= OLDPWD
 
+g:
+	cd $@
+	ls
+
 # Default exit wapper with default arg support
 exit:
 	echo $? |= _?
